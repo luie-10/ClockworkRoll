@@ -361,3 +361,34 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+# ─────────────────────────── Unity ───────────────────────────
+# 에디터가 자동으로 다시 만드는 폴더 (커밋하면 저장소가 수 GB로 커지고 충돌이 남)
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Bb]uilds/
+/[Ll]ogs/
+/[Uu]ser[Ss]ettings/
+/[Mm]emoryCaptures/
+/[Rr]ecordings/
+
+# IDE가 자동 생성하는 프로젝트 파일
+/*.csproj
+/*.sln
+/*.slnx
+.vs/
+
+# Unity는 .meta(GUID)로 스크립트/에셋 연결을 기억한다 → 반드시 커밋 (위 VS 규칙 *.meta 해제)
+!*.meta
+*.pidb.meta
+*.pdb.meta
+*.mdb.meta
+sysinfo.txt
+*.apk
+*.aab
+crashlytics-build.properties
+
+# Unity 패키지 목록은 반드시 커밋 (위 NuGet 규칙 **/[Pp]ackages/* 에서 제외)
+!/Packages/manifest.json
+!/Packages/packages-lock.json

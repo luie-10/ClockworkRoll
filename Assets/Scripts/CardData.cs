@@ -40,7 +40,60 @@ public class DiceData
     public int maxRoll;                 // 최댓값
 
     [TextArea(2, 4)]
-    public string diceEffectDescription; // [적중시], [합 승리시] 효과 텍스트
+    public string diceEffectDescription; // [적중시], [합 승리시] 효과 텍스트 (설명용 — 실제 효과는 아래 effects)
+
+    [Tooltip("실제로 발동하는 효과 목록 (+ 버튼으로 추가)")]
+    public List<DiceEffect> effects = new List<DiceEffect>();
+}
+#endregion
+
+#region 2-1. 주사위 효과 (스킬)
+/// <summary>효과가 발동하는 시점</summary>
+public enum DiceTrigger
+{
+    OnHit,          // [적중시]   공격 주사위가 합을 이겨 피해를 줬을 때
+    OnClashWin,     // [합 승리시] 합에서 이겼을 때 (수비 주사위 포함)
+    OnClashLose     // [합 패배시] 합에서 졌을 때
+}
+
+/// <summary>효과 종류 — 새 효과는 여기에 추가하고 BattleManager.ApplyDiceEffect에 처리를 넣는다</summary>
+public enum DiceEffectType
+{
+    Bleed,          // 상대에게 출혈 부여
+    RecoverKi,      // 자신의 기력 회복 (플레이어만)
+    DrawCard        // 책장 뽑기 (플레이어만)
+}
+
+[Serializable]
+public class DiceEffect
+{
+    public DiceTrigger trigger;
+    public DiceEffectType effect;
+    public int amount = 1;
+    [Tooltip("체크: 다음 턴에 부여 (출혈 등 상태이상용)")]
+    public bool nextTurn;
+
+    /// <summary>카드/로그 표시용 짧은 문구 (예: "[적중시] 다음 턴 출혈 1")</summary>
+    public string Describe()
+    {
+        string when;
+        switch (trigger)
+        {
+            case DiceTrigger.OnHit:      when = "[적중시]"; break;
+            case DiceTrigger.OnClashWin: when = "[합 승리시]"; break;
+            default:                     when = "[합 패배시]"; break;
+        }
+
+        string what;
+        switch (effect)
+        {
+            case DiceEffectType.Bleed:     what = $"출혈 {amount}"; break;
+            case DiceEffectType.RecoverKi: what = $"기력 {amount} 회복"; break;
+            default:                       what = $"책장 {amount}장 뽑기"; break;
+        }
+
+        return nextTurn ? $"{when} 다음 턴 {what}" : $"{when} {what}";
+    }
 }
 #endregion
 

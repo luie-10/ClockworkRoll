@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d3a5c1e9b2f4e60a8c4d2f1b6e9a037, type: 3}
+  m_Name: "시계 마을 이야기"
+  m_EditorClassIdentifier: Assembly-CSharp::StoryData
+  storyTitle: "시계 마을 이야기"
+  summary: "멈춘 종탑 때문에 물에 잠긴 시계 마을. 이안은 태엽 인형 틱과 함께 떠다니는 기억(책장)을 삼키며 종탑으로 향한다."
+  startingDeck:
+  - {fileID: 11400000, guid: c752f0de72672fb75770bf0156e2234a, type: 2}
+  - {fileID: 11400000, guid: c752f0de72672fb75770bf0156e2234a, type: 2}
+  - {fileID: 11400000, guid: c752f0de72672fb75770bf0156e2234a, type: 2}
+  - {fileID: 11400000, guid: acb67c6530c2105adfecbbbadf2072d6, type: 2}
+  - {fileID: 11400000, guid: 12ac0a2bff8033ee0643124bddb502ef, type: 2}
+  - {fileID: 11400000, guid: 0e9352576c1da336396d97d2eee78a73, type: 2}
+  - {fileID: 11400000, guid: 0e9352576c1da336396d97d2eee78a73, type: 2}
+  - {fileID: 11400000, guid: 83853b7e9a35475e4c6fd54d7fa2e88d, type: 2}
+  - {fileID: 11400000, guid: 3b4a56966aca133901993aac5c86e4df, type: 2}
+  chapters:
+  - {fileID: 11400000, guid: ff3247547fe5dc39ef390ee7aba714d9, type: 2}
+  - {fileID: 11400000, guid: e169478c71f8497743c3996798136224, type: 2}
+  - {fileID: 11400000, guid: c8eadc25ffba4a3ceee6cda5fce8ed68, type: 2}
+  - {fileID: 11400000, guid: 0323428cb9c8b2da177b3440a119782e, type: 2}

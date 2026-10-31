@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c432b655cc2ee62408eb86f1bf1d0dbc, type: 3}
+  m_Name: "골목 쥐"
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyData
+  enemyName: "골목 쥐"
+  maxHp: 30
+  resistance:
+    slash: 0
+    thrust: 1
+    blunt: 2
+  modelPrefab: {fileID: 0}
+  tintColor: {r: 0.8, g: 0.35, b: 0.3, a: 1}
+  deck:
+  - {fileID: 11400000, guid: 44b0abacae1fa621c1687a272e55b9dd, type: 2}
+  - {fileID: 11400000, guid: 9392751af3ba81aaaf1e426e8e2e209d, type: 2}
+  - {fileID: 11400000, guid: a0966b9cb0990d1a7ff70e6e51d0f522, type: 2}

@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c432b655cc2ee62408eb86f1bf1d0dbc, type: 3}
+  m_Name: "굶주린 쥐"
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyData
+  enemyName: "굶주린 쥐"
+  maxHp: 45
+  resistance:
+    slash: 1
+    thrust: 0
+    blunt: 1
+  modelPrefab: {fileID: 0}
+  tintColor: {r: 0.4, g: 0.5, b: 0.85, a: 1}
+  deck:
+  - {fileID: 11400000, guid: cc5d7fdfb1f5c3cbb975e9cf38434ad3, type: 2}
+  - {fileID: 11400000, guid: d12930928e4b887d3a10eb4720dff8bd, type: 2}
+  - {fileID: 11400000, guid: 9c9df5d014e9ec463acfd400bad0e99a, type: 2}

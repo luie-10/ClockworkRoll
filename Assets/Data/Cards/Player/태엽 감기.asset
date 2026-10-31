@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 64319ab3dd94be547b66c1346fc27ddd, type: 3}
+  m_Name: "태엽 감기"
+  m_EditorClassIdentifier: Assembly-CSharp::CardData
+  cardName: "태엽 감기"
+  cardArt: {fileID: 0}
+  rarity: 1
+  cost: 1
+  requireEmotionLevel: 0
+  cardDescription: "틱이 나눠 준 태엽. 버티면 기력이 돌고, 베면 책장이 손에 감긴다."
+  diceList:
+  - diceName: 
+    diceType: 1
+    diceDetail: 3
+    minRoll: 2
+    maxRoll: 5
+    diceEffectDescription: 
+    effects:
+    - trigger: 1
+      effect: 1
+      amount: 1
+      nextTurn: 0
+  - diceName: 
+    diceType: 0
+    diceDetail: 0
+    minRoll: 2
+    maxRoll: 4
+    diceEffectDescription: 
+    effects:
+    - trigger: 0
+      effect: 2
+      amount: 1
+      nextTurn: 0

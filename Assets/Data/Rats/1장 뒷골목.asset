@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 551d2ebdc9dbf10479df475a9525e215, type: 3}
+  m_Name: "1장 뒷골목"
+  m_EditorClassIdentifier: Assembly-CSharp::ChapterData
+  chapterTitle: "1장. 뒷골목의 이빨"
+  introLines:
+  - speaker: "틱"
+    text: "조심해. 물이 빠진 골목에는 쥐들이 모여 살아."
+    portrait: {fileID: 0}
+  - speaker: "???"
+    text: "찍찍... 새 기억 냄새다. 반짝이는 책장 냄새."
+    portrait: {fileID: 0}
+  - speaker: "이안"
+    text: "쥐가... 말을 해?"
+    portrait: {fileID: 0}
+  - speaker: "틱"
+    text: "기억을 너무 많이 먹은 녀석들이야. 물리면 상처가 쉽게 안 닫혀. 오래 끌지 마!"
+    portrait: {fileID: 0}
+  battle: {fileID: 11400000, guid: 62628dac1741dc51c4032bfa62c68ec0, type: 2}
+  outroLines:
+  - speaker: "이안"
+    text: "쥐들이 쓰던 책장이... 손 안으로 스며들어."
+    portrait: {fileID: 0}
+  - speaker: "틱"
+    text: "그게 흡수야. 쓸 때마다 그 녀석들의 굶주림이 조금씩 새어 나올 거야."
+    portrait: {fileID: 0}
+  - speaker: "틱"
+    text: "아, 골목 끝에서 이걸 찾았어. 멈춘 초침... 이상하게 따뜻해."
+    portrait: {fileID: 0}
+  rewardCards:
+  - {fileID: 11400000, guid: f5f724797ccaefc28317ef920253b939, type: 2}

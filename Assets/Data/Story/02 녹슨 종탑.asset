@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 551d2ebdc9dbf10479df475a9525e215, type: 3}
+  m_Name: "02 녹슨 종탑"
+  m_EditorClassIdentifier: Assembly-CSharp::ChapterData
+  chapterTitle: "2장. 녹슨 종탑"
+  introLines:
+  - speaker: "틱"
+    text: "여기가 종탑이야. ...소리가 하나도 안 나."
+    portrait: {fileID: 0}
+  - speaker: "종지기"
+    text: "누구냐. 종을 다시 울리러 왔다면 돌아가라."
+    portrait: {fileID: 0}
+  - speaker: "이안"
+    text: "종이 멈춰서 마을이 가라앉고 있어."
+    portrait: {fileID: 0}
+  - speaker: "종지기"
+    text: "종이 한 번 울릴 때마다 누군가의 기억이 지워졌다. 나는 그 소리를 더는 견딜 수 없었다."
+    portrait: {fileID: 0}
+  - speaker: "종지기"
+    text: "멈춘 채로 가라앉는 편이 낫다. 병정들아, 막아라."
+    portrait: {fileID: 0}
+  battle: {fileID: 11400000, guid: 33c3333e343b0afc00fc05edfa34c747, type: 2}
+  outroLines:
+  - speaker: "종지기"
+    text: "...네 손에서 내 기억 냄새가 나는군. 그걸로 무엇을 할 셈이냐."
+    portrait: {fileID: 0}
+  - speaker: "이안"
+    text: "잊지 않을 거야. 지워지게 두지도 않을 거고."
+    portrait: {fileID: 0}
+  - speaker: "종지기"
+    text: "그렇다면... 종을 울려라. 이번에는 지우는 소리가 아니길 바란다."
+    portrait: {fileID: 0}
+  rewardCards: []
