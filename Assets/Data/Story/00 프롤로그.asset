@@ -45,3 +45,4 @@ MonoBehaviour:
     portrait: {fileID: 0}
   rewardCards:
   - {fileID: 11400000, guid: 41990bcb6445c2ab80031a436c5783cc, type: 2}
+  - {fileID: 11400000, guid: 303db84955a890a2353cbde6e9fae8be, type: 2}

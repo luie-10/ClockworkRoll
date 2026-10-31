@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 64319ab3dd94be547b66c1346fc27ddd, type: 3}
+  m_Name: "정비"
+  m_EditorClassIdentifier: Assembly-CSharp::CardData
+  cardName: "정비"
+  cardArt: {fileID: 0}
+  rarity: 0
+  cost: 1
+  requireEmotionLevel: 0
+  cardDescription: "틱이 가르쳐 준 응급 정비. 버티는 사이에 나사를 조인다."
+  diceList:
+  - diceName: 
+    diceType: 1
+    diceDetail: 3
+    minRoll: 3
+    maxRoll: 6
+    diceEffectDescription: 
+    effects:
+    - trigger: 1
+      effect: 3
+      amount: 3
+      nextTurn: 0
+  - diceName: 
+    diceType: 1
+    diceDetail: 4
+    minRoll: 2
+    maxRoll: 5
+    diceEffectDescription: 
+    effects:
+    - trigger: 1
+      effect: 2
+      amount: 1
+      nextTurn: 0

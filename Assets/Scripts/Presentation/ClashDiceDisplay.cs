@@ -71,7 +71,7 @@ public class ClashDiceDisplay : MonoBehaviour
     /// index번째 주사위를 굴리는 연출. 숫자가 빠르게 바뀌며 돌다가 finalValue에서 멈춘다.
     /// die가 null이면(이 쪽은 주사위가 없음) 빈 주사위 "-"를 보여준다.
     /// </summary>
-    public IEnumerator RollRoutine(int index, DiceData die, int finalValue, bool boosted, int bonus, float duration)
+    public IEnumerator RollRoutine(int index, DiceData die, int finalValue, int bonus, float duration)
     {
         SelectSlot(index);
         boostText.text = "";
@@ -112,10 +112,13 @@ public class ClashDiceDisplay : MonoBehaviour
         // 착지: 최종 값 + 커졌다 돌아오는 펀치
         bigHex.localRotation = Quaternion.identity;
         bigNumber.text = finalValue.ToString();
-        if (boosted)
+        if (bonus != 0)
         {
-            bigNumber.color = new Color(1f, 0.85f, 0.2f, alpha);
-            boostText.text = $"+{bonus}";
+            // 보정이 붙으면 금색(+) / 보라색(-) 숫자와 옆에 보정값 (상성·힘·허약·인내 등)
+            Color bonusColor = bonus > 0 ? new Color(1f, 0.85f, 0.2f, alpha) : new Color(0.75f, 0.55f, 1f, alpha);
+            bigNumber.color = bonusColor;
+            boostText.color = bonusColor;
+            boostText.text = bonus > 0 ? $"+{bonus}" : bonus.ToString();
         }
         yield return Punch(bigHex, BigHexSize, 1.35f, 0.15f);
     }

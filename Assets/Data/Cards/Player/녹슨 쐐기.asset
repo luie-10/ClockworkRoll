@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 64319ab3dd94be547b66c1346fc27ddd, type: 3}
+  m_Name: "녹슨 쐐기"
+  m_EditorClassIdentifier: Assembly-CSharp::CardData
+  cardName: "녹슨 쐐기"
+  cardArt: {fileID: 0}
+  rarity: 1
+  cost: 1
+  requireEmotionLevel: 0
+  cardDescription: "톱니 사이에 박힌 쐐기는 상대의 힘을 빼앗는다."
+  diceList:
+  - diceName: 
+    diceType: 0
+    diceDetail: 2
+    minRoll: 2
+    maxRoll: 5
+    diceEffectDescription: 
+    effects:
+    - trigger: 0
+      effect: 6
+      amount: 2
+      nextTurn: 1
+  - diceName: 
+    diceType: 1
+    diceDetail: 3
+    minRoll: 3
+    maxRoll: 5
+    diceEffectDescription: 
+    effects:
+    - trigger: 3
+      effect: 5
+      amount: 1
+      nextTurn: 0

@@ -100,6 +100,10 @@ public class BattleManager : MonoBehaviour
     private int lastDamage;                  // 마지막 공격의 실제 피해 (내성 적용 후, 연출용)
     private Resistance lastResistance;
 
+    // 합 하나 안에서만 유효한 효과 (합이 끝나면 비운다)
+    private readonly Dictionary<Unit, int> nextDieBonus = new Dictionary<Unit, int>();   // [다음 주사위 위력 +n]
+    private readonly HashSet<Unit> destroyNextDie = new HashSet<Unit>();                 // 이 유닛의 다음 주사위는 파괴됨
+
     void Awake()
     {
         if (Instance != null && Instance != this)
@@ -440,6 +444,12 @@ public class BattleManager : MonoBehaviour
             if (defCard != null) defDisplay = ClashDiceDisplay.Show(defender, defCard.data);
         }
 
+        // [사용시] 효과: 주사위를 굴리기 전에 양쪽 책장 모두 발동 (공격자 먼저)
+        nextDieBonus.Clear();
+        destroyNextDie.Clear();
+        TriggerCardUse(attacker, defender, atkCard.data);
+        if (defCard != null) TriggerCardUse(defender, attacker, defCard.data);
+
         for (int i = 0; i < count; i++)
         {
             if (!attacker.IsAlive || !defender.IsAlive) break;
@@ -452,15 +462,19 @@ public class BattleManager : MonoBehaviour
             DiceData atkDie = atkHas ? atkDice[i] : null;
             DiceData defDie = defHas ? defDice[i] : null;
 
+            // [상대의 다음 주사위 파괴]: 굴리기 전에 사라진다 (없는 주사위 = 자동 패배)
+            atkDie = TryDestroyDie(attacker, atkDie);
+            defDie = TryDestroyDie(defender, defDie);
+
             // 출혈: 공격 주사위를 굴리려는 순간 피해 (출혈로 쓰러지면 주사위를 굴리지 못한다)
             TriggerBleedIfAttack(attacker, atkDie);
             TriggerBleedIfAttack(defender, defDie);
             if (!attacker.IsAlive || !defender.IsAlive) break;
 
-            // 주사위 굴림 (없는 쪽은 자동 패배). boosted = 상성/회피 보정을 받았는가
-            bool atkBoosted = false, defBoosted = false;
-            int atkRoll = atkDie != null ? ComputeRoll(atkDie, defDie, out atkBoosted) : -1;
-            int defRoll = defDie != null ? ComputeRoll(defDie, atkDie, out defBoosted) : -1;
+            // 주사위 굴림 (없는 쪽은 자동 패배). bonus = 상성·힘·허약 등으로 더해진 값 (머리 위 주사위에 표시)
+            int atkBonus = 0, defBonus = 0;
+            int atkRoll = atkDie != null ? ComputeRoll(attacker, atkDie, defDie, out atkBonus) : -1;
+            int defRoll = defDie != null ? ComputeRoll(defender, defDie, atkDie, out defBonus) : -1;
 
             string atkLabel = atkDie != null ? $"{atkDie.diceDetail} {atkRoll}" : "-";
             string defLabel = defDie != null ? $"{defDie.diceDetail} {defRoll}" : "-";
@@ -470,17 +484,17 @@ public class BattleManager : MonoBehaviour
             if (atkDisplay != null || defDisplay != null)
             {
                 Coroutine atkSpin = atkDisplay != null
-                    ? StartCoroutine(atkDisplay.RollRoutine(i, atkDie, atkRoll, atkBoosted, typeAdvantageBonus, diceRollTime)) : null;
+                    ? StartCoroutine(atkDisplay.RollRoutine(i, atkDie, atkRoll, atkBonus, diceRollTime)) : null;
                 Coroutine defSpin = defDisplay != null
-                    ? StartCoroutine(defDisplay.RollRoutine(i, defDie, defRoll, defBoosted, typeAdvantageBonus, diceRollTime)) : null;
+                    ? StartCoroutine(defDisplay.RollRoutine(i, defDie, defRoll, defBonus, diceRollTime)) : null;
                 if (atkSpin != null) yield return atkSpin;
                 if (defSpin != null) yield return defSpin;
             }
 
             // 연출: 양쪽이 서로 부딪히고, 굴림 값이 머리 위에 뜬다
             if (clashFx)
-                yield return StartCoroutine(ClashImpactRoutine(attacker, atkDie, atkRoll, atkBoosted,
-                                                              defender, defDie, defRoll, defBoosted));
+                yield return StartCoroutine(ClashImpactRoutine(attacker, atkDie, atkRoll, atkBonus,
+                                                              defender, defDie, defRoll, defBonus));
 
             // 연출: 이긴 주사위는 번쩍, 진 주사위는 흔들리며 흐려진다 (아래 결과 연출과 동시에)
             ShowDiceResult(atkDisplay, atkRoll, defRoll);
@@ -506,6 +520,9 @@ public class BattleManager : MonoBehaviour
             }
         }
 
+        nextDieBonus.Clear();
+        destroyNextDie.Clear();
+
         // 연출: 주사위 표시를 걷고, 원래 자리로 복귀, 카메라 해제
         if (atkDisplay != null) atkDisplay.Hide();
         if (defDisplay != null) defDisplay.Hide();
@@ -529,32 +546,62 @@ public class BattleManager : MonoBehaviour
         return Random.Range(die.minRoll, die.maxRoll + 1);
     }
 
-    /// <summary>주사위를 굴리고 타입 상성 보정을 적용한다.</summary>
-    private int ComputeRoll(DiceData mine, DiceData theirs, out bool boosted)
+    /// <summary>
+    /// 주사위를 굴리고 보정을 적용한다. bonus = 기본 굴림에 더해진 총합 (음수 가능).
+    /// 순서: 마비(최솟값 고정) → 힘/허약/인내 → [다음 주사위 위력 +n] → 상성/회피 보정
+    /// </summary>
+    private int ComputeRoll(Unit self, DiceData mine, DiceData theirs, out int bonus)
     {
-        boosted = false;
+        bonus = 0;
         int roll = RollBase(mine);
-        if (theirs == null) return Mathf.Max(roll, 0);
 
-        // 공격 대 공격: 상성 순환(참격>관통>타격>참격) 우위 보정
-        if (mine.diceType == DiceType.Attack && theirs.diceType == DiceType.Attack &&
-            advantageOver.TryGetValue(mine.diceDetail, out DiceDetail beaten) &&
-            theirs.diceDetail == beaten)
+        if (self.ConsumeParalysis())
         {
-            roll += typeAdvantageBonus;
-            boosted = true;
-            Log($"  → {mine.diceDetail}은(는) {theirs.diceDetail}에 강하다! 굴림 +{typeAdvantageBonus}");
+            roll = mine.minRoll;
+            Log($"  → {self.unitName}은(는) 마비되어 주사위가 최솟값({roll})으로 굴러간다!");
         }
 
-        // 회피: 상대 공격 주사위를 상대로는 굴림 보정
-        if (mine.diceDetail == DiceDetail.Evade && theirs.diceType == DiceType.Attack)
+        if (mine.diceType == DiceType.Attack)
+            bonus += self.GetStatus(StatusType.Strength) - self.GetStatus(StatusType.Feeble);
+        else
+            bonus += self.GetStatus(StatusType.Endurance);
+
+        if (nextDieBonus.TryGetValue(self, out int power) && power > 0)
         {
-            roll += typeAdvantageBonus;
-            boosted = true;
-            Log($"  → 회피가 공격을 겨냥한다! 굴림 +{typeAdvantageBonus}");
+            bonus += power;
+            nextDieBonus.Remove(self);
         }
 
-        return Mathf.Max(roll, 0);
+        if (theirs != null)
+        {
+            // 공격 대 공격: 상성 순환(참격>관통>타격>참격) 우위 보정
+            if (mine.diceType == DiceType.Attack && theirs.diceType == DiceType.Attack &&
+                advantageOver.TryGetValue(mine.diceDetail, out DiceDetail beaten) &&
+                theirs.diceDetail == beaten)
+            {
+                bonus += typeAdvantageBonus;
+                Log($"  → {mine.diceDetail}은(는) {theirs.diceDetail}에 강하다! 굴림 +{typeAdvantageBonus}");
+            }
+
+            // 회피: 상대 공격 주사위를 상대로는 굴림 보정
+            if (mine.diceDetail == DiceDetail.Evade && theirs.diceType == DiceType.Attack)
+            {
+                bonus += typeAdvantageBonus;
+                Log($"  → 회피가 공격을 겨냥한다! 굴림 +{typeAdvantageBonus}");
+            }
+        }
+
+        return Mathf.Max(roll + bonus, 0);
+    }
+
+    /// <summary>파괴 예약이 걸린 유닛이면 이번 주사위를 없앤다 (null 반환).</summary>
+    private DiceData TryDestroyDie(Unit owner, DiceData die)
+    {
+        if (die == null || !destroyNextDie.Remove(owner)) return die;
+
+        Log($"  → {owner.unitName}의 {DiceInfo.Name(die.diceDetail)} 주사위가 부서졌다!");
+        if (clashFx) DamagePopup.Spawn(HeadPosition(owner) + Vector3.up * 0.8f, "주사위 파괴!", statusDebuffColor, 1f);
+        return null;
     }
 
     /// <summary>합에서 이긴 주사위의 효과 적용. 공격 주사위가 실제로 피해를 줬으면(적중) true.</summary>
@@ -567,6 +614,7 @@ public class BattleManager : MonoBehaviour
 
                 // 내성: 맞는 쪽이 이 공격 종류(참격/관통/타격)에 약하면 피해가 x1.5 / x2.0
                 int damage = target.ApplyResistance(roll, die.diceDetail, out Resistance res);
+                damage += target.GetStatus(StatusType.Fragile);   // 취약: 내성 배율 뒤에 고정 피해 +n
                 lastDamage = damage;
                 lastResistance = res;
 
@@ -609,6 +657,16 @@ public class BattleManager : MonoBehaviour
             TriggerDiceEffects(loser, winner, loseDie, DiceTrigger.OnClashLose);
     }
 
+    /// <summary>책장의 모든 주사위에 붙은 [사용시] 효과를 발동한다.</summary>
+    private void TriggerCardUse(Unit self, Unit opponent, CardData card)
+    {
+        if (card == null || card.diceList == null) return;
+        foreach (DiceData die in card.diceList)
+        {
+            if (die != null) TriggerDiceEffects(self, opponent, die, DiceTrigger.OnUse);
+        }
+    }
+
     private void TriggerDiceEffects(Unit self, Unit opponent, DiceData die, DiceTrigger trigger)
     {
         if (die.effects == null) return;
@@ -646,7 +704,61 @@ public class BattleManager : MonoBehaviour
                 int drawn = handManager.DrawCards(fx.amount);
                 Log($"  {fx.Describe()} ({drawn}장)");
                 break;
+
+            case DiceEffectType.Heal:
+                int healed = self.Heal(fx.amount);
+                Log($"  {fx.Describe()} → {self.unitName} (+{healed})");
+                if (clashFx && healed > 0) StatusPopup(self, $"+{healed}", healPopupColor);
+                break;
+
+            case DiceEffectType.Strength:
+                ApplyStatus(self, StatusType.Strength, fx, statusBuffColor);
+                break;
+
+            case DiceEffectType.Endurance:
+                ApplyStatus(self, StatusType.Endurance, fx, statusBuffColor);
+                break;
+
+            case DiceEffectType.Feeble:
+                ApplyStatus(opponent, StatusType.Feeble, fx, statusDebuffColor);
+                break;
+
+            case DiceEffectType.Fragile:
+                ApplyStatus(opponent, StatusType.Fragile, fx, statusDebuffColor);
+                break;
+
+            case DiceEffectType.Paralysis:
+                ApplyStatus(opponent, StatusType.Paralysis, fx, statusDebuffColor);
+                break;
+
+            case DiceEffectType.PowerNextDie:
+                nextDieBonus.TryGetValue(self, out int current);
+                nextDieBonus[self] = current + fx.amount;
+                Log($"  {fx.Describe()}");
+                if (clashFx) StatusPopup(self, $"다음 주사위 +{fx.amount}", statusBuffColor);
+                break;
+
+            case DiceEffectType.DestroyNextDie:
+                if (!opponent.IsAlive) return;
+                destroyNextDie.Add(opponent);
+                Log($"  {fx.Describe()} → {opponent.unitName}");
+                break;
         }
+    }
+
+    private void ApplyStatus(Unit unit, StatusType type, DiceEffect fx, Color color)
+    {
+        if (!unit.IsAlive) return;
+        unit.AddStatus(type, fx.amount, fx.nextTurn);
+        Log($"  {fx.Describe()} → {unit.unitName}");
+        if (clashFx)
+            StatusPopup(unit, fx.nextTurn ? $"{DiceInfo.StatusName(type)} +{fx.amount} (다음 턴)"
+                                          : $"{DiceInfo.StatusName(type)} +{fx.amount}", color);
+    }
+
+    private void StatusPopup(Unit unit, string text, Color color)
+    {
+        DamagePopup.Spawn(HeadPosition(unit) + Vector3.up * 0.8f, text, color, 0.8f);
     }
 
     /// <summary>공격 주사위를 굴리려는 유닛에게 출혈 피해를 준다.</summary>
@@ -669,16 +781,19 @@ public class BattleManager : MonoBehaviour
     private static readonly Color boostedPopupColor = new Color(1f, 0.85f, 0.2f);
     private static readonly Color damagePopupColor = new Color(1f, 0.2f, 0.15f);
     private static readonly Color bleedPopupColor = new Color(0.85f, 0.1f, 0.25f);
+    private static readonly Color healPopupColor = new Color(0.45f, 1f, 0.55f);
+    private static readonly Color statusBuffColor = new Color(1f, 0.8f, 0.35f);
+    private static readonly Color statusDebuffColor = new Color(0.75f, 0.55f, 1f);
 
     /// <summary>주사위 한 쌍이 부딪히는 순간: 굴림 값 표시 → 양쪽 돌진 → 중간 지점에 불꽃.</summary>
-    private IEnumerator ClashImpactRoutine(Unit a, DiceData aDie, int aRoll, bool aBoosted,
-                                           Unit b, DiceData bDie, int bRoll, bool bBoosted)
+    private IEnumerator ClashImpactRoutine(Unit a, DiceData aDie, int aRoll, int aBonus,
+                                           Unit b, DiceData bDie, int bRoll, int bBonus)
     {
         // 머리 위 주사위 표시를 쓰면 숫자는 거기서 보이므로 팝업은 생략
         if (!showDiceDisplay)
         {
-            ShowRollPopup(a, aDie, aRoll, aBoosted);
-            ShowRollPopup(b, bDie, bRoll, bBoosted);
+            ShowRollPopup(a, aDie, aRoll, aBonus);
+            ShowRollPopup(b, bDie, bRoll, bBonus);
         }
 
         // 주사위가 있는 쪽만 상대를 향해 튀어나간다 (캐릭터 모델이면 주사위 종류 애니메이션도 재생)
@@ -764,12 +879,12 @@ public class BattleManager : MonoBehaviour
         Time.timeScale = 1f;
     }
 
-    private void ShowRollPopup(Unit unit, DiceData die, int roll, bool boosted)
+    private void ShowRollPopup(Unit unit, DiceData die, int roll, int bonus)
     {
         if (die == null) return;
 
-        string text = boosted ? $"{roll} (+{typeAdvantageBonus})" : roll.ToString();
-        Color color = boosted ? boostedPopupColor
+        string text = bonus != 0 ? $"{roll} ({bonus:+0;-0})" : roll.ToString();
+        Color color = bonus > 0 ? boostedPopupColor : bonus < 0 ? statusDebuffColor
                     : die.diceType == DiceType.Attack ? attackPopupColor : defensePopupColor;
         DamagePopup.Spawn(HeadPosition(unit), text, color, 1f);
     }

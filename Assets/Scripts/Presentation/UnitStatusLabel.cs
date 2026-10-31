@@ -7,7 +7,7 @@ using UnityEngine;
 ///   ┌─────────────────┐
 ///   │  골목 쥐         │  ← 이름 (아군 하늘색 / 적 주황)
 ///   │ ████████░░ 24/30 │  ← 체력바 (초록→노랑→빨강) + 깎인 만큼 흰 잔상이 천천히 줄어듦
-///   │  출혈 2 (+1)     │  ← 출혈이 있을 때만
+///   │ 출혈 2 (+1) 힘 1 │  ← 상태이상이 있을 때만 (괄호 = 다음 턴)
 ///   └─────────────────┘
 /// 어두운 상자를 뒤에 깔아서 어떤 배경에서도 잘 보인다.
 /// 직접 붙일 필요 없음 — BattleManager가 전투 시작 때 UnitStatusLabel.AttachTo()로 붙인다.
@@ -122,7 +122,7 @@ public class UnitStatusLabel : MonoBehaviour
 
         UpdateBar();
         UpdateBleed();
-        if (hasIntent) RefreshBox();   // 글자 폭이 바뀐 직후 메시 크기를 다시 재서 상자를 맞춘다
+        if (hasIntent || hasBleed) RefreshBox();   // 글자 폭이 바뀐 직후 메시 크기를 다시 재서 상자를 맞춘다
     }
 
     private void UpdateBar()
@@ -149,9 +149,8 @@ public class UnitStatusLabel : MonoBehaviour
 
     private void UpdateBleed()
     {
-        string bleed = "";
-        if (target.IsAlive && (target.Bleed > 0 || target.PendingBleed > 0))
-            bleed = target.PendingBleed > 0 ? $"출혈 {target.Bleed} (+{target.PendingBleed})" : $"출혈 {target.Bleed}";
+        // 출혈 + 힘/인내/허약/취약/마비 한 줄 (색 글자, 괄호 = 다음 턴에 들어올 수치)
+        string bleed = target.IsAlive ? DiceInfo.StatusLine(target) : "";
 
         if (bleed == lastBleed) return;
         lastBleed = bleed;
@@ -176,8 +175,10 @@ public class UnitStatusLabel : MonoBehaviour
         {
             float textWidth = Mathf.Max(intentTitle.GetComponent<MeshRenderer>().bounds.size.x,
                                         intentDice.GetComponent<MeshRenderer>().bounds.size.x);
-            width = Mathf.Max(Width, textWidth + 0.24f);
+            width = Mathf.Max(width, textWidth + 0.24f);
         }
+        if (hasBleed)
+            width = Mathf.Max(width, bleedText.GetComponent<MeshRenderer>().bounds.size.x + 0.24f);
 
         box.size = new Vector2(width, top - bottom);
         box.transform.localPosition = new Vector3(0f, (top + bottom) * 0.5f, 0f);

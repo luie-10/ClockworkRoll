@@ -108,8 +108,8 @@ public class UnitTooltip : MonoBehaviour
     {
         string nameColor = u.isPlayer ? "#8cd9ff" : "#ff9e73";
         string s = $"<size=26><b><color={nameColor}>{u.unitName}</color></b></size>    HP {u.Hp}/{u.MaxHp}";
-        if (u.Bleed > 0 || u.PendingBleed > 0)
-            s += $"   <color=#ff4d66>출혈 {u.Bleed}{(u.PendingBleed > 0 ? $" (+{u.PendingBleed})" : "")}</color>";
+        string status = DiceInfo.StatusLine(u);
+        if (status.Length > 0) s += "\n" + status + "  <color=#888888>(괄호 = 다음 턴)</color>";
 
         s += "\n<color=#e8c27a>─ 내성 (받는 피해) ─</color>";
         s += ResistLine(DiceDetail.Slash, u);
@@ -123,6 +123,8 @@ public class UnitTooltip : MonoBehaviour
             s += $"\n{equipped.cardName}  <color=#8cd9ff>(기력 {equipped.cost})</color>";
             string detail = DiceInfo.Detail(equipped);
             if (detail.Length > 0) s += "\n" + detail;
+            string keywords = DiceInfo.Keywords(equipped);
+            if (keywords.Length > 0) s += "\n<size=18>" + keywords + "</size>";
         }
         else if (u.isPlayer)
         {

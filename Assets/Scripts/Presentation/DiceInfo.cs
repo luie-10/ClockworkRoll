@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using System.Text;
+using UnityEngine;
 
 /// <summary>주사위/책장을 짧은 글자로 표시하는 공용 도우미 (머리 위 상태창, 정보창에서 사용)</summary>
 public static class DiceInfo
@@ -77,5 +79,118 @@ public static class DiceInfo
             sb.Append('\n');
         }
         return sb.ToString().TrimEnd('\n');
+    }
+
+    // ─────────────────────────── 상태이상 ───────────────────────────
+
+    public static string StatusName(StatusType t)
+    {
+        switch (t)
+        {
+            case StatusType.Strength:  return "힘";
+            case StatusType.Endurance: return "인내";
+            case StatusType.Feeble:    return "허약";
+            case StatusType.Fragile:   return "취약";
+            case StatusType.Paralysis: return "마비";
+            default:                   return t.ToString();
+        }
+    }
+
+    /// <summary>이로운 상태 = 금색, 해로운 상태 = 보라색</summary>
+    public static string StatusColorHex(StatusType t)
+    {
+        return t == StatusType.Strength || t == StatusType.Endurance ? "#ffcc59" : "#bf8cff";
+    }
+
+    /// <summary>
+    /// 유닛의 상태이상 한 줄 (색 글자): "출혈 2 (+1)  힘 1  마비 2 (+1)". 없으면 빈 문자열.
+    /// (+n)은 다음 턴에 들어올 수치.
+    /// </summary>
+    public static string StatusLine(Unit u)
+    {
+        StringBuilder sb = new StringBuilder();
+        if (u.Bleed > 0 || u.PendingBleed > 0)
+            AppendStatus(sb, "출혈", "#ff4d66", u.Bleed, u.PendingBleed);
+
+        foreach (StatusType t in (StatusType[])System.Enum.GetValues(typeof(StatusType)))
+        {
+            int now = u.GetStatus(t), next = u.GetPendingStatus(t);
+            if (now > 0 || next > 0) AppendStatus(sb, StatusName(t), StatusColorHex(t), now, next);
+        }
+        return sb.ToString();
+    }
+
+    private static void AppendStatus(StringBuilder sb, string name, string hex, int now, int next)
+    {
+        if (sb.Length > 0) sb.Append("  ");
+        sb.Append($"<color={hex}>{name} {now}");
+        if (next > 0) sb.Append($" (+{next})");
+        sb.Append("</color>");
+    }
+
+    // ─────────────────────────── 용어 설명 ───────────────────────────
+
+    /// <summary>효과 종류별 용어 설명 (책장 정보창 아래 "용어" 칸). 설명이 필요 없는 효과는 null.</summary>
+    public static string Keyword(DiceEffectType type)
+    {
+        switch (type)
+        {
+            case DiceEffectType.Bleed:          return "<color=#ff4d66>출혈</color>: 공격 주사위를 굴릴 때마다 수치만큼 피해, 그 뒤 2/3로 줄어듦";
+            case DiceEffectType.Strength:       return "<color=#ffcc59>힘</color>: 이번 턴 동안 공격 주사위 위력 +n";
+            case DiceEffectType.Endurance:      return "<color=#ffcc59>인내</color>: 이번 턴 동안 수비 주사위 위력 +n";
+            case DiceEffectType.Feeble:         return "<color=#bf8cff>허약</color>: 이번 턴 동안 공격 주사위 위력 -n";
+            case DiceEffectType.Fragile:        return "<color=#bf8cff>취약</color>: 이번 턴 동안 공격에 맞을 때 피해 +n";
+            case DiceEffectType.Paralysis:      return "<color=#bf8cff>마비</color>: 주사위 n개가 최솟값으로 굴러감";
+            case DiceEffectType.DestroyNextDie: return "<color=#bf8cff>파괴</color>: 이번 합에서 상대가 다음에 굴릴 주사위가 사라짐";
+            default:                            return null;
+        }
+    }
+
+    /// <summary>책장에 쓰인 효과들의 용어 설명을 중복 없이 모은다 (없으면 빈 문자열).</summary>
+    public static string Keywords(CardData card)
+    {
+        if (card == null || card.diceList == null) return "";
+        HashSet<DiceEffectType> seen = new HashSet<DiceEffectType>();
+        StringBuilder sb = new StringBuilder();
+        foreach (DiceData die in card.diceList)
+        {
+            if (die == null || die.effects == null) continue;
+            foreach (DiceEffect fx in die.effects)
+            {
+                if (fx == null || !seen.Add(fx.effect)) continue;
+                string k = Keyword(fx.effect);
+                if (k == null) continue;
+                if (sb.Length > 0) sb.Append('\n');
+                sb.Append(k);
+            }
+        }
+        return sb.ToString();
+    }
+
+    /// <summary>등급 이름 / 색</summary>
+    public static string RarityName(CardRarity r)
+    {
+        switch (r)
+        {
+            case CardRarity.Paper: return "종이";
+            case CardRarity.Stone: return "돌";
+            case CardRarity.Iron:  return "철";
+            case CardRarity.Gold:  return "예술";
+            case CardRarity.EGO:   return "E.G.O";
+            default:               return r.ToString();
+        }
+    }
+
+    public static Color RarityColor(CardRarity r)
+    {
+        switch (r)
+        {
+            case CardRarity.Paper: return new Color(0.92f, 0.92f, 0.88f);   // 종이
+            case CardRarity.Stone: return new Color(0.72f, 0.78f, 0.82f);   // 돌
+            case CardRarity.Iron:  return new Color(0.62f, 0.66f, 0.72f);   // 철
+            case CardRarity.Gold:  return new Color(1.00f, 0.85f, 0.35f);   // 예술
+            case CardRarity.EGO:   return new Color(0.78f, 0.45f, 0.95f);   // E.G.O
+            default:               return Color.white;
+        }
     }
 }

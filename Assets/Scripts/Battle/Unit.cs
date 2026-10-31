@@ -3,6 +3,16 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>턴 단위 상태이상 (출혈은 따로 — 누적되고 굴릴 때마다 줄어드는 방식이라)</summary>
+public enum StatusType
+{
+    Strength,   // 힘: 공격 주사위 위력 +n
+    Endurance,  // 인내: 수비 주사위 위력 +n
+    Feeble,     // 허약: 공격 주사위 위력 -n
+    Fragile,    // 취약: 공격 주사위에 맞을 때 피해 +n
+    Paralysis   // 마비: 주사위 n개가 최솟값으로 굴러감 (굴릴 때마다 1씩 줄어듦)
+}
+
 /// <summary>
 /// 씬에 배치되는 3D 전투 유닛 (플레이어 / 적 공용).
 /// 클릭 판정을 위해 Collider 가 반드시 필요하다.
@@ -104,11 +114,17 @@ public class Unit : MonoBehaviour
         else Bleed += amount;
     }
 
-    /// <summary>새 턴 시작 — 대기 중이던 상태이상을 실제로 적용한다.</summary>
+    /// <summary>새 턴 시작 — 지난 턴의 힘/허약 등은 사라지고, 대기 중이던 상태이상이 실제로 적용된다.</summary>
     public void ActivatePendingStatus()
     {
         Bleed += PendingBleed;
         PendingBleed = 0;
+
+        for (int i = 0; i < status.Length; i++)
+        {
+            status[i] = pendingStatus[i];
+            pendingStatus[i] = 0;
+        }
     }
 
     /// <summary>공격 주사위를 굴릴 때 호출. 출혈 피해를 주고 수치를 2/3로 줄인다. 실제 피해량을 돌려준다.</summary>
@@ -126,6 +142,42 @@ public class Unit : MonoBehaviour
     {
         Bleed = 0;
         PendingBleed = 0;
+        Array.Clear(status, 0, status.Length);
+        Array.Clear(pendingStatus, 0, pendingStatus.Length);
+    }
+
+    // ─────────────────────────── 상태이상 (힘 · 인내 · 허약 · 취약 · 마비) ───────────────────────────
+    // 이번 턴 동안만 유지된다 (다음 턴이 시작되면 사라짐). "다음 턴 n"은 pending에 쌓였다가 다음 턴에 들어온다.
+
+    private readonly int[] status = new int[Enum.GetValues(typeof(StatusType)).Length];
+    private readonly int[] pendingStatus = new int[Enum.GetValues(typeof(StatusType)).Length];
+
+    public int GetStatus(StatusType type) { return status[(int)type]; }
+    public int GetPendingStatus(StatusType type) { return pendingStatus[(int)type]; }
+
+    public void AddStatus(StatusType type, int amount, bool nextTurn)
+    {
+        if (!IsAlive || amount <= 0) return;
+
+        if (nextTurn) pendingStatus[(int)type] += amount;
+        else status[(int)type] += amount;
+    }
+
+    /// <summary>주사위를 굴릴 때 호출. 마비가 있으면 1 소모하고 true (= 이 주사위는 최솟값).</summary>
+    public bool ConsumeParalysis()
+    {
+        if (status[(int)StatusType.Paralysis] <= 0) return false;
+        status[(int)StatusType.Paralysis]--;
+        return true;
+    }
+
+    /// <summary>체력 회복 (최대 체력까지). 실제 회복량을 돌려준다.</summary>
+    public int Heal(int amount)
+    {
+        if (!IsAlive || amount <= 0) return 0;
+        int before = Hp;
+        Hp = Mathf.Min(maxHp, Hp + amount);
+        return Hp - before;
     }
 
     // ─────────────────────────── 이동 연출 ───────────────────────────

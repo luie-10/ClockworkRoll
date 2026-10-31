@@ -24,6 +24,9 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 0e9352576c1da336396d97d2eee78a73, type: 2}
   - {fileID: 11400000, guid: 83853b7e9a35475e4c6fd54d7fa2e88d, type: 2}
   - {fileID: 11400000, guid: 3b4a56966aca133901993aac5c86e4df, type: 2}
+  - {fileID: 11400000, guid: bce74fad9d4d77cf782aa35254e39054, type: 2}
+  - {fileID: 11400000, guid: e8aa1a0602b02408d5ceaa793758a14e, type: 2}
+  - {fileID: 11400000, guid: 6144cbb8a0492e7e7e6e80cfaf40df2f, type: 2}
   chapters:
   - {fileID: 11400000, guid: ff3247547fe5dc39ef390ee7aba714d9, type: 2}
   - {fileID: 11400000, guid: e169478c71f8497743c3996798136224, type: 2}

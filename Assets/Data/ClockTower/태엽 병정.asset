@@ -25,3 +25,4 @@ MonoBehaviour:
   deck:
   - {fileID: 11400000, guid: d6eddaad42be87bc2c026bd889a21601, type: 2}
   - {fileID: 11400000, guid: 336e92373224a41dfb746014cdde1356, type: 2}
+  - {fileID: 11400000, guid: a0d597effcbc6c11e76fc54902a88eee, type: 2}
