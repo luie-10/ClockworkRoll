@@ -22,6 +22,11 @@ public class HandManager : MonoBehaviour
 
     public int HandCount { get { return hand.Count; } }
 
+    // 덱 보기 창(DeckViewer)용 — 읽기 전용
+    public IReadOnlyList<DeckEntry> DrawPile { get { return drawPile; } }
+    public IReadOnlyList<DeckEntry> DiscardPile { get { return discardPile; } }
+    public IReadOnlyList<CardInstance> Hand { get { return hand; } }
+
     /// <summary>전투 시작 시 덱 구성 (기존 손패/더미 전부 초기화)</summary>
     public void BuildDeck(List<DeckEntry> deck)
     {

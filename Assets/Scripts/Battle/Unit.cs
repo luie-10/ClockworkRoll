@@ -20,6 +20,10 @@ public enum StatusType
 public class Unit : MonoBehaviour
 {
     public string unitName = "이름 없는 유닛";
+    [Tooltip("종류 이름 (적: EnemyData의 Enemy Name). 별명과 다르면 이름 옆에 작게 표시")]
+    public string kindName;
+    [Tooltip("적: 무대 안에서의 번호 (1부터) — 머리 위 [번호], 숫자 키로 대상 지정")]
+    public int slotNumber;
     public bool isPlayer = false;
 
     [SerializeField] private int maxHp = 50;

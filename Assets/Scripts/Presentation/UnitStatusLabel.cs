@@ -27,7 +27,8 @@ public class UnitStatusLabel : MonoBehaviour
     private float trailRatio = 1f;    // 흰 잔상 (천천히 따라감)
     private string lastStatus;
     private int lastHp = -1;
-    private bool hasIntent, hasStatus;
+    private bool hasIntent, hasStatus, lastTargeted;
+    private static readonly Color boxColor = new Color(0.03f, 0.03f, 0.04f, 0.82f);
 
     private static readonly Dictionary<Unit, UnitStatusLabel> labels = new Dictionary<Unit, UnitStatusLabel>();
     private static bool allVisible = true;
@@ -82,8 +83,13 @@ public class UnitStatusLabel : MonoBehaviour
     {
         Color nameColor = target.isPlayer ? new Color(0.55f, 0.85f, 1f) : new Color(1f, 0.62f, 0.45f);
 
-        box = ProceduralSprites.WorldBox(transform, "Box", new Vector2(Width, 0.5f), new Color(0.03f, 0.03f, 0.04f, 0.82f), 20);
-        nameText = NewText("Name", target.unitName, new Vector3(0f, 0.11f, -0.01f), 0.024f, nameColor, 24);
+        box = ProceduralSprites.WorldBox(transform, "Box", new Vector2(Width, 0.5f), boxColor, 20);
+        // 별명 + 종류 (예: "찍찍이 골목 쥐" — 종류는 작고 흐리게)
+        string number = target.slotNumber > 0 ? $"<color=#ffd159>[{target.slotNumber}]</color> " : "";   // 숫자 키로 대상 지정
+        string display = !string.IsNullOrEmpty(target.kindName) && target.kindName != target.unitName
+            ? $"{number}{target.unitName} <size=44><color=#c8c8c8>{target.kindName}</color></size>"
+            : number + target.unitName;
+        nameText = NewText("Name", display, new Vector3(0f, 0.11f, -0.01f), 0.024f, nameColor, 24);
 
         barBg = NewBar("BarBg", new Color(0.12f, 0.02f, 0.02f, 1f), 21);
         barTrail = NewBar("BarTrail", new Color(1f, 1f, 1f, 0.85f), 22);
@@ -122,7 +128,18 @@ public class UnitStatusLabel : MonoBehaviour
 
         UpdateBar();
         UpdateStatus();
-        if (hasIntent || hasStatus) RefreshBox();   // 글자 폭이 바뀐 직후 메시 크기를 다시 재서 상자를 맞춘다
+        UpdateTargeted();
+        RefreshBox();   // 글자 폭이 바뀐 직후 메시 크기를 다시 재서 상자를 맞춘다
+    }
+
+    /// <summary>지금 노리는 적이면 상자가 황동색으로 물든다</summary>
+    private void UpdateTargeted()
+    {
+        BattleManager bm = BattleManager.Instance;
+        bool targeted = bm != null && !target.isPlayer && bm.FocusTarget == target && target.IsAlive;
+        if (targeted == lastTargeted) return;
+        lastTargeted = targeted;
+        box.color = targeted ? new Color(0.32f, 0.22f, 0.05f, 0.92f) : boxColor;
     }
 
     private void UpdateBar()
@@ -170,7 +187,7 @@ public class UnitStatusLabel : MonoBehaviour
         float top = 0.25f + (hasIntent ? 0.33f : 0f);
         float bottom = -0.25f - (hasStatus ? 0.2f : 0f);
 
-        float width = Width;
+        float width = Mathf.Max(Width, nameText.GetComponent<MeshRenderer>().bounds.size.x + 0.24f);   // 긴 별명도 상자 안에
         if (hasIntent)
         {
             float textWidth = Mathf.Max(intentTitle.GetComponent<MeshRenderer>().bounds.size.x,

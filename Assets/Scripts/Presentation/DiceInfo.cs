@@ -141,7 +141,7 @@ public static class DiceInfo
             case DiceEffectType.Feeble:         return "<color=#bf8cff>허약</color>: 이번 라운드 동안 공격 주사위 위력 -n";
             case DiceEffectType.Fragile:        return "<color=#bf8cff>취약</color>: 이번 라운드 동안 공격에 맞을 때 피해 +n";
             case DiceEffectType.Paralysis:      return "<color=#bf8cff>마비</color>: 주사위 n개가 최솟값으로 굴러감";
-            case DiceEffectType.DestroyNextDie: return "<color=#bf8cff>파괴</color>: 이번 합에서 상대가 다음에 굴릴 주사위가 사라짐";
+            case DiceEffectType.DestroyNextDie: return "<color=#bf8cff>파괴</color>: 이번 라운드에 상대가 다음으로 굴릴 주사위 하나가 사라짐";
             default:                            return null;
         }
     }

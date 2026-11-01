@@ -74,6 +74,14 @@ public class TestBoot : MonoBehaviour
             return;
         }
 
+        // 1-2) 승리 화면이면 고를 수 있는 만큼 골라 흡수
+        if (VictoryScreen.IsOpen)
+        {
+            VictoryScreen.AutoPick();
+            timer = 0.6f;
+            return;
+        }
+
         // 2) 내 턴이면: 카드를 최대 3장 사용하고 턴 종료 (반복)
         if (BattleManager.Instance != null &&
             BattleManager.Instance.Phase == BattleManager.BattlePhase.PlayerTurn &&

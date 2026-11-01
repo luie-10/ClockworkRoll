@@ -7,7 +7,7 @@ using UnityEngine;
 /// 한 씬 안에서 상태만 전환하며 [스토리 → 전투 → 승리/보상 → 다음 스토리]를 반복한다.
 ///
 /// 덱 성장 시스템:
-/// - 전투에서 이기면 쓰러뜨린 적의 태엽판을 내 덱으로 '흡수'한다 (◈ 표시).
+/// - 전투에서 이기면 쓰러뜨린 적의 태엽판을 장력 단계만큼 골라 내 덱으로 '흡수'한다 (◈ 표시, 1단계 = 1장).
 /// - 흡수 카드는 강력하지만, 사용할 때 확률적으로 '침식'이 발동해 사용자가 피해를 입는다.
 /// - 같은 태엽판을 중복 흡수하면 침식 수치가 누적되어 발동 확률과 피해가 커진다.
 /// </summary>
@@ -153,22 +153,16 @@ public class GameManager : MonoBehaviour
 
     // ─────────────────────────── 전투 결과 수신 ───────────────────────────
 
-    /// <summary>BattleManager가 승리 시 호출.</summary>
-    public void OnBattleWon()
+    /// <summary>
+    /// BattleManager가 승리 시 호출 (전투 없는 챕터는 바로 호출).
+    /// absorbed = 승리 화면에서 고른 적의 태엽판 (장력 단계만큼). 없으면 null.
+    /// </summary>
+    public void OnBattleWon(List<CardData> absorbed = null)
     {
         ChapterData chapter = chapters[ChapterIndex];
 
-        // 1) 쓰러뜨린 적들의 태엽판을 흡수한다 (덱 오염 = 이 게임의 핵심 트레이드오프)
-        if (chapter.battle != null && chapter.battle.enemies != null)
-        {
-            List<CardData> spoils = new List<CardData>();
-            foreach (EnemySpawnInfo info in chapter.battle.enemies)
-            {
-                if (info == null || info.enemy == null || info.enemy.deck == null) continue;
-                spoils.AddRange(info.enemy.deck);
-            }
-            AbsorbCards(spoils);
-        }
+        // 1) 고른 적의 태엽판을 흡수한다 (덱 오염 = 이 게임의 핵심 트레이드오프)
+        if (absorbed != null && absorbed.Count > 0) AbsorbCards(absorbed);
 
         // 2) 기존 보상 카드 지급 (침식 없는 순수 획득)
         if (chapter.rewardCards != null)
@@ -233,6 +227,17 @@ public class GameManager : MonoBehaviour
                 Debug.Log($"적의 태엽판 흡수: [{card.cardName}] ◈ (침식 1)");
             }
         }
+    }
+
+    /// <summary>이미 흡수한 태엽판의 원본 이름들 (승리 화면에서 "침식 +1" 경고용)</summary>
+    public HashSet<string> AbsorbedSourceNames()
+    {
+        HashSet<string> names = new HashSet<string>();
+        foreach (DeckEntry e in OwnedDeck)
+        {
+            if (e.absorbed && e.sourceName != null) names.Add(e.sourceName);
+        }
+        return names;
     }
 
     /// <summary>침식 수치에 대응하는 '침식 발동' 확률 (0~0.8로 제한).</summary>

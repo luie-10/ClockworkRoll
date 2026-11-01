@@ -6,8 +6,8 @@ using UnityEngine.UI;
 /// 전투 화면 오른쪽의 시계판 (1시~12시).
 ///
 ///            12
-///        11  ●  1         ● 칸 위쪽 빨간 점 = 적 행동이 차지한 칸 (시작 칸에는 적 이름 첫 글자)
-///      10    │    2       ● 칸 아래쪽 파란 점 = 내 행동이 차지한 칸 (시작 칸에는 태엽판 이름 첫 글자)
+///        11  ●  1         ● 칸 위쪽 점 = 그 칸의 적 주사위 / 아래쪽 점 = 내 주사위 (시계판 한 칸 = 주사위 하나)
+///      10    │    2       점 색 = 주사위 종류, 글자 = 참/관/타/가/회
 ///      9     ┼    3       금색 테두리 = 둘이 겹침 → 합이 일어나는 칸
 ///      8          4       바늘 = 진행 중인 시각
 ///        7   6  5
@@ -26,6 +26,9 @@ public class ClockDial : MonoBehaviour
     private const float CellSize = 64f;
 
     private static ClockDial instance;
+
+    /// <summary>마우스가 올라가 있는 칸 (없으면 0). 숫자 키로 그 칸의 내 행동 대상을 바꿀 때 사용</summary>
+    public static int HoveredHour { get { return instance != null ? instance.hoveredHour : 0; } }
 
     private readonly Cell[] cells = new Cell[Hours + 1];   // 1~12 사용
     private RectTransform hand;
@@ -148,6 +151,7 @@ public class ClockDial : MonoBehaviour
         c.enemyDot = NewImage("Enemy", t, ProceduralSprites.Circle(), enemyColor);
         c.enemyDot.rectTransform.sizeDelta = new Vector2(24f, 24f);
         c.enemyDot.rectTransform.anchoredPosition = new Vector2(0f, 22f);
+        AddSideRing(c.enemyDot, enemyColor);   // 테두리 색 = 누구의 주사위인가 (빨강 = 적)
         c.enemyTag = UIBuilder.Label("Tag", c.enemyDot.transform, "", 15, Color.black, TextAnchor.MiddleCenter, false);
         UIBuilder.Stretch(c.enemyTag.rectTransform);
         c.enemyTag.raycastTarget = false;
@@ -155,10 +159,18 @@ public class ClockDial : MonoBehaviour
         c.playerDot = NewImage("Player", t, ProceduralSprites.Circle(), playerColor);
         c.playerDot.rectTransform.sizeDelta = new Vector2(24f, 24f);
         c.playerDot.rectTransform.anchoredPosition = new Vector2(0f, -22f);
+        AddSideRing(c.playerDot, playerColor);   // 파랑 = 나
         c.playerTag = UIBuilder.Label("Tag", c.playerDot.transform, "", 15, Color.black, TextAnchor.MiddleCenter, false);
         UIBuilder.Stretch(c.playerTag.rectTransform);
         c.playerTag.raycastTarget = false;
         return c;
+    }
+
+    private static void AddSideRing(Image dot, Color color)
+    {
+        Outline ring = dot.gameObject.AddComponent<Outline>();
+        ring.effectColor = color;
+        ring.effectDistance = new Vector2(2.5f, -2.5f);
     }
 
     private static Image NewImage(string name, Transform parent, Sprite sprite, Color color)
@@ -217,43 +229,58 @@ public class ClockDial : MonoBehaviour
             Cell c = cells[h];
             TimedAction enemy = FindCovering(bm.EnemyActions, h);
             TimedAction mine = FindCovering(bm.PlayerActions, h);
+            bool past = bm.CurrentHour > 0 && h < bm.CurrentHour;   // 이미 지나간 칸
 
-            DrawDot(c.enemyDot, c.enemyTag, enemy, h, enemy != null ? Initial(enemy.owner.unitName) : "");
-            DrawDot(c.playerDot, c.playerTag, mine, h, mine != null ? Initial(mine.card.data.cardName) : "");
+            // 칸마다 그 칸에 배정된 주사위 하나: 색 = 주사위 종류, 글자 = 참/관/타/가/회
+            DrawDie(c.enemyDot, c.enemyTag, enemy != null ? enemy.DieAt(h) : null, enemy != null && (past || !enemy.owner.IsAlive), enemy != null && enemy.hour == h);
+
+            bool inPreview = pending != null && hoveredHour > 0 && h >= hoveredHour && h < hoveredHour + previewLength;
+            if (inPreview && mine == null)
+            {
+                // 미리보기: 고른 태엽판의 주사위가 이 칸에 어떻게 놓이는지 반투명하게
+                DiceData ghost = pending.diceList != null && h - hoveredHour < pending.diceList.Count ? pending.diceList[h - hoveredHour] : null;
+                DrawDie(c.playerDot, c.playerTag, ghost, false, h == hoveredHour);
+                if (ghost != null) c.playerDot.color = new Color(c.playerDot.color.r, c.playerDot.color.g, c.playerDot.color.b, 0.55f);
+            }
+            else
+            {
+                DrawDie(c.playerDot, c.playerTag, mine != null ? mine.DieAt(h) : null, mine != null && past, mine != null && mine.hour == h);
+            }
 
             bool clash = enemy != null && mine != null;
             c.edge.enabled = clash || h == bm.CurrentHour;
             c.edge.effectColor = h == bm.CurrentHour ? Color.white : clashColor;
 
-            bool inPreview = pending != null && hoveredHour > 0 && h >= hoveredHour && h < hoveredHour + previewLength;
             c.bg.color = inPreview ? (previewOk ? validColor : invalidColor)
                        : h == bm.CurrentHour ? new Color(0.3f, 0.26f, 0.16f, 0.98f)
                        : cellColor;
             c.bg.rectTransform.localScale = Vector3.one * (h == bm.CurrentHour ? 1.18f : 1f);
-            c.hourText.color = (enemy != null || mine != null) ? new Color(1f, 1f, 1f, 0.35f) : new Color(0.9f, 0.85f, 0.75f);
+            c.hourText.color = (enemy != null || mine != null || inPreview) ? new Color(1f, 1f, 1f, 0.3f) : new Color(0.9f, 0.85f, 0.75f);
         }
 
         centerText.text = bm.Phase == BattleManager.BattlePhase.EnemyTurn
             ? $"<b>{bm.CurrentHour}시</b>"
-            : pending != null ? $"<color=#7fd4ff>{pending.cardName}</color>\n{previewLength}칸" : "계획";
+            : pending != null ? $"<color=#7fd4ff>{pending.cardName}</color>\n{previewLength}칸 · 주사위 {previewLength}개" : "계획";
 
         infoText.text = hoveredHour > 0 ? DescribeHour(bm, hoveredHour)
-                      : "<color=#a8a8a8>칸에 마우스를 올리면 그 시각의 행동이 보인다</color>";
+                      : "<color=#a8a8a8>칸에 마우스 = 그 칸의 주사위 (한 칸 = 주사위 하나) · 내 칸 위에서 숫자 키 = 그 행동의 대상 변경</color>";
     }
 
-    /// <summary>행동이 차지한 칸이면 점을 켠다. 시작 칸은 진하게 + 글자, 이어지는 칸은 작고 흐리게.</summary>
-    private static void DrawDot(Image dot, Text tag, TimedAction action, int hour, string label)
+    /// <summary>
+    /// 칸의 주사위 점. 색 = 주사위 종류(참격 빨강 · 관통 주황 · 타격 노랑 · 가드 파랑 · 회피 초록), 글자 = 종류 한 글자.
+    /// 행동의 첫 칸은 조금 크게, 지나간 칸은 회색.
+    /// </summary>
+    private static void DrawDie(Image dot, Text tag, DiceData die, bool spent, bool first)
     {
-        dot.enabled = action != null;
+        dot.enabled = die != null;
         tag.text = "";
-        if (action == null) return;
+        if (die == null) return;
 
-        bool start = action.hour == hour;
-        Color baseColor = action.owner.isPlayer ? playerColor : enemyColor;
-        dot.color = action.resolved ? new Color(0.45f, 0.45f, 0.45f, 0.6f)
-                  : start ? baseColor : new Color(baseColor.r, baseColor.g, baseColor.b, 0.45f);
-        dot.rectTransform.sizeDelta = Vector2.one * (start ? 26f : 14f);
-        if (start) tag.text = label;
+        Color typeColor;
+        ColorUtility.TryParseHtmlString(DiceInfo.ColorHex(die.diceDetail), out typeColor);
+        dot.color = spent ? new Color(0.45f, 0.45f, 0.45f, 0.6f) : typeColor;
+        dot.rectTransform.sizeDelta = Vector2.one * (first ? 28f : 24f);
+        tag.text = DiceInfo.Glyph(die.diceDetail);
     }
 
     private static TimedAction FindCovering(System.Collections.Generic.IReadOnlyList<TimedAction> list, int hour)
@@ -265,23 +292,32 @@ public class ClockDial : MonoBehaviour
         return null;
     }
 
-    private static string Initial(string s)
+    /// <summary>"골목 쥐 [물어뜯기] 타1~4" 처럼 그 칸의 주사위 하나를 설명</summary>
+    private static string DescribeDie(TimedAction a, int hour, string hex)
     {
-        return string.IsNullOrEmpty(s) ? "?" : s.Substring(0, 1);
+        DiceData die = a.DieAt(hour);
+        string dieText = die != null
+            ? $"<color={DiceInfo.ColorHex(die.diceDetail)}>{DiceInfo.Name(die.diceDetail)} {die.minRoll}~{die.maxRoll}</color>"
+            : "-";
+        string aim = a.owner.isPlayer && a.target != null ? $" <color=#ffd159>→ [{a.target.slotNumber}] {a.target.unitName}</color>" : "";
+        return $"<color={hex}>{a.owner.unitName} [{a.card.data.cardName} {hour - a.hour + 1}/{a.length}]</color> {dieText}{aim}";
     }
 
     private static string DescribeHour(BattleManager bm, int hour)
     {
         string s = $"<b>{hour}시</b>  ";
-        TimedAction enemy = FindCovering(bm.EnemyActions, hour);
+        System.Collections.Generic.List<string> foes = new System.Collections.Generic.List<string>();
+        foreach (TimedAction a in bm.EnemyActions)
+        {
+            if (a.Covers(hour) && a.owner.IsAlive) foes.Add(DescribeDie(a, hour, "#ff6b54"));
+        }
         TimedAction mine = FindCovering(bm.PlayerActions, hour);
 
-        if (enemy == null && mine == null) return s + "<color=#a8a8a8>비어 있음</color>";
-        if (enemy != null)
-            s += $"<color=#ff6b54>{enemy.owner.unitName} [{enemy.card.data.cardName}] {enemy.HourLabel()}</color> {DiceInfo.Summary(enemy.card.data)}";
-        if (enemy != null && mine != null) s += "\n<color=#ffd159>↕ 합</color>  ";
-        if (mine != null)
-            s += $"<color=#66bfff>{mine.owner.unitName} [{mine.card.data.cardName}] {mine.HourLabel()}</color> {DiceInfo.Summary(mine.card.data)}";
+        if (foes.Count == 0 && mine == null) return s + "<color=#a8a8a8>비어 있음</color>";
+        s += string.Join("  /  ", foes);
+        if (foes.Count > 0 && mine != null) s += "\n<color=#ffd159>↕ 합</color>  ";
+        if (mine != null) s += DescribeDie(mine, hour, "#66bfff");
+        else if (foes.Count > 0) s += "\n<color=#a8a8a8>내 주사위 없음 — 공격이면 그대로 맞는다</color>";
         return s;
     }
 

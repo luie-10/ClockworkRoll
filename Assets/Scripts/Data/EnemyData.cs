@@ -8,7 +8,10 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "NewEnemy", menuName = "Ruina/Enemy Data", order = 3)]
 public class EnemyData : ScriptableObject
 {
+    [Tooltip("종류 이름 (예: 골목 쥐) — 머리 위에 별명 옆에 작게 표시")]
     public string enemyName;
+    [Tooltip("전투마다 이 중 하나를 무작위로 골라 개체 이름으로 쓴다 (같은 무대에서 겹치지 않게). 비워두면 Enemy Name 그대로")]
+    public List<string> nicknames = new List<string>();
     public int maxHp = 40;
 
     [Header("내성 (참격/관통/타격에 맞을 때 피해 배율: 보통 x1.0 / 약점 x1.5 / 취약 x2.0)")]

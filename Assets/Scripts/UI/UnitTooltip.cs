@@ -108,7 +108,8 @@ public class UnitTooltip : MonoBehaviour
     private static string BuildText(Unit u)
     {
         string nameColor = u.isPlayer ? "#8cd9ff" : "#ff9e73";
-        string s = $"<size=26><b><color={nameColor}>{u.unitName}</color></b></size>    HP {u.Hp}/{u.MaxHp}";
+        string kind = !string.IsNullOrEmpty(u.kindName) && u.kindName != u.unitName ? $" <color=#a8a8a8>{u.kindName}</color>" : "";
+        string s = $"<size=26><b><color={nameColor}>{u.unitName}</color></b></size>{kind}    HP {u.Hp}/{u.MaxHp}";
         string status = DiceInfo.StatusLine(u);
         if (status.Length > 0) s += "\n" + status + "  <color=#888888>(괄호 = 다음 턴)</color>";
 
