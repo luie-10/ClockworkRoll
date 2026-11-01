@@ -18,7 +18,7 @@ MonoBehaviour:
     text: "조심해. 물이 빠진 골목에는 쥐들이 모여 살아."
     portrait: {fileID: 0}
   - speaker: "???"
-    text: "찍찍... 새 기억 냄새다. 반짝이는 책장 냄새."
+    text: "찍찍... 새 기억 냄새다. 반짝이는 태엽판 냄새."
     portrait: {fileID: 0}
   - speaker: "이안"
     text: "쥐가... 말을 해?"
@@ -29,7 +29,7 @@ MonoBehaviour:
   battle: {fileID: 11400000, guid: 62628dac1741dc51c4032bfa62c68ec0, type: 2}
   outroLines:
   - speaker: "이안"
-    text: "쥐들이 쓰던 책장이... 손 안으로 스며들어."
+    text: "쥐들이 쓰던 태엽판이... 손 안으로 스며들어."
     portrait: {fileID: 0}
   - speaker: "틱"
     text: "그게 흡수야. 쓸 때마다 그 녀석들의 굶주림이 조금씩 새어 나올 거야."

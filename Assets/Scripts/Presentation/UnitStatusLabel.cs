@@ -2,12 +2,12 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// 유닛 머리 위의 이름표 + 체력바 (+ 출혈).
+/// 유닛 머리 위의 이름표 + 체력바 (+ 녹 · 상태이상).
 ///
 ///   ┌─────────────────┐
 ///   │  골목 쥐         │  ← 이름 (아군 하늘색 / 적 주황)
 ///   │ ████████░░ 24/30 │  ← 체력바 (초록→노랑→빨강) + 깎인 만큼 흰 잔상이 천천히 줄어듦
-///   │ 출혈 2 (+1) 힘 1 │  ← 상태이상이 있을 때만 (괄호 = 다음 턴)
+///   │  녹 2 (+1) 힘 1  │  ← 상태이상이 있을 때만 (괄호 = 다음 턴)
 ///   └─────────────────┘
 /// 어두운 상자를 뒤에 깔아서 어떤 배경에서도 잘 보인다.
 /// 직접 붙일 필요 없음 — BattleManager가 전투 시작 때 UnitStatusLabel.AttachTo()로 붙인다.
@@ -22,19 +22,19 @@ public class UnitStatusLabel : MonoBehaviour
     private const float BarHeight = 0.13f;
 
     private SpriteRenderer box, barBg, barTrail, barFill;
-    private TextMesh nameText, hpText, bleedText, intentTitle, intentDice;
+    private TextMesh nameText, hpText, statusText, intentTitle, intentDice;
     private float shownRatio = 1f;    // 체력바 (즉시)
     private float trailRatio = 1f;    // 흰 잔상 (천천히 따라감)
-    private string lastBleed;
+    private string lastStatus;
     private int lastHp = -1;
-    private bool hasIntent, hasBleed;
+    private bool hasIntent, hasStatus;
 
     private static readonly Dictionary<Unit, UnitStatusLabel> labels = new Dictionary<Unit, UnitStatusLabel>();
     private static bool allVisible = true;
 
     /// <summary>
-    /// 상태창 맨 위에 장착 책장을 표시한다.
-    /// 적: "장착 ▶ 물어뜯기" + "참1~4 타1~4" / 플레이어: "응수 ▶ 기본 가드" ...
+    /// 상태창 맨 위에 장착 태엽판을 표시한다.
+    /// 적: "3~4시 ▶ 물어뜯기" + "참1~4 타1~4"
     /// </summary>
     public void SetIntent(string title, CardData card)
     {
@@ -90,10 +90,10 @@ public class UnitStatusLabel : MonoBehaviour
         barFill = NewBar("BarFill", new Color(0.3f, 0.85f, 0.35f), 23);
         hpText = NewText("Hp", "", new Vector3(0f, -0.1f, -0.02f), 0.017f, Color.white, 25);
 
-        bleedText = NewText("Bleed", "", new Vector3(0f, -0.3f, -0.01f), 0.018f, new Color(1f, 0.3f, 0.4f), 24);
-        bleedText.gameObject.SetActive(false);
+        statusText = NewText("Status", "", new Vector3(0f, -0.3f, -0.01f), 0.018f, Color.white, 24);
+        statusText.gameObject.SetActive(false);
 
-        // 장착 책장 (상자 위쪽 두 줄) — 처음엔 숨김
+        // 장착 태엽판 (상자 위쪽 두 줄) — 처음엔 숨김
         intentTitle = NewText("IntentTitle", "", new Vector3(0f, 0.47f, -0.01f), 0.019f, Color.white, 24);
         intentDice = NewText("IntentDice", "", new Vector3(0f, 0.32f, -0.01f), 0.018f, Color.white, 24);
         intentTitle.gameObject.SetActive(false);
@@ -121,8 +121,8 @@ public class UnitStatusLabel : MonoBehaviour
         if (cam != null) transform.rotation = cam.transform.rotation;
 
         UpdateBar();
-        UpdateBleed();
-        if (hasIntent || hasBleed) RefreshBox();   // 글자 폭이 바뀐 직후 메시 크기를 다시 재서 상자를 맞춘다
+        UpdateStatus();
+        if (hasIntent || hasStatus) RefreshBox();   // 글자 폭이 바뀐 직후 메시 크기를 다시 재서 상자를 맞춘다
     }
 
     private void UpdateBar()
@@ -147,28 +147,28 @@ public class UnitStatusLabel : MonoBehaviour
         }
     }
 
-    private void UpdateBleed()
+    private void UpdateStatus()
     {
-        // 출혈 + 힘/인내/허약/취약/마비 한 줄 (색 글자, 괄호 = 다음 턴에 들어올 수치)
-        string bleed = target.IsAlive ? DiceInfo.StatusLine(target) : "";
+        // 녹 + 힘/인내/허약/취약/마비 한 줄 (색 글자, 괄호 = 다음 턴에 들어올 수치)
+        string status = target.IsAlive ? DiceInfo.StatusLine(target) : "";
 
-        if (bleed == lastBleed) return;
-        lastBleed = bleed;
+        if (status == lastStatus) return;
+        lastStatus = status;
 
-        hasBleed = bleed.Length > 0;
-        bleedText.gameObject.SetActive(hasBleed);
-        bleedText.text = bleed;
+        hasStatus = status.Length > 0;
+        statusText.gameObject.SetActive(hasStatus);
+        statusText.text = status;
         RefreshBox();
     }
 
     /// <summary>
-    /// 상자 크기: 기본(이름+체력) 위아래 ±0.25, 장착 책장 줄이 있으면 위로 0.33, 출혈 줄이 있으면 아래로 0.2 늘린다.
-    /// 장착 책장 글자가 길면 상자 폭도 넓힌다.
+    /// 상자 크기: 기본(이름+체력) 위아래 ±0.25, 다음 행동 줄이 있으면 위로 0.33, 상태이상 줄이 있으면 아래로 0.2 늘린다.
+    /// 장착 태엽판 글자가 길면 상자 폭도 넓힌다.
     /// </summary>
     private void RefreshBox()
     {
         float top = 0.25f + (hasIntent ? 0.33f : 0f);
-        float bottom = -0.25f - (hasBleed ? 0.2f : 0f);
+        float bottom = -0.25f - (hasStatus ? 0.2f : 0f);
 
         float width = Width;
         if (hasIntent)
@@ -177,8 +177,8 @@ public class UnitStatusLabel : MonoBehaviour
                                         intentDice.GetComponent<MeshRenderer>().bounds.size.x);
             width = Mathf.Max(width, textWidth + 0.24f);
         }
-        if (hasBleed)
-            width = Mathf.Max(width, bleedText.GetComponent<MeshRenderer>().bounds.size.x + 0.24f);
+        if (hasStatus)
+            width = Mathf.Max(width, statusText.GetComponent<MeshRenderer>().bounds.size.x + 0.24f);
 
         box.size = new Vector2(width, top - bottom);
         box.transform.localPosition = new Vector3(0f, (top + bottom) * 0.5f, 0f);

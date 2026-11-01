@@ -7,9 +7,9 @@ using UnityEngine;
 /// 한 씬 안에서 상태만 전환하며 [스토리 → 전투 → 승리/보상 → 다음 스토리]를 반복한다.
 ///
 /// 덱 성장 시스템:
-/// - 전투에서 이기면 쓰러뜨린 적의 책장을 내 덱으로 '흡수'한다 (◈ 표시).
+/// - 전투에서 이기면 쓰러뜨린 적의 태엽판을 내 덱으로 '흡수'한다 (◈ 표시).
 /// - 흡수 카드는 강력하지만, 사용할 때 확률적으로 '침식'이 발동해 사용자가 피해를 입는다.
-/// - 같은 책장을 중복 흡수하면 침식 수치가 누적되어 발동 확률과 피해가 커진다.
+/// - 같은 태엽판을 중복 흡수하면 침식 수치가 누적되어 발동 확률과 피해가 커진다.
 /// </summary>
 public class GameManager : MonoBehaviour
 {
@@ -34,7 +34,7 @@ public class GameManager : MonoBehaviour
     public DialogueManager dialogueManager;
     public BattleManager battleManager;
 
-    [Header("플레이어가 처음부터 가지는 덱(책장)")]
+    [Header("플레이어가 처음부터 가지는 덱(태엽판)")]
     public List<CardData> startingDeck = new List<CardData>();
 
     [Header("침식(흡수 카드 부작용) 설정")]
@@ -43,7 +43,7 @@ public class GameManager : MonoBehaviour
     [Tooltip("침식 1pt당 추가되는 발동 확률")]
     public float corruptionChancePerPoint = 0.05f;
 
-    /// <summary>현재 보유 덱 (적 책장 흡수 + 챕터 보상으로 계속 불어난다)</summary>
+    /// <summary>현재 보유 덱 (적 태엽판 흡수 + 챕터 보상으로 계속 불어난다)</summary>
     public List<DeckEntry> OwnedDeck { get; private set; }
 
     public GameState State { get; private set; }
@@ -158,7 +158,7 @@ public class GameManager : MonoBehaviour
     {
         ChapterData chapter = chapters[ChapterIndex];
 
-        // 1) 쓰러뜨린 적들의 책장을 흡수한다 (덱 오염 = 이 게임의 핵심 트레이드오프)
+        // 1) 쓰러뜨린 적들의 태엽판을 흡수한다 (덱 오염 = 이 게임의 핵심 트레이드오프)
         if (chapter.battle != null && chapter.battle.enemies != null)
         {
             List<CardData> spoils = new List<CardData>();
@@ -177,7 +177,7 @@ public class GameManager : MonoBehaviour
             {
                 if (reward == null) continue;
                 OwnedDeck.Add(new DeckEntry(reward, false, 0));
-                Debug.Log($"보상 책장 획득: [{reward.cardName}]");
+                Debug.Log($"보상 태엽판 획득: [{reward.cardName}]");
             }
         }
 
@@ -203,9 +203,9 @@ public class GameManager : MonoBehaviour
     // ─────────────────────────── 흡수 시스템 ───────────────────────────
 
     /// <summary>
-    /// 적의 책장을 내 덱으로 흡수한다.
+    /// 적의 태엽판을 내 덱으로 흡수한다.
     /// 원본 에셋은 절대 건드리지 않고 런타임 클론에 ◈ 표식을 남긴다.
-    /// 중복 흡수 시 침식 수치만 +1 (같은 책장을 또 삼키면 원한이 깊어진다).
+    /// 중복 흡수 시 침식 수치만 +1 (같은 태엽판을 또 삼키면 원한이 깊어진다).
     /// </summary>
     public void AbsorbCards(List<CardData> cards)
     {
@@ -221,7 +221,7 @@ public class GameManager : MonoBehaviour
             if (existing != null)
             {
                 existing.corruption++;
-                Debug.Log($"책장 [{card.cardName}] 재흡수 — 침식이 깊어진다 ({existing.corruption})");
+                Debug.Log($"태엽판 [{card.cardName}] 재흡수 — 침식이 깊어진다 ({existing.corruption})");
             }
             else
             {
@@ -230,7 +230,7 @@ public class GameManager : MonoBehaviour
                 // ◈ 표식은 CardView가 붙이므로 cardName은 원본 그대로 둔다 (◈◈ 중복 방지)
 
                 OwnedDeck.Add(new DeckEntry(clone, true, 1, card.cardName));
-                Debug.Log($"적의 책장 흡수: [{card.cardName}] ◈ (침식 1)");
+                Debug.Log($"적의 태엽판 흡수: [{card.cardName}] ◈ (침식 1)");
             }
         }
     }

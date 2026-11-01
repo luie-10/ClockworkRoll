@@ -37,7 +37,7 @@ public class TestBoot : MonoBehaviour
 
     private GameObject dialoguePanel;
     private Text speakerText, bodyText;
-    private Text stageText, kiText, emotionText, logText;
+    private Text stageText, kiText, emotionText;
     private Transform handPanel;
 
     private float timer;
@@ -206,12 +206,6 @@ public class TestBoot : MonoBehaviour
             new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(1f, 1f),
             new Vector2(-12f, -38f), new Vector2(240f, 28f));
 
-        // ── 전투 로그 (좌측, 마우스 휠로 스크롤) ──
-        logText = UIBuilder.ScrollLog("LogPanel", hud, "전투 기록 (휠 스크롤)");
-        logText.fontSize = 13;
-        UIBuilder.Place((RectTransform)logText.transform.parent.parent,
-            new Vector2(0f, 0.55f), new Vector2(0.34f, 0.95f), new Vector2(0f, 1f), new Vector2(10f, -10f), new Vector2(-10f, -10f));
-
         // ── 턴 종료 버튼 (우하단, 손패 위) ──
         GameObject btnGO = new GameObject("EndTurnButton");
         btnGO.transform.SetParent(hud, false);
@@ -310,33 +304,33 @@ public class TestBoot : MonoBehaviour
     private void CreateTestStory()
     {
         // 1) 플레이어 시작 덱 카드
-        CardData slash = MakeCard("기본 참격", 1, new[] { MakeDice("참격", DiceType.Attack, DiceDetail.Slash, 2, 6) });
-        CardData guard = MakeCard("기본 가드", 1, new[] { MakeDice("가드", DiceType.Defense, DiceDetail.Guard, 3, 7) });
-        CardData evade = MakeCard("기본 회피", 1, new[] { MakeDice("회피", DiceType.Defense, DiceDetail.Evade, 2, 6) });
-        CardData thrust = MakeCard("기본 관통", 1, new[] { MakeDice("관통", DiceType.Attack, DiceDetail.Thrust, 1, 5) });
-        CardData blunt = MakeCard("기본 타격", 2, new[] { MakeDice("타격", DiceType.Attack, DiceDetail.Blunt, 3, 8) });
+        CardData slash = MakeCard("참격", 1, new[] { MakeDice("참격", DiceType.Attack, DiceDetail.Slash, 2, 6) });
+        CardData guard = MakeCard("가드", 1, new[] { MakeDice("가드", DiceType.Defense, DiceDetail.Guard, 3, 7) });
+        CardData evade = MakeCard("회피", 1, new[] { MakeDice("회피", DiceType.Defense, DiceDetail.Evade, 2, 6) });
+        CardData thrust = MakeCard("관통", 1, new[] { MakeDice("관통", DiceType.Attack, DiceDetail.Thrust, 1, 5) });
+        CardData blunt = MakeCard("타격", 2, new[] { MakeDice("타격", DiceType.Attack, DiceDetail.Blunt, 3, 8) });
         CardData emotionBlade = MakeCard("감정의 칼날", 3, new[] { MakeDice("참격", DiceType.Attack, DiceDetail.Slash, 6, 12) }, 2);
 
-        // 2) 적 — 쥐 책장 6장 (적이 쓰는 카드 = 승리 시 흡수되는 카드). 출혈 스킬 테스트용
+        // 2) 적 — 쥐 태엽판 6장 (적이 쓰는 카드 = 승리 시 흡수되는 카드). 녹 스킬 테스트용
         CardData bite = MakeCard("물어뜯기", 1, new[] {
-            Bleed(MakeDice("참격", DiceType.Attack, DiceDetail.Slash, 1, 4), DiceTrigger.OnHit, 1, true),
+            Rust(MakeDice("참격", DiceType.Attack, DiceDetail.Slash, 1, 4), DiceTrigger.OnHit, 1, true),
             MakeDice("타격", DiceType.Attack, DiceDetail.Blunt, 1, 4) }, 0, CardRarity.Paper);
         CardData alleyRush = MakeCard("골목 돌파", 1, new[] {
-            Bleed(MakeDice("관통", DiceType.Attack, DiceDetail.Thrust, 1, 8), DiceTrigger.OnHit, 1, true) }, 0, CardRarity.Stone);
+            Rust(MakeDice("관통", DiceType.Attack, DiceDetail.Thrust, 1, 8), DiceTrigger.OnHit, 1, true) }, 0, CardRarity.Stone);
         CardData scram = MakeCard("튀어", 1, new[] {
             MakeDice("회피", DiceType.Defense, DiceDetail.Evade, 1, 6),
             MakeDice("회피", DiceType.Defense, DiceDetail.Evade, 1, 6),
             MakeDice("참격", DiceType.Attack, DiceDetail.Slash, 1, 4) }, 0, CardRarity.Stone);
         CardData survival = MakeCard("쥐의 생존법", 2, new[] {
             MakeDice("가드", DiceType.Defense, DiceDetail.Guard, 1, 6),
-            Bleed(MakeDice("참격", DiceType.Attack, DiceDetail.Slash, 3, 4), DiceTrigger.OnHit, 1, true),
+            Rust(MakeDice("참격", DiceType.Attack, DiceDetail.Slash, 3, 4), DiceTrigger.OnHit, 1, true),
             MakeDice("회피", DiceType.Defense, DiceDetail.Evade, 1, 7) }, 0, CardRarity.Paper);
         CardData dirtyHit = MakeCard("더러운 타격", 2, new[] {
-            Bleed(MakeDice("타격", DiceType.Attack, DiceDetail.Blunt, 3, 7), DiceTrigger.OnClashWin, 2, false),
+            Rust(MakeDice("타격", DiceType.Attack, DiceDetail.Blunt, 3, 7), DiceTrigger.OnClashWin, 2, false),
             MakeDice("가드", DiceType.Defense, DiceDetail.Guard, 1, 3) }, 0, CardRarity.Iron);
         CardData gut = MakeCard("내장담기", 3, new[] {
-            Bleed(MakeDice("참격", DiceType.Attack, DiceDetail.Slash, 3, 6), DiceTrigger.OnHit, 1, true),
-            Bleed(MakeDice("참격", DiceType.Attack, DiceDetail.Slash, 3, 5), DiceTrigger.OnHit, 1, true),
+            Rust(MakeDice("참격", DiceType.Attack, DiceDetail.Slash, 3, 6), DiceTrigger.OnHit, 1, true),
+            Rust(MakeDice("참격", DiceType.Attack, DiceDetail.Slash, 3, 5), DiceTrigger.OnHit, 1, true),
             MakeDice("가드", DiceType.Defense, DiceDetail.Guard, 1, 4) }, 0, CardRarity.Iron);
 
         EnemyData enemyA = ScriptableObject.CreateInstance<EnemyData>();
@@ -370,12 +364,12 @@ public class TestBoot : MonoBehaviour
         chapter.introLines = new List<DialogueLine>
         {
             new DialogueLine { speaker = "안내 (테스트)", text = "핵심 시스템 테스트 무대다. 클릭 또는 Space로 대사를 넘긴다." },
-            new DialogueLine { speaker = "안내 (테스트)", text = "전투에서 이기면 적의 책장이 ◈ 흡수된다. 사용할 때 침식을 조심하자." },
+            new DialogueLine { speaker = "안내 (테스트)", text = "전투에서 이기면 적의 태엽판이 ◈ 흡수된다. 사용할 때 침식을 조심하자." },
         };
         chapter.battle = stage;
         chapter.outroLines = new List<DialogueLine>
         {
-            new DialogueLine { speaker = "안내 (테스트)", text = "무대 클리어. 적의 책장이 덱에 흡수되었다." },
+            new DialogueLine { speaker = "안내 (테스트)", text = "무대 클리어. 적의 태엽판이 덱에 흡수되었다." },
             new DialogueLine { speaker = "안내 (테스트)", text = "◈ 카드를 사용해 침식 발동을 확인해 보자. 이 대사가 끝나면 클리어 로그가 찍힌다." },
         };
         chapter.rewardCards = new List<CardData> { emotionBlade };
@@ -398,7 +392,6 @@ public class TestBoot : MonoBehaviour
         battleManager.stageNameText = stageText;
         battleManager.kiText = kiText;
         battleManager.emotionText = emotionText;
-        battleManager.battleLogText = logText;
         battleManager.endTurnButton = endTurnButton;
 
         handManager.cardViewPrefab = cardTemplate.GetComponent<CardView>();
@@ -445,10 +438,10 @@ public class TestBoot : MonoBehaviour
         return dice;
     }
 
-    /// <summary>주사위에 출혈 효과를 붙여서 그대로 돌려준다.</summary>
-    private static DiceData Bleed(DiceData dice, DiceTrigger trigger, int amount, bool nextTurn)
+    /// <summary>주사위에 녹 효과를 붙여서 그대로 돌려준다.</summary>
+    private static DiceData Rust(DiceData dice, DiceTrigger trigger, int amount, bool nextTurn)
     {
-        dice.effects.Add(new DiceEffect { trigger = trigger, effect = DiceEffectType.Bleed, amount = amount, nextTurn = nextTurn });
+        dice.effects.Add(new DiceEffect { trigger = trigger, effect = DiceEffectType.Rust, amount = amount, nextTurn = nextTurn });
         return dice;
     }
 

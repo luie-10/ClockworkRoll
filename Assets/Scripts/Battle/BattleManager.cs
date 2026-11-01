@@ -6,13 +6,16 @@ using UnityEngine.UI;
 /// <summary>
 /// 한 무대(전투)의 진행을 담당.
 ///
-/// [자원] 기력 — 턴마다 회복되고, 공격 주사위로 합을 이기면 추가 회복된다.
+/// [시계판] 한 라운드 = 시곗바늘 한 바퀴(1~12시). 태엽판을 시각에 놓고, 적 행동과 칸이 겹치면 합.
+///          태엽판이 차지하는 칸 수 = 주사위 개수.
+/// [자원] 기력 — 라운드마다 회복되고, 공격 주사위로 합을 이기면 추가 회복된다.
+/// [장력] 공격이 적중할수록 감긴다. 단계가 오르면 강한 태엽판을 쓸 수 있지만, 끝까지 감기면 끊어진다.
 /// [합]   양쪽 주사위를 앞에서부터 한 칸씩 비교.
 ///        - 타입 상성 보정: 참격 > 관통 > 타격 > 참격 (우위 시 굴림 +2)
 ///        - 회피는 상대 공격 주사위 상대로 굴림 +2
 ///        - 동점은 양쪽 모두 무효 (팽팽하게 밀림)
 /// [침식] 흡수 카드(◈) 사용 시 확률적으로 발동해 사용자가 피해를 입는다.
-/// [연출] 공격자가 응답자 곁으로 이동, 카메라 포커스, 감정 단계 라이팅.
+/// [연출] 공격자가 응답자 곁으로 이동, 카메라 포커스, 장력 단계 라이팅.
 /// </summary>
 public class BattleManager : MonoBehaviour
 {
@@ -33,12 +36,28 @@ public class BattleManager : MonoBehaviour
     public Text phaseText;
     [Tooltip("내 턴이 아닐 때는 자동으로 비활성화")]
     public Button endTurnButton;
+    [Tooltip("화면 전투 기록 (비워두면 콘솔에만 기록). Show Battle Log를 끄면 연결돼 있어도 숨긴다")]
     public Text battleLogText;
+    [Tooltip("체크: 화면에 전투 기록 패널을 보여줌 / 해제: 숨김 (기록은 콘솔에 계속 남음)")]
+    public bool showBattleLog = false;
     [Tooltip("전투 로그에 남겨둘 최대 줄 수 (스크롤해서 볼 수 있음)")]
     public int maxLogLines = 80;
 
     [Header("기력 (자원)")]
     public int maxKi = 20;       // 기력 상한
+
+    [Header("시계판")]
+    [Tooltip("시곗바늘이 한 시각을 넘어갈 때의 대기 시간(초)")]
+    public float hourTickTime = 0.35f;
+
+    [Header("장력 (감정)")]
+    [Tooltip("최대 장력일 때 내 모든 주사위 위력 보너스")]
+    public int maxTensionBonus = 1;
+    [Tooltip("최대 장력으로 라운드를 넘겨 태엽이 끊어질 때의 피해")]
+    public int snapDamage = 6;
+    [Tooltip("태엽이 끊어진 뒤 돌아가는 장력 단계")]
+    public int snapResetLevel = 3;
+    private const int MaxTension = 5;
 
     [Header("합 규칙")]
     [Tooltip("상성 우위 시 굴림 보정치")]
@@ -56,9 +75,9 @@ public class BattleManager : MonoBehaviour
 
     [Header("합 연출 (끄면 기존처럼 로그만)")]
     public bool clashFx = true;
-    [Tooltip("유닛 머리 위에 HP/출혈 표시")]
+    [Tooltip("유닛 머리 위에 HP/상태이상 표시")]
     public bool showStatusLabels = true;
-    [Tooltip("합 중 머리 위에 책장 이름 + 주사위(굴림 애니메이션) 표시")]
+    [Tooltip("합 중 머리 위에 태엽판 이름 + 주사위(굴림 애니메이션) 표시")]
     public bool showDiceDisplay = true;
     [Tooltip("주사위가 굴러가는 시간(초)")]
     public float diceRollTime = 0.45f;
@@ -75,7 +94,16 @@ public class BattleManager : MonoBehaviour
 
     public BattlePhase Phase { get; private set; } = BattlePhase.Ready;
     public int CurrentKi { get; private set; }
-    public int EmotionLevel { get; private set; }
+    public int EmotionLevel { get; private set; }   // 장력 단계
+
+    /// <summary>시계판 칸 수 (1시~12시)</summary>
+    public const int ClockHours = 12;
+
+    /// <summary>진행 중인 시각 (1~12). 계획 단계에서는 0.</summary>
+    public int CurrentHour { get; private set; }
+
+    /// <summary>일방 공격 대상 (적을 클릭해서 지정)</summary>
+    public Unit FocusTarget { get; private set; }
 
     /// <summary>합 연출이 진행 중이면 true — 이 동안에는 카드/턴 종료 입력을 받지 않는다.</summary>
     public bool IsBusy { get; private set; }
@@ -94,8 +122,8 @@ public class BattleManager : MonoBehaviour
     private readonly List<Unit> enemies = new List<Unit>();
     private readonly List<string> logLines = new List<string>();
     private CardInstance pendingCard;   // 클릭해서 대상을 기다리는 중인 카드
-    private CardInstance responseCard;  // 적의 턴에 첫 공격을 받아칠 응수 책장 (나를 클릭해서 장착)
-    private readonly Dictionary<Unit, CardInstance> enemyIntents = new Dictionary<Unit, CardInstance>();   // 적이 이번 턴에 장착한 책장
+    private readonly List<TimedAction> enemyActions = new List<TimedAction>();    // 적이 이번 라운드 시계판에 올린 행동
+    private readonly List<TimedAction> playerActions = new List<TimedAction>();   // 내가 시계판에 올린 행동
     private int emotionPoints;
     private int lastDamage;                  // 마지막 공격의 실제 피해 (내성 적용 후, 연출용)
     private Resistance lastResistance;
@@ -112,6 +140,15 @@ public class BattleManager : MonoBehaviour
             return;
         }
         Instance = this;
+
+        // 전투 기록 패널은 기본으로 숨긴다 — 이미 만들어진 씬에도 적용 (ScrollRect가 붙은 패널째로 끔)
+        if (!showBattleLog && battleLogText != null)
+        {
+            ScrollRect scroll = battleLogText.GetComponentInParent<ScrollRect>();
+            GameObject panel = scroll != null ? scroll.gameObject : battleLogText.gameObject;   // ScrollLog: 패널에 ScrollRect가 붙어 있음
+            panel.SetActive(false);
+            battleLogText = null;
+        }
     }
 
     void Update()
@@ -132,20 +169,30 @@ public class BattleManager : MonoBehaviour
         EmotionLevel = 0;
         emotionPoints = 0;
         pendingCard = null;
-        responseCard = null;
-        enemyIntents.Clear();
+        enemyActions.Clear();
+        playerActions.Clear();
+        CurrentHour = 0;
+        FocusTarget = null;
         IsBusy = false;
         Phase = BattlePhase.Ready;
 
         logLines.Clear();
         if (stageNameText != null) stageNameText.text = stage.stageName;
 
+        // 시계판 UI (씬에 없으면 전투 HUD 안에 자동 생성) + 턴 종료 버튼은 "시계 진행" 버튼으로
+        ClockDial.Ensure();
+        if (endTurnButton != null)
+        {
+            Text label = endTurnButton.GetComponentInChildren<Text>();
+            if (label != null) label.text = "시계 진행 ▶";
+        }
+
         SpawnEnemies();
 
         if (playerUnit != null)
         {
             playerUnit.CaptureHome();
-            playerUnit.ClearStatus();   // 이전 무대의 출혈이 넘어오지 않게
+            playerUnit.ClearStatus();   // 이전 무대의 녹·상태이상이 넘어오지 않게
         }
         AttachStatusLabels();
         FaceOpponents();
@@ -181,14 +228,23 @@ public class BattleManager : MonoBehaviour
         StartPlayerTurn();
     }
 
-    // ─────────────────────────── 턴 흐름 ───────────────────────────
+    // ─────────────────────────── 라운드 흐름 (시계판) ───────────────────────────
+    //
+    // 한 라운드 = 시계판 한 바퀴 (1시 ~ 12시).
+    //  1) 계획: 적의 행동이 시계판에 미리 보인다. 나는 태엽판을 원하는 시각에 놓는다.
+    //  2) 진행: 시곗바늘이 1시부터 돈다. 각 시각에 시작하는 행동이 발동한다.
+    //     - 내 행동과 적 행동의 칸이 하나라도 겹치면 → 합 (먼저 시작한 쪽이 공격자)
+    //     - 겹치는 상대가 없으면 → 일방 공격
+    //  3) 12시가 지나면 다음 라운드.
 
+    /// <summary>새 라운드의 계획 단계 시작</summary>
     private void StartPlayerTurn()
     {
         if (!playerUnit.IsAlive) { EndBattle(false); return; }
         if (CheckBattleEnd()) return;
+        if (CheckTensionSnap()) return;
 
-        // 새 턴: "다음 턴 출혈"처럼 대기 중이던 상태이상이 모두 적용된다
+        // 새 라운드: 지난 라운드의 힘/허약 등은 사라지고, "다음 턴 n"으로 대기 중이던 상태이상이 들어온다
         playerUnit.ActivatePendingStatus();
         foreach (Unit e in enemies)
         {
@@ -196,104 +252,189 @@ public class BattleManager : MonoBehaviour
         }
 
         Phase = BattlePhase.PlayerTurn;
+        CurrentHour = 0;
         CurrentKi = Mathf.Min(CurrentKi + stage.kiPerTurn, maxKi);
+        playerActions.Clear();
         handManager.RefillHand();
-        RollEnemyIntents();
+        RollEnemyActions();
+        if (FocusTarget == null || !FocusTarget.IsAlive) FocusTarget = FirstAliveEnemy();
+        TimelineChanged();
         UpdateHUD();
-        Log("── 내 턴: 책장 → 적 클릭 = 공격 / 책장 → 나 클릭 = 응수 장착 ──");
+        Log("── 계획: 태엽판 → 시계판의 시각 클릭 = 배치 (적 클릭 = 그 적의 행동에 맞춰 배치) ──");
     }
 
     /// <summary>
-    /// 적마다 이번 턴에 쓸 책장을 미리 정해서 머리 위 상태창에 보여준다.
-    /// 이 책장으로 내 공격에 응수하고, 적의 턴에도 이 책장으로 공격한다.
+    /// 적마다 이번 라운드에 쓸 태엽판과 시각을 정해서 시계판과 머리 위 상태창에 보여준다.
+    /// 같은 적의 행동끼리는 겹치지 않는다 (다른 적과는 겹칠 수 있음).
     /// </summary>
-    private void RollEnemyIntents()
+    private void RollEnemyActions()
     {
-        enemyIntents.Clear();
+        enemyActions.Clear();
         foreach (Unit e in enemies)
         {
             if (!e.IsAlive) continue;
 
-            CardInstance intent = GetRandomEnemyCard(e);
-            if (intent == null) continue;
-            enemyIntents[e] = intent;
+            for (int n = 0; n < Mathf.Max(1, e.actionsPerRound); n++)
+            {
+                CardInstance card = GetRandomEnemyCard(e);
+                if (card == null) break;
 
+                int length = TimedAction.LengthOf(card.data);
+                for (int attempt = 0; attempt < 20; attempt++)
+                {
+                    int hour = Random.Range(1, ClockHours - length + 2);
+                    TimedAction a = new TimedAction { owner = e, card = card, hour = hour, length = length, target = playerUnit };
+                    if (enemyActions.Exists(o => o.owner == e && o.Overlaps(a))) continue;
+                    enemyActions.Add(a);
+                    break;
+                }
+            }
+        }
+        enemyActions.Sort((a, b) => a.hour.CompareTo(b.hour));
+        RefreshIntentLabels();
+    }
+
+    /// <summary>적 머리 위 상태창에 "다음에 발동할 행동"을 보여준다.</summary>
+    private void RefreshIntentLabels()
+    {
+        foreach (Unit e in enemies)
+        {
             UnitStatusLabel label = UnitStatusLabel.AttachTo(e);
-            if (label != null) label.SetIntent("장착", intent.data);
+            if (label == null) continue;
+
+            TimedAction next = enemyActions.Find(a => a.owner == e && !a.resolved);
+            if (next != null && e.IsAlive) label.SetIntent(next.HourLabel(), next.card.data);
+            else label.ClearIntent();
         }
     }
 
-    /// <summary>유닛이 지금 장착한 책장 (적 = 이번 턴 행동, 플레이어 = 응수 책장). 없으면 null.</summary>
-    public CardData GetEquippedCard(Unit unit)
+    /// <summary>이 유닛이 이번 라운드에 시계판에 올린 행동 (시각 순). 정보창용.</summary>
+    public List<TimedAction> GetActionsOf(Unit unit)
     {
-        if (unit == null) return null;
-        if (unit.isPlayer) return responseCard != null ? responseCard.data : null;
-        return enemyIntents.TryGetValue(unit, out CardInstance c) && c != null ? c.data : null;
+        List<TimedAction> list = new List<TimedAction>();
+        if (unit == null) return list;
+        list.AddRange((unit.isPlayer ? playerActions : enemyActions).FindAll(a => a.owner == unit));
+        list.Sort((a, b) => a.hour.CompareTo(b.hour));
+        return list;
     }
 
-    /// <summary>'턴 종료' 버튼에 연결해서 사용.</summary>
+    /// <summary>'시계 진행' 버튼 (기존 턴 종료 버튼)에 연결해서 사용.</summary>
     public void EndPlayerTurn()
     {
         if (Phase != BattlePhase.PlayerTurn || IsBusy) return;
         CancelPendingCard();
-        StartCoroutine(EnemyTurnRoutine());
+        StartCoroutine(ClockRoutine());
     }
 
-    private IEnumerator EnemyTurnRoutine()
+    /// <summary>시곗바늘이 1시부터 12시까지 돌며 각 시각의 행동을 발동시킨다.</summary>
+    private IEnumerator ClockRoutine()
     {
         Phase = BattlePhase.EnemyTurn;
+        IsBusy = true;
         UpdateHUD();
-        Log("── 적의 턴 ──");
+        Log("── 시계 진행 ──");
 
-        foreach (Unit enemy in enemies)
+        for (int h = 1; h <= ClockHours; h++)
         {
-            if (!enemy.IsAlive) continue;
+            CurrentHour = h;
+            TimelineChanged();
+            UpdateHUD();
+            yield return new WaitForSeconds(hourTickTime);
 
-            yield return new WaitForSeconds(0.7f);
+            // 이 시각에 시작하는 행동들 (적 먼저 — 같은 시각이면 적이 공격자)
+            List<TimedAction> starting = enemyActions.FindAll(a => a.hour == h && !a.resolved);
+            starting.AddRange(playerActions.FindAll(a => a.hour == h && !a.resolved));
 
-            // 적은 내 턴 동안 머리 위에 보여준 '장착' 책장으로 공격한다
-            enemyIntents.TryGetValue(enemy, out CardInstance enemyCard);
-            if (enemyCard == null)
+            foreach (TimedAction action in starting)
             {
-                Log($"{enemy.unitName}: 사용할 책장이 없다.");
-                continue;
+                if (action.resolved) continue;   // 앞선 합에서 이미 소모됨
+                action.resolved = true;
+                if (!action.owner.IsAlive) continue;
+
+                yield return StartCoroutine(FireAction(action, h));
+                TimelineChanged();
+                RefreshIntentLabels();
+
+                if (CheckBattleEnd()) { IsBusy = false; yield break; }
             }
-
-            // 플레이어는 내 턴에 '응수'로 장착해 둔 책장이 있을 때만 맞받아친다 (손패에서 멋대로 꺼내 쓰지 않음)
-            CardInstance playerResponse = responseCard;
-            if (playerResponse != null)
-            {
-                responseCard = null;
-                Log($"응수! [{playerResponse.data.cardName}]로 {enemy.unitName}의 공격을 받아친다.");
-            }
-            else
-            {
-                Log($"{enemy.unitName}의 [{enemyCard.data.cardName}] — 응수할 책장이 없다!");
-            }
-
-            UnitStatusLabel enemyLabel = UnitStatusLabel.AttachTo(enemy);
-            if (enemyLabel != null) enemyLabel.ClearIntent();   // 사용 중 → 합 주사위 표시로 넘어감
-
-            yield return StartCoroutine(ResolveClashRoutine(enemy, enemyCard, playerUnit, playerResponse));
-
-            if (playerResponse != null)
-            {
-                handManager.DiscardReserved(playerResponse);   // 응수 책장은 한 번 쓰면 버림패로
-                UnitStatusLabel playerLabel = UnitStatusLabel.AttachTo(playerUnit);
-                if (playerLabel != null) playerLabel.ClearIntent();
-            }
-
-            if (!playerUnit.IsAlive) { EndBattle(false); yield break; }
         }
-        enemyIntents.Clear();
+
+        // 발동하지 못한 내 행동(상대가 먼저 쓰러짐 등)도 버림패로
+        foreach (TimedAction a in playerActions)
+        {
+            if (!a.resolved) handManager.DiscardReserved(a.card);
+        }
+
+        enemyActions.Clear();
+        playerActions.Clear();
+        CurrentHour = 0;
+        IsBusy = false;
 
         yield return new WaitForSeconds(0.4f);
         StartPlayerTurn();
     }
 
-    // ─────────────────────────── 카드 사용 ───────────────────────────
+    /// <summary>행동 하나 발동: 겹치는 상대 행동이 있으면 합, 없으면 일방 공격.</summary>
+    private IEnumerator FireAction(TimedAction action, int hour)
+    {
+        TimedAction partner = FindClashPartner(action);
+        if (partner != null) partner.resolved = true;
 
-    /// <summary>손패 카드 클릭 (HandManager가 연결해줌). 대기 상태로 만들고 상대 클릭을 기다린다.</summary>
+        TimedAction mine = action.owner.isPlayer ? action : partner;   // 이번 발동에 쓰인 내 행동 (없을 수 있음)
+
+        // 흡수 태엽판(◈)은 발동하는 순간 침식 판정 — 삼킨 기억이 도사리고 있다
+        if (mine != null && CheckCorruption(mine.card))
+        {
+            handManager.DiscardReserved(mine.card);
+            yield break;
+        }
+
+        if (partner != null)
+        {
+            Log($"<color=#e8c27a>{hour}시 — 합!</color> {action.owner.unitName} [{action.HourLabel()}] ↔ {partner.owner.unitName} [{partner.HourLabel()}]");
+            yield return StartCoroutine(ResolveClashRoutine(action.owner, action.card, partner.owner, partner.card));
+        }
+        else
+        {
+            Unit target = action.owner.isPlayer ? AliveTargetFor(action) : playerUnit;
+            if (target != null && target.IsAlive)
+            {
+                Log($"<color=#e8c27a>{hour}시</color> — {action.owner.unitName}의 일방 공격!");
+                yield return StartCoroutine(ResolveClashRoutine(action.owner, action.card, target, null));
+            }
+        }
+
+        if (mine != null) handManager.DiscardReserved(mine.card);   // 쓴 태엽판은 버림패로
+    }
+
+    /// <summary>겹치는 상대편 행동 중 가장 먼저 시작하는 것 (아직 발동 안 했고 주인이 살아 있는 것).</summary>
+    private TimedAction FindClashPartner(TimedAction action)
+    {
+        List<TimedAction> others = action.owner.isPlayer ? enemyActions : playerActions;
+        TimedAction best = null;
+        foreach (TimedAction o in others)
+        {
+            if (o.resolved || !o.owner.IsAlive || !o.Overlaps(action)) continue;
+            if (best == null || o.hour < best.hour) best = o;
+        }
+        return best;
+    }
+
+    private Unit AliveTargetFor(TimedAction action)
+    {
+        if (action.target != null && action.target.IsAlive) return action.target;
+        if (FocusTarget != null && FocusTarget.IsAlive) return FocusTarget;
+        return FirstAliveEnemy();
+    }
+
+    private Unit FirstAliveEnemy()
+    {
+        return enemies.Find(e => e != null && e.IsAlive);
+    }
+
+    // ─────────────────────────── 태엽판 배치 ───────────────────────────
+
+    /// <summary>손패 카드 클릭 (HandManager가 연결해줌). 선택 상태로 만들고 시각/적 클릭을 기다린다.</summary>
     public void OnCardClicked(CardView view)
     {
         if (Phase != BattlePhase.PlayerTurn || IsBusy) return;
@@ -305,7 +446,7 @@ public class BattleManager : MonoBehaviour
 
         if (card.data.requireEmotionLevel > EmotionLevel)
         {
-            Log($"감정 단계 {card.data.requireEmotionLevel} 이상이 필요한 책장이다.");
+            Log($"장력 {card.data.requireEmotionLevel}단계 이상이 필요한 태엽판이다.");
             return;
         }
 
@@ -314,64 +455,128 @@ public class BattleManager : MonoBehaviour
         CancelPendingCard();
         pendingCard = card;
         view.SetSelected(true);
-        Log($"[{card.data.cardName}] 사용 대상을 클릭하세요. (다시 클릭하면 취소)");
-    }
-
-    /// <summary>3D 유닛(적)을 클릭했을 때 Unit이 호출.</summary>
-    public void OnUnitClicked(Unit unit)
-    {
-        if (Phase != BattlePhase.PlayerTurn || IsBusy) return;
-        if (unit == null || !unit.IsAlive) return;
-
-        // 나 자신 클릭 = 응수 책장 장착 / 해제
-        if (unit.isPlayer) { ToggleResponse(); return; }
-
-        if (pendingCard == null) return;
-        CardInstance card = pendingCard;
-        CancelPendingCard();
-
-        StartCoroutine(UseCardRoutine(card, unit));
+        TimelineChanged();
+        Log($"[{card.data.cardName}] ({TimedAction.LengthOf(card.data)}칸) 시계판의 시각을 클릭하세요. (다시 클릭하면 취소)");
     }
 
     /// <summary>
-    /// 응수 책장: 적의 턴에 들어오는 첫 공격을 이 책장으로 맞받아친다.
-    /// 책장을 고른 상태로 나를 클릭 → 기력을 내고 장착 (머리 위에 표시).
-    /// 아무것도 안 고르고 나를 클릭 → 장착 해제 (기력 반환, 손패로 돌아옴).
+    /// 유닛 클릭 (Unit이 호출).
+    /// 적 클릭: 일방 공격 대상으로 지정. 태엽판을 고른 상태면 그 적의 다음 행동에 맞부딪히는 시각에 자동 배치.
     /// </summary>
-    private void ToggleResponse()
+    public void OnUnitClicked(Unit unit)
     {
+        if (Phase != BattlePhase.PlayerTurn || IsBusy) return;
+        if (unit == null || !unit.IsAlive || unit.isPlayer) return;
+
+        FocusTarget = unit;
+        TimelineChanged();
+
         if (pendingCard == null)
         {
-            if (responseCard == null) return;
-            CurrentKi = Mathf.Min(CurrentKi + responseCard.data.cost, maxKi);
-            handManager.ReturnToHand(responseCard);
-            Log($"응수 해제: [{responseCard.data.cardName}] (기력 {responseCard.data.cost} 반환)");
-            responseCard = null;
-            UnitStatusLabel.AttachTo(playerUnit)?.ClearIntent();
-            UpdateHUD();
+            Log($"대상 지정: {unit.unitName}");
             return;
         }
 
-        CardInstance card = pendingCard;
-        CancelPendingCard();
+        int length = TimedAction.LengthOf(pendingCard.data);
+        int hour = FindHourAgainst(unit, length);
+        if (hour < 0) { Log("시계판에 놓을 자리가 없다!"); return; }
+        PlaceCard(pendingCard, hour, unit);
+    }
 
-        // 이미 장착한 게 있으면 손패로 되돌리고 교체
-        if (responseCard != null)
+    /// <summary>시계판의 시각 칸 클릭 (ClockDial이 호출). 태엽판을 골랐으면 배치, 아니면 그 칸의 내 행동을 회수.</summary>
+    public void OnHourClicked(int hour)
+    {
+        if (Phase != BattlePhase.PlayerTurn || IsBusy) return;
+
+        if (pendingCard != null)
         {
-            CurrentKi = Mathf.Min(CurrentKi + responseCard.data.cost, maxKi);
-            handManager.ReturnToHand(responseCard);
+            int length = TimedAction.LengthOf(pendingCard.data);
+            if (!CanPlace(hour, length))
+            {
+                Log(hour + length - 1 > ClockHours
+                    ? $"{hour}시부터는 {length}칸이 들어가지 않는다 (12시를 넘김)."
+                    : "이미 내 행동이 있는 칸과 겹친다.");
+                return;
+            }
+            PlaceCard(pendingCard, hour, null);
+            return;
         }
+
+        TimedAction placed = playerActions.Find(a => a.Covers(hour));
+        if (placed != null) Unplace(placed);
+    }
+
+    /// <summary>hour부터 length칸에 내 행동을 놓을 수 있는가 (12시를 넘지 않고, 내 다른 행동과 겹치지 않음)</summary>
+    public bool CanPlace(int hour, int length)
+    {
+        if (hour < 1 || hour + length - 1 > ClockHours) return false;
+        TimedAction probe = new TimedAction { hour = hour, length = length };
+        return !playerActions.Exists(a => a.Overlaps(probe));
+    }
+
+    /// <summary>그 적의 다음 행동과 겹치는 가장 이른 빈 시각. 없으면 아무 빈 시각, 그것도 없으면 -1.</summary>
+    private int FindHourAgainst(Unit enemy, int length)
+    {
+        TimedAction next = enemyActions.Find(a => a.owner == enemy && !a.resolved);
+        if (next != null)
+        {
+            for (int h = Mathf.Max(1, next.hour - length + 1); h <= next.EndHour; h++)
+            {
+                if (CanPlace(h, length)) return h;
+            }
+        }
+        for (int h = 1; h <= ClockHours; h++)
+        {
+            if (CanPlace(h, length)) return h;
+        }
+        return -1;
+    }
+
+    private void PlaceCard(CardInstance card, int hour, Unit target)
+    {
+        CancelPendingCard();
 
         CurrentKi -= card.data.cost;
         handManager.ReserveCard(card);
-        responseCard = card;
-        UnitStatusLabel.AttachTo(playerUnit)?.SetIntent("응수", card.data);
-        UpdateHUD();
-        Log($"응수 장착: [{card.data.cardName}] — 적의 턴에 첫 공격을 받아친다. (나를 다시 클릭하면 해제)");
 
-        // 흡수 카드면 장착하는 순간 침식 판정
-        CheckCorruption(card);
+        TimedAction action = new TimedAction
+        {
+            owner = playerUnit, card = card, hour = hour,
+            length = TimedAction.LengthOf(card.data),
+            target = target != null ? target : FocusTarget,
+        };
+        playerActions.Add(action);
+
+        TimedAction against = FindClashPartner(action);
+        Log(against != null
+            ? $"[{card.data.cardName}] → {action.HourLabel()} 배치. {against.owner.unitName}의 [{against.card.data.cardName}]와 합!"
+            : $"[{card.data.cardName}] → {action.HourLabel()} 배치. 겹치는 적 행동이 없어 일방 공격.");
+
+        TimelineChanged();
+        UpdateHUD();
     }
+
+    /// <summary>배치한 행동 회수: 기력 반환, 손패로 되돌림</summary>
+    private void Unplace(TimedAction action)
+    {
+        playerActions.Remove(action);
+        CurrentKi = Mathf.Min(CurrentKi + action.card.data.cost, maxKi);
+        handManager.ReturnToHand(action.card);
+        Log($"회수: [{action.card.data.cardName}] (기력 {action.card.data.cost} 반환)");
+        TimelineChanged();
+        UpdateHUD();
+    }
+
+    /// <summary>지금 고른(배치 대기 중인) 태엽판. 없으면 null. 시계판 미리보기용.</summary>
+    public CardData PendingCard { get { return pendingCard != null ? pendingCard.data : null; } }
+
+    public IReadOnlyList<TimedAction> PlayerActions { get { return playerActions; } }
+    public IReadOnlyList<TimedAction> EnemyActions { get { return enemyActions; } }
+
+    /// <summary>시계판 내용이 바뀔 때마다 1씩 오른다 (ClockDial이 다시 그릴지 판단)</summary>
+    public int TimelineVersion { get; private set; }
+
+    private void TimelineChanged() { TimelineVersion++; }
 
     /// <summary>흡수 카드(◈)의 침식 판정. 침식으로 전투가 끝났으면 true.</summary>
     private bool CheckCorruption(CardInstance card)
@@ -385,32 +590,6 @@ public class BattleManager : MonoBehaviour
         Log($"기억이 침식했다! [{card.data.cardName}]에 깃든 원한이 밖으로 샌다.");
         playerUnit.TakeDamage(damage);
         return CheckBattleEnd();
-    }
-
-    private IEnumerator UseCardRoutine(CardInstance card, Unit target)
-    {
-        IsBusy = true;
-        yield return StartCoroutine(UseCardBody(card, target));
-        IsBusy = false;
-    }
-
-    private IEnumerator UseCardBody(CardInstance card, Unit target)
-    {
-        // 1) 기력 지불 + 손패에서 제거
-        CurrentKi -= card.data.cost;
-        UpdateHUD();
-        handManager.UseCard(card);
-
-        // 2) 흡수 카드(◈)의 침식 판정 — 삼킨 기억이 도사리고 있다
-        if (CheckCorruption(card)) yield break;
-
-        // 3) 상대는 머리 위에 보여준 '장착' 책장으로 응수 → 합 진행
-        enemyIntents.TryGetValue(target, out CardInstance enemyResponse);
-        if (enemyResponse == null) enemyResponse = GetRandomEnemyCard(target);
-        yield return StartCoroutine(ResolveClashRoutine(playerUnit, card, target, enemyResponse));
-
-        // 4) 승패 확인
-        CheckBattleEnd();
     }
 
     // ─────────────────────────── 합(주사위 대결) ───────────────────────────
@@ -436,7 +615,7 @@ public class BattleManager : MonoBehaviour
 
         int count = Mathf.Max(atkDice != null ? atkDice.Count : 0, defDice != null ? defDice.Count : 0);
 
-        // 연출: 양쪽 머리 위에 책장 이름 + 주사위 표시
+        // 연출: 양쪽 머리 위에 태엽판 이름 + 주사위 표시
         ClashDiceDisplay atkDisplay = null, defDisplay = null;
         if (clashFx && showDiceDisplay)
         {
@@ -444,7 +623,7 @@ public class BattleManager : MonoBehaviour
             if (defCard != null) defDisplay = ClashDiceDisplay.Show(defender, defCard.data);
         }
 
-        // [사용시] 효과: 주사위를 굴리기 전에 양쪽 책장 모두 발동 (공격자 먼저)
+        // [사용시] 효과: 주사위를 굴리기 전에 양쪽 태엽판 모두 발동 (공격자 먼저)
         nextDieBonus.Clear();
         destroyNextDie.Clear();
         TriggerCardUse(attacker, defender, atkCard.data);
@@ -466,18 +645,13 @@ public class BattleManager : MonoBehaviour
             atkDie = TryDestroyDie(attacker, atkDie);
             defDie = TryDestroyDie(defender, defDie);
 
-            // 출혈: 공격 주사위를 굴리려는 순간 피해 (출혈로 쓰러지면 주사위를 굴리지 못한다)
-            TriggerBleedIfAttack(attacker, atkDie);
-            TriggerBleedIfAttack(defender, defDie);
-            if (!attacker.IsAlive || !defender.IsAlive) break;
-
             // 주사위 굴림 (없는 쪽은 자동 패배). bonus = 상성·힘·허약 등으로 더해진 값 (머리 위 주사위에 표시)
             int atkBonus = 0, defBonus = 0;
             int atkRoll = atkDie != null ? ComputeRoll(attacker, atkDie, defDie, out atkBonus) : -1;
             int defRoll = defDie != null ? ComputeRoll(defender, defDie, atkDie, out defBonus) : -1;
 
-            string atkLabel = atkDie != null ? $"{atkDie.diceDetail} {atkRoll}" : "-";
-            string defLabel = defDie != null ? $"{defDie.diceDetail} {defRoll}" : "-";
+            string atkLabel = atkDie != null ? $"{DiceInfo.Name(atkDie.diceDetail)} {atkRoll}" : "-";
+            string defLabel = defDie != null ? $"{DiceInfo.Name(defDie.diceDetail)} {defRoll}" : "-";
             Log($"주사위 {i + 1}: {attacker.unitName}[{atkLabel}] vs {defender.unitName}[{defLabel}]");
 
             // 연출: 머리 위 주사위가 동시에 굴러가다 결과 값에 멈춘다
@@ -540,20 +714,23 @@ public class BattleManager : MonoBehaviour
         StartCoroutine(display.ResultRoutine(result));
     }
 
-    private int RollBase(DiceData die)
+    private int RollBase(Unit self, DiceData die)
     {
-        // int 오버로드는 상한 미포함이므로 +1 (최댓값도 나오도록)
-        return Random.Range(die.minRoll, die.maxRoll + 1);
+        // 녹: 최댓값이 깎인다. int 오버로드는 상한 미포함이므로 +1 (최댓값도 나오도록)
+        int max = self.RustedMax(die);
+        if (max < die.maxRoll) Log($"  → {self.unitName}의 주사위가 녹슬었다! 최댓값 {die.maxRoll} → {max}");
+        self.WearRust();   // 굴릴 때마다 녹이 1 벗겨진다
+        return Random.Range(die.minRoll, max + 1);
     }
 
     /// <summary>
     /// 주사위를 굴리고 보정을 적용한다. bonus = 기본 굴림에 더해진 총합 (음수 가능).
-    /// 순서: 마비(최솟값 고정) → 힘/허약/인내 → [다음 주사위 위력 +n] → 상성/회피 보정
+    /// 순서: 녹(최댓값 감소) → 마비(최솟값 고정) → 힘/허약/인내/최대 장력 → [다음 주사위 위력 +n] → 상성/회피 보정
     /// </summary>
     private int ComputeRoll(Unit self, DiceData mine, DiceData theirs, out int bonus)
     {
         bonus = 0;
-        int roll = RollBase(mine);
+        int roll = RollBase(self, mine);
 
         if (self.ConsumeParalysis())
         {
@@ -565,6 +742,8 @@ public class BattleManager : MonoBehaviour
             bonus += self.GetStatus(StatusType.Strength) - self.GetStatus(StatusType.Feeble);
         else
             bonus += self.GetStatus(StatusType.Endurance);
+
+        if (self.isPlayer && EmotionLevel >= MaxTension) bonus += maxTensionBonus;   // 최대 장력
 
         if (nextDieBonus.TryGetValue(self, out int power) && power > 0)
         {
@@ -580,7 +759,7 @@ public class BattleManager : MonoBehaviour
                 theirs.diceDetail == beaten)
             {
                 bonus += typeAdvantageBonus;
-                Log($"  → {mine.diceDetail}은(는) {theirs.diceDetail}에 강하다! 굴림 +{typeAdvantageBonus}");
+                Log($"  → {DiceInfo.Name(mine.diceDetail)}은(는) {DiceInfo.Name(theirs.diceDetail)}에 강하다! 굴림 +{typeAdvantageBonus}");
             }
 
             // 회피: 상대 공격 주사위를 상대로는 굴림 보정
@@ -622,7 +801,7 @@ public class BattleManager : MonoBehaviour
                 AddEmotion(2);
                 string resNote = res == Resistance.Normal ? ""
                     : $" ({ResistanceSet.Label(res)} x{ResistanceSet.Multiplier(res):0.0})";
-                Log($"{source.unitName}의 {die.diceDetail} 주사위 → {target.unitName}에게 피해 {damage}!{resNote}");
+                Log($"{source.unitName}의 {DiceInfo.Name(die.diceDetail)} 주사위 → {target.unitName}에게 피해 {damage}!{resNote}");
 
                 // 공격 주사위로 합을 이기면 기력이 조금 회복된다 — 밀어붙일수록 몰아치는 규칙
                 if (source.isPlayer)
@@ -634,7 +813,7 @@ public class BattleManager : MonoBehaviour
 
             case DiceType.Defense:
                 // 기본 규칙: 수비 주사위가 합을 이기면 상대 주사위를 막는다(피해 없음).
-                Log($"{source.unitName}의 {die.diceDetail} 주사위가 상대 주사위를 막았다!");
+                Log($"{source.unitName}의 {DiceInfo.Name(die.diceDetail)} 주사위가 상대 주사위를 막았다!");
                 return false;
         }
         return false;
@@ -657,7 +836,7 @@ public class BattleManager : MonoBehaviour
             TriggerDiceEffects(loser, winner, loseDie, DiceTrigger.OnClashLose);
     }
 
-    /// <summary>책장의 모든 주사위에 붙은 [사용시] 효과를 발동한다.</summary>
+    /// <summary>태엽판의 모든 주사위에 붙은 [사용시] 효과를 발동한다.</summary>
     private void TriggerCardUse(Unit self, Unit opponent, CardData card)
     {
         if (card == null || card.diceList == null) return;
@@ -683,13 +862,12 @@ public class BattleManager : MonoBehaviour
     {
         switch (fx.effect)
         {
-            case DiceEffectType.Bleed:
+            case DiceEffectType.Rust:
                 if (!opponent.IsAlive) return;
-                opponent.AddBleed(fx.amount, fx.nextTurn);
+                opponent.AddRust(fx.amount, fx.nextTurn);
                 Log($"  {fx.Describe()} → {opponent.unitName}");
                 if (clashFx)
-                    DamagePopup.Spawn(HeadPosition(opponent) + Vector3.up * 0.8f,
-                        fx.nextTurn ? $"출혈 +{fx.amount} (다음 턴)" : $"출혈 +{fx.amount}", bleedPopupColor, 0.8f);
+                    StatusPopup(opponent, fx.nextTurn ? $"녹 +{fx.amount} (다음 턴)" : $"녹 +{fx.amount}", rustPopupColor);
                 break;
 
             case DiceEffectType.RecoverKi:
@@ -761,26 +939,13 @@ public class BattleManager : MonoBehaviour
         DamagePopup.Spawn(HeadPosition(unit) + Vector3.up * 0.8f, text, color, 0.8f);
     }
 
-    /// <summary>공격 주사위를 굴리려는 유닛에게 출혈 피해를 준다.</summary>
-    private void TriggerBleedIfAttack(Unit unit, DiceData die)
-    {
-        if (die == null || die.diceType != DiceType.Attack || unit.Bleed <= 0) return;
-
-        int damage = unit.TriggerBleed();
-        if (damage <= 0) return;
-
-        Log($"{unit.unitName}의 상처에서 피가 흐른다! 출혈 피해 {damage} (남은 출혈 {unit.Bleed})");
-        if (clashFx)
-            DamagePopup.Spawn(HeadPosition(unit) + Vector3.up * 0.4f, $"출혈 -{damage}", bleedPopupColor, 1.1f);
-    }
-
     // ─────────────────────────── 합 연출 (Clash FX) ───────────────────────────
 
     private static readonly Color attackPopupColor = new Color(1f, 0.55f, 0.45f);
     private static readonly Color defensePopupColor = new Color(0.55f, 0.8f, 1f);
     private static readonly Color boostedPopupColor = new Color(1f, 0.85f, 0.2f);
     private static readonly Color damagePopupColor = new Color(1f, 0.2f, 0.15f);
-    private static readonly Color bleedPopupColor = new Color(0.85f, 0.1f, 0.25f);
+    private static readonly Color rustPopupColor = new Color(0.85f, 0.5f, 0.25f);
     private static readonly Color healPopupColor = new Color(0.45f, 1f, 0.55f);
     private static readonly Color statusBuffColor = new Color(1f, 0.8f, 0.35f);
     private static readonly Color statusDebuffColor = new Color(0.75f, 0.55f, 1f);
@@ -900,22 +1065,51 @@ public class BattleManager : MonoBehaviour
         return unit.transform.position + Vector3.up * 1.5f;
     }
 
-    // ─────────────────────────── 감정 단계 ───────────────────────────
+    // ─────────────────────────── 장력 단계 ───────────────────────────
+    // 적중할수록 이안의 태엽이 감긴다 (10pt마다 1단계, 최대 5).
+    // 최대 장력: 내 모든 주사위 위력 +1. 하지만 최대인 채로 라운드를 넘기면 태엽이 끊어져 피해를 입고 장력이 풀린다.
 
     private void AddEmotion(int amount)
     {
         emotionPoints += amount;
-        while (EmotionLevel < 5 && emotionPoints >= (EmotionLevel + 1) * 10)
+        while (EmotionLevel < MaxTension && emotionPoints >= (EmotionLevel + 1) * 10)
         {
             EmotionLevel++;
-            Log($"감정 단계 상승! LV.{EmotionLevel}");
-
-            // 연출: 감정이 오를수록 무대의 빛이 물든다
-            if (StageLighting.Instance != null)
-                StageLighting.Instance.SetEmotion(EmotionLevel);
-            StageBackdrop.SetTempo(EmotionLevel);   // 감정이 오를수록 배경이 고조된다
+            Log(EmotionLevel >= MaxTension
+                ? $"장력 최대! LV.{EmotionLevel} — 모든 주사위 위력 +{maxTensionBonus}. 이대로 라운드를 넘기면 태엽이 끊어진다!"
+                : $"장력 상승! LV.{EmotionLevel}");
+            ApplyTensionFx();
         }
+        emotionPoints = Mathf.Min(emotionPoints, MaxTension * 10);
         UpdateHUD();
+    }
+
+    /// <summary>라운드 시작: 최대 장력으로 넘어왔으면 태엽이 끊어진다. 전투가 끝났으면 true.</summary>
+    private bool CheckTensionSnap()
+    {
+        if (EmotionLevel < MaxTension) return false;
+
+        EmotionLevel = snapResetLevel;
+        emotionPoints = snapResetLevel * 10;
+        ApplyTensionFx();
+        Log($"태엽이 끊어졌다! 반동 피해 {snapDamage}, 장력 LV.{EmotionLevel}로 풀림.");
+        if (clashFx)
+        {
+            DamagePopup.Spawn(HeadPosition(playerUnit) + Vector3.up * 0.4f, "태엽 끊어짐!", statusDebuffColor, 1.3f);
+            StageBackdrop.Impact(1f);
+            if (BattleCamera.Instance != null) BattleCamera.Instance.Shake(0.3f, 0.3f);
+        }
+        playerUnit.TakeDamage(snapDamage);
+        UpdateHUD();
+        return CheckBattleEnd();
+    }
+
+    private void ApplyTensionFx()
+    {
+        // 연출: 장력이 오를수록 무대의 빛이 물들고 배경 태엽이 빨라진다
+        if (StageLighting.Instance != null)
+            StageLighting.Instance.SetEmotion(EmotionLevel);
+        StageBackdrop.SetTempo(EmotionLevel);
     }
 
     // ─────────────────────────── 승패 판정 ───────────────────────────
@@ -988,6 +1182,7 @@ public class BattleManager : MonoBehaviour
                 SpriteCharacter sc = go.AddComponent<SpriteCharacter>();
                 Color tint = info.enemy.sprite != null ? Color.white : info.enemy.tintColor;
                 sc.Setup(info.enemy.sprite, info.enemy.spriteHeight, tint);   // Unit을 붙이기 전에 외형 완성
+                sc.poses = info.enemy.poses;
             }
             else
             {
@@ -1004,6 +1199,7 @@ public class BattleManager : MonoBehaviour
             if (unit == null) unit = go.AddComponent<Unit>();
 
             unit.Init(info.enemy.enemyName, info.enemy.maxHp, info.enemy.deck, info.enemy.resistance);
+            unit.actionsPerRound = info.enemy.actionsPerRound;
             unit.CaptureHome();
             unit.OnDead += HandleUnitDead;
             enemies.Add(unit);
@@ -1026,7 +1222,7 @@ public class BattleManager : MonoBehaviour
         foreach (Unit e in enemies) e.FaceTowards(playerUnit.transform.position);
     }
 
-    /// <summary>플레이어와 적 머리 위에 HP/출혈 표시를 붙인다 (이미 있으면 건너뜀).</summary>
+    /// <summary>플레이어와 적 머리 위에 HP/상태이상 표시를 붙인다 (이미 있으면 건너뜀).</summary>
     private void AttachStatusLabels()
     {
         if (!showStatusLabels) return;
@@ -1081,19 +1277,19 @@ public class BattleManager : MonoBehaviour
     {
         if (kiText != null) kiText.text = $"기력 {CurrentKi}";
 
-        // 감정: 단계 + 다음 단계까지 진행도 (10pt마다 1단계, 최대 5)
+        // 장력: 단계 + 다음 단계까지 진행도 (10pt마다 1단계, 최대 5)
         int levelStart = EmotionLevel * 10;
-        float progress = EmotionLevel >= 5 ? 1f : Mathf.Clamp01((emotionPoints - levelStart) / 10f);
+        float progress = EmotionLevel >= MaxTension ? 1f : Mathf.Clamp01((emotionPoints - levelStart) / 10f);
         if (emotionText != null)
-            emotionText.text = EmotionLevel >= 5 ? "감정 LV.5 (최대)" : $"감정 LV.{EmotionLevel}  {emotionPoints - levelStart}/10";
+            emotionText.text = EmotionLevel >= MaxTension ? $"<color=#ff6b6b>장력 LV.{MaxTension} 최대 — 끊어지기 직전!</color>" : $"장력 LV.{EmotionLevel}  {emotionPoints - levelStart}/10";
         if (emotionGauge != null) emotionGauge.fillAmount = progress;
 
         if (phaseText != null)
         {
             switch (Phase)
             {
-                case BattlePhase.PlayerTurn: phaseText.text = "<color=#7fd4ff>내 턴</color>"; break;
-                case BattlePhase.EnemyTurn:  phaseText.text = "<color=#ff8a6b>적의 턴</color>"; break;
+                case BattlePhase.PlayerTurn: phaseText.text = "<color=#7fd4ff>계획 — 태엽판을 시계판에</color>"; break;
+                case BattlePhase.EnemyTurn:  phaseText.text = $"<color=#e8c27a>시계 진행 — {CurrentHour}시</color>"; break;
                 case BattlePhase.End:        phaseText.text = "전투 종료"; break;
                 default:                     phaseText.text = ""; break;
             }

@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>턴 단위 상태이상 (출혈은 따로 — 누적되고 굴릴 때마다 줄어드는 방식이라)</summary>
+/// <summary>라운드 단위 상태이상 (녹은 따로 — 누적되고 주사위를 굴릴 때마다 벗겨지는 방식이라)</summary>
 public enum StatusType
 {
     Strength,   // 힘: 공격 주사위 위력 +n
@@ -39,8 +39,11 @@ public class Unit : MonoBehaviour
     public int Hp { get; private set; }
     public bool IsAlive { get { return Hp > 0; } }
 
-    /// <summary>적 AI가 사용하는 책장(카드) 목록 — SpawnEnemies에서 EnemyData로부터 복사됨</summary>
+    /// <summary>적 AI가 사용하는 태엽판(카드) 목록 — SpawnEnemies에서 EnemyData로부터 복사됨</summary>
     public List<CardData> personalDeck = new List<CardData>();
+
+    [Tooltip("적: 한 라운드(시계판 한 바퀴)에 하는 행동 수")]
+    public int actionsPerRound = 1;
 
     public event Action<Unit, int> OnDamaged;   // (피격 유닛, 피해량)
     public event Action<Unit> OnDead;
@@ -68,6 +71,9 @@ public class Unit : MonoBehaviour
 
         if (bodyRenderer == null) bodyRenderer = GetComponentInChildren<Renderer>();
         if (bodyRenderer != null) SetBodyColor(originalColor);
+
+        SpriteCharacter sc = GetComponent<SpriteCharacter>();
+        if (sc != null) sc.ResetPose();   // 이전 무대에서 쓰러진 자세 등이 남지 않게
     }
 
     public void RestoreFullHp()
@@ -98,27 +104,42 @@ public class Unit : MonoBehaviour
         }
     }
 
-    // ─────────────────────────── 상태이상 (출혈) ───────────────────────────
+    // ─────────────────────────── 상태이상 (녹) ───────────────────────────
 
-    /// <summary>현재 출혈 수치 — 공격 주사위를 굴릴 때마다 이만큼 피해를 받고 2/3로 줄어든다.</summary>
-    public int Bleed { get; private set; }
+    /// <summary>
+    /// 현재 녹 수치 — 굴리는 주사위의 최댓값이 이만큼 깎인다 (최솟값 아래로는 안 내려감).
+    /// 주사위를 하나 굴릴 때마다 녹이 1씩 벗겨진다 (녹 3 → 다음 주사위들 -3, -2, -1).
+    /// </summary>
+    public int Rust { get; private set; }
 
-    /// <summary>다음 턴에 들어올 출혈 ([적중시] 다음 턴 출혈 n)</summary>
-    public int PendingBleed { get; private set; }
+    /// <summary>다음 라운드에 들어올 녹 ([적중시] 다음 턴 녹 n)</summary>
+    public int PendingRust { get; private set; }
 
-    public void AddBleed(int amount, bool nextTurn)
+    public void AddRust(int amount, bool nextTurn)
     {
         if (!IsAlive || amount <= 0) return;
 
-        if (nextTurn) PendingBleed += amount;
-        else Bleed += amount;
+        if (nextTurn) PendingRust += amount;
+        else Rust += amount;
     }
 
-    /// <summary>새 턴 시작 — 지난 턴의 힘/허약 등은 사라지고, 대기 중이던 상태이상이 실제로 적용된다.</summary>
+    /// <summary>녹이 반영된 주사위 최댓값</summary>
+    public int RustedMax(DiceData die)
+    {
+        return Mathf.Max(die.minRoll, die.maxRoll - Rust);
+    }
+
+    /// <summary>주사위를 굴린 뒤 호출 — 녹이 1 벗겨진다.</summary>
+    public void WearRust()
+    {
+        if (Rust > 0) Rust--;
+    }
+
+    /// <summary>새 라운드 시작 — 지난 라운드의 힘/허약 등은 사라지고, 대기 중이던 녹·상태이상이 들어온다.</summary>
     public void ActivatePendingStatus()
     {
-        Bleed += PendingBleed;
-        PendingBleed = 0;
+        Rust += PendingRust;
+        PendingRust = 0;
 
         for (int i = 0; i < status.Length; i++)
         {
@@ -127,21 +148,10 @@ public class Unit : MonoBehaviour
         }
     }
 
-    /// <summary>공격 주사위를 굴릴 때 호출. 출혈 피해를 주고 수치를 2/3로 줄인다. 실제 피해량을 돌려준다.</summary>
-    public int TriggerBleed()
-    {
-        if (!IsAlive || Bleed <= 0) return 0;
-
-        int damage = Bleed;
-        Bleed = Bleed * 2 / 3;   // 정수 나눗셈 = 소수점 버림 (1 → 0, 2 → 1, 3 → 2)
-        TakeDamage(damage);
-        return damage;
-    }
-
     public void ClearStatus()
     {
-        Bleed = 0;
-        PendingBleed = 0;
+        Rust = 0;
+        PendingRust = 0;
         Array.Clear(status, 0, status.Length);
         Array.Clear(pendingStatus, 0, pendingStatus.Length);
     }
@@ -248,6 +258,10 @@ public class Unit : MonoBehaviour
     /// </summary>
     public void PlayAnim(string trigger)
     {
+        // 2.5D 스프라이트: 포즈 그림 교체 (그림이 없으면 기울이는 임시 동작)
+        SpriteCharacter sc = GetComponent<SpriteCharacter>();
+        if (sc != null) sc.SetPose(trigger);
+
         if (animator == null || animator.runtimeAnimatorController == null) return;
 
         foreach (AnimatorControllerParameter p in animator.parameters)
@@ -296,6 +310,8 @@ public class Unit : MonoBehaviour
 
     private void Die()
     {
+        PlayAnim("Down");   // 쓰러지는 포즈 (스프라이트) / Down 트리거 (Animator)
+
         Collider col = GetComponent<Collider>();
         if (col != null) col.enabled = false;   // 시체 클릭 방지
 
@@ -324,7 +340,7 @@ public class Unit : MonoBehaviour
             BattleManager.Instance.OnUnitClicked(this);
     }
 
-    // 마우스를 올리면 이름 / 체력 / 내성 / 장착 책장 정보창
+    // 마우스를 올리면 이름 / 체력 / 내성 / 장착 태엽판 정보창
     void OnMouseEnter()
     {
         UnitTooltip.Show(this);

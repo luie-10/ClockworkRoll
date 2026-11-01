@@ -28,3 +28,4 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 336e92373224a41dfb746014cdde1356, type: 2}
   - {fileID: 11400000, guid: 8e43b874fa58d37a8693c959f7582238, type: 2}
   - {fileID: 11400000, guid: 585dcbcaf5454f9d604386847f234c77, type: 2}
+  actionsPerRound: 2

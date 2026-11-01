@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,9 +10,9 @@ using UnityEngine.UI;
 ///   참격  x1.0 보통
 ///   관통  x1.5 약점
 ///   타격  x2.0 취약
-///   ─ 장착 책장 ─
-///   물어뜯기  (기력 1)
-///     참격 1~4  [적중시] 다음 턴 출혈 1
+///   ─ 시계판 위의 행동 ─
+///   3~4시  물어뜯기  (기력 1)
+///     참격 1~4  [적중시] 다음 턴 녹 1
 ///     타격 1~4
 ///
 /// 직접 붙일 필요 없음 — Unit의 OnMouseEnter/Exit가 Show/Hide를 부르면 전용 Canvas를 알아서 만든다.
@@ -116,19 +117,30 @@ public class UnitTooltip : MonoBehaviour
         s += ResistLine(DiceDetail.Thrust, u);
         s += ResistLine(DiceDetail.Blunt, u);
 
-        CardData equipped = BattleManager.Instance != null ? BattleManager.Instance.GetEquippedCard(u) : null;
-        if (equipped != null)
+        List<TimedAction> actions = BattleManager.Instance != null ? BattleManager.Instance.GetActionsOf(u) : new List<TimedAction>();
+        if (actions.Count > 0)
         {
-            s += $"\n<color=#e8c27a>─ {(u.isPlayer ? "응수 책장" : "장착 책장")} ─</color>";
-            s += $"\n{equipped.cardName}  <color=#8cd9ff>(기력 {equipped.cost})</color>";
-            string detail = DiceInfo.Detail(equipped);
-            if (detail.Length > 0) s += "\n" + detail;
-            string keywords = DiceInfo.Keywords(equipped);
+            s += "\n<color=#e8c27a>─ 시계판 위의 행동 ─</color>";
+            HashSet<CardData> shown = new HashSet<CardData>();
+            foreach (TimedAction a in actions)
+            {
+                string done = a.resolved ? "  <color=#888888>(끝남)</color>" : "";
+                s += $"\n<color=#ffd159>{a.HourLabel()}</color>  {a.card.data.cardName}  <color=#8cd9ff>(기력 {a.card.data.cost})</color>{done}";
+                if (a.resolved || !shown.Add(a.card.data)) continue;
+                string detail = DiceInfo.Detail(a.card.data);
+                if (detail.Length > 0) s += "\n" + detail;
+            }
+            string keywords = "";
+            foreach (CardData c in shown)
+            {
+                string k = DiceInfo.Keywords(c);
+                if (k.Length > 0 && !keywords.Contains(k)) keywords += (keywords.Length > 0 ? "\n" : "") + k;
+            }
             if (keywords.Length > 0) s += "\n<size=18>" + keywords + "</size>";
         }
         else if (u.isPlayer)
         {
-            s += "\n<color=#888888>응수 책장 없음 — 책장을 고르고 나를 클릭하면 장착</color>";
+            s += "\n<color=#888888>시계판에 올린 행동 없음 — 태엽판을 고르고 시계판의 시각을 클릭</color>";
         }
         return s;
     }

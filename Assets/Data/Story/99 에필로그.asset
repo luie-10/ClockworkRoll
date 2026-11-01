@@ -24,7 +24,7 @@ MonoBehaviour:
     text: "떠다니던 기억들이... 제자리로 돌아가는 걸까."
     portrait: {fileID: 0}
   - speaker: "틱"
-    text: "네 안의 책장들은 그대로네. 무겁지 않아?"
+    text: "네 안의 태엽판들은 그대로네. 무겁지 않아?"
     portrait: {fileID: 0}
   - speaker: "이안"
     text: "무거워. 그래도 누군가는 들고 있어야 하니까."

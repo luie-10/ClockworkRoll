@@ -54,7 +54,7 @@ public enum DiceTrigger
     OnHit,          // [적중시]   공격 주사위가 합을 이겨 피해를 줬을 때
     OnClashWin,     // [합 승리시] 합에서 이겼을 때 (수비 주사위 포함)
     OnClashLose,    // [합 패배시] 합에서 졌을 때
-    OnUse           // [사용시]   책장을 써서 합이 시작될 때 (주사위 순서와 상관없이 맨 처음)
+    OnUse           // [사용시]   태엽판을 써서 합이 시작될 때 (주사위 순서와 상관없이 맨 처음)
 }
 
 /// <summary>
@@ -63,17 +63,17 @@ public enum DiceTrigger
 /// </summary>
 public enum DiceEffectType
 {
-    Bleed,          // 상대에게 출혈 부여
+    Rust,           // 상대에게 녹 부여 (주사위 최댓값 감소)
     RecoverKi,      // 자신의 기력 회복 (플레이어만)
-    DrawCard,       // 책장 뽑기 (플레이어만)
+    DrawCard,       // 태엽판 뽑기 (플레이어만)
     Heal,           // 자신의 체력 회복
     Strength,       // 자신에게 힘 (공격 주사위 위력 +n)
     Endurance,      // 자신에게 인내 (수비 주사위 위력 +n)
     Feeble,         // 상대에게 허약 (공격 주사위 위력 -n)
     Fragile,        // 상대에게 취약 (공격받을 때 피해 +n)
     Paralysis,      // 상대에게 마비 (주사위 n개가 최솟값으로 굴러감)
-    PowerNextDie,   // 이 책장의 다음 주사위 위력 +n
-    DestroyNextDie  // 상대 책장의 다음 주사위 파괴
+    PowerNextDie,   // 이 태엽판의 다음 주사위 위력 +n
+    DestroyNextDie  // 상대 태엽판의 다음 주사위 파괴
 }
 
 [Serializable]
@@ -82,10 +82,10 @@ public class DiceEffect
     public DiceTrigger trigger;
     public DiceEffectType effect;
     public int amount = 1;
-    [Tooltip("체크: 다음 턴에 부여 (출혈·힘·마비 같은 상태이상용)")]
+    [Tooltip("체크: 다음 턴에 부여 (녹·힘·마비 같은 상태이상용)")]
     public bool nextTurn;
 
-    /// <summary>카드/로그 표시용 짧은 문구 (예: "[적중시] 다음 턴 출혈 1")</summary>
+    /// <summary>카드/로그 표시용 짧은 문구 (예: "[적중시] 다음 턴 녹 1")</summary>
     public string Describe()
     {
         string when;
@@ -100,9 +100,9 @@ public class DiceEffect
         string what;
         switch (effect)
         {
-            case DiceEffectType.Bleed:          what = $"출혈 {amount}"; break;
+            case DiceEffectType.Rust:           what = $"녹 {amount}"; break;
             case DiceEffectType.RecoverKi:      what = $"기력 {amount} 회복"; break;
-            case DiceEffectType.DrawCard:       what = $"책장 {amount}장 뽑기"; break;
+            case DiceEffectType.DrawCard:       what = $"태엽판 {amount}장 뽑기"; break;
             case DiceEffectType.Heal:           what = $"체력 {amount} 회복"; break;
             case DiceEffectType.Strength:       what = $"힘 {amount} 얻음"; break;
             case DiceEffectType.Endurance:      what = $"인내 {amount} 얻음"; break;
@@ -121,7 +121,7 @@ public class DiceEffect
     {
         switch (type)
         {
-            case DiceEffectType.Bleed:
+            case DiceEffectType.Rust:
             case DiceEffectType.Strength:
             case DiceEffectType.Endurance:
             case DiceEffectType.Feeble:
@@ -135,20 +135,20 @@ public class DiceEffect
 }
 #endregion
 
-#region 3. 전투 책장 스크립터블 오브젝트 (유니티 에셋 생성용)
+#region 3. 전투 태엽판 스크립터블 오브젝트 (유니티 에셋 생성용)
 [CreateAssetMenu(fileName = "NewCardData", menuName = "Ruina/Card Data", order = 1)]
 public class CardData : ScriptableObject
 {
     [Header("기본 정보")]
-    public string cardName;             // 책장 이름
-    public Sprite cardArt;              // 책장 일러스트
+    public string cardName;             // 태엽판 이름
+    public Sprite cardArt;              // 태엽판 일러스트
     public CardRarity rarity;           // 등급
 
     [Header("비용 및 조건")]
     public int cost;                    // 빛 코스트
     public int requireEmotionLevel;     // 필요 감정 단계
 
-    [Header("책장 능력 설명")]
+    [Header("태엽판 능력 설명")]
     [TextArea(3, 8)]
     public string cardDescription;      // [사용시], [무대 시작시] 효과 텍스트
 

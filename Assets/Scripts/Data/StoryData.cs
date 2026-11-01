@@ -12,7 +12,7 @@ public class StoryData : ScriptableObject
     public string storyTitle;
     [TextArea(2, 5)] public string summary;   // 줄거리 메모 (게임에는 표시되지 않음)
 
-    [Header("플레이어가 처음부터 가지는 덱(책장)")]
+    [Header("플레이어가 처음부터 가지는 덱(태엽판)")]
     public List<CardData> startingDeck = new List<CardData>();
 
     [Header("챕터 (진행 순서대로)")]

@@ -5,8 +5,8 @@ using UnityEngine;
 /// <summary>
 /// 합을 하는 동안 유닛 머리 위에 뜨는 주사위 표시.
 ///
-///   [범위 2~5]      [책장 이름]
-///   ⬢ (큰 주사위)    ⬢ ⬢ ⬢  ← 이 책장의 주사위들 (종류별 색/글자, 쓴 것은 흐려짐)
+///   [범위 2~5]      [태엽판 이름]
+///   ⬢ (큰 주사위)    ⬢ ⬢ ⬢  ← 이 태엽판의 주사위들 (종류별 색/글자, 쓴 것은 흐려짐)
 ///
 /// - 굴릴 때: 큰 주사위가 돌면서 숫자가 빠르게 바뀌다가 최종 값에 '쾅' 하고 멈춘다
 /// - 결과: 이긴 주사위는 번쩍 커지고, 진 주사위는 흔들리며 흐려진다 (동점은 둘 다 흔들림)
@@ -161,12 +161,12 @@ public class ClashDiceDisplay : MonoBehaviour
 
     private void FollowTarget()
     {
-        // 머리 위 (HP/출혈 표시보다 위)
+        // 머리 위 (HP/상태이상 표시보다 위)
         Vector3 pos = target.transform.position + Vector3.up * 2.6f;
         if (target.bodyRenderer != null)
         {
             Bounds b = target.bodyRenderer.bounds;
-            pos = new Vector3(b.center.x, b.max.y + 1.15f, b.center.z);   // 상태창(장착 책장 줄 포함) 바로 위
+            pos = new Vector3(b.center.x, b.max.y + 1.15f, b.center.z);   // 상태창(장착 태엽판 줄 포함) 바로 위
         }
         transform.position = pos;
 
@@ -204,7 +204,7 @@ public class ClashDiceDisplay : MonoBehaviour
         rangeText = NewText(transform, "", new Vector3(bigHex.localPosition.x, 0.6f, -0.01f), 0.022f, 64, TextAnchor.MiddleCenter, new Color(0.6f, 0.85f, 1f), 12);
         boostText = NewText(transform, "", new Vector3(bigHex.localPosition.x + BigHexSize * 0.45f, 0.48f, -0.02f), 0.02f, 64, TextAnchor.MiddleLeft, new Color(1f, 0.85f, 0.2f), 13);
 
-        // 책장 이름 + 주사위 슬롯 (오른쪽)
+        // 태엽판 이름 + 주사위 슬롯 (오른쪽)
         float slotsLeft = left + BigHexSize + 0.12f;
         NewText(transform, cardName, new Vector3(slotsLeft, 0.48f, -0.01f), 0.022f, 64, TextAnchor.MiddleLeft, new Color(1f, 0.75f, 0.55f), 12);
 

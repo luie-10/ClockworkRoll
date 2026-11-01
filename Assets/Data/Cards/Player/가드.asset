@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 64319ab3dd94be547b66c1346fc27ddd, type: 3}
-  m_Name: "기본 회피"
+  m_Name: "가드"
   m_EditorClassIdentifier: Assembly-CSharp::CardData
-  cardName: "기본 회피"
+  cardName: "가드"
   cardArt: {fileID: 0}
   rarity: 0
   cost: 1
@@ -21,8 +21,8 @@ MonoBehaviour:
   diceList:
   - diceName: 
     diceType: 1
-    diceDetail: 4
-    minRoll: 2
-    maxRoll: 6
+    diceDetail: 3
+    minRoll: 3
+    maxRoll: 7
     diceEffectDescription: 
     effects: []

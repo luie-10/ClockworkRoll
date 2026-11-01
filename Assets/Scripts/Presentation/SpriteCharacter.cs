@@ -7,6 +7,7 @@ using UnityEngine;
 ///   Body   : SpriteRenderer — 항상 카메라 쪽을 바라봄 (빌보드, 위아래로는 기울지 않음)
 ///   Shadow : 발밑의 둥근 그림자 (바닥에 눕혀진 스프라이트)
 /// 스프라이트를 비워두면 단색 실루엣(임시 그림)을 자동으로 그린다.
+/// 합 중에는 주사위 종류에 따라 포즈 그림(Poses)으로 바뀐다 — 그림이 없으면 몸을 기울이는 임시 동작.
 ///
 /// 스프라이트 그림은 '오른쪽을 보는' 그림이 기본 (왼쪽을 보는 그림이면 Faces Right By Default 해제).
 /// </summary>
@@ -24,6 +25,13 @@ public class SpriteCharacter : MonoBehaviour
     [Tooltip("그림이 원래 오른쪽을 보고 있는가")]
     public bool facesRightByDefault = true;
 
+    [Header("합 포즈 (비워두면 기본 그림을 기울이고 늘이는 임시 동작)")]
+    public PoseSprites poses = new PoseSprites();
+    [Tooltip("포즈를 유지하는 시간(초) — 지나면 기본 자세로 돌아온다")]
+    public float poseHoldTime = 0.55f;
+    [Tooltip("포즈가 바뀔 때 몸이 따라가는 속도")]
+    public float poseSpeed = 14f;
+
     [Header("그림자")]
     public bool showShadow = true;
     public float shadowSize = 1.1f;
@@ -33,6 +41,18 @@ public class SpriteCharacter : MonoBehaviour
     private Transform body;
     private Transform shadow;
     private bool facingRight = true;
+
+    // 포즈
+    private float bodyScale = 1f;          // 기본 그림 기준 배율 (포즈 그림도 같은 배율 → 크기가 맞음)
+    private float footOffset;              // 발이 바닥에 오도록 올리는 높이 (지금 보이는 그림 기준)
+    private string currentPose = "Idle";
+    private float poseTimer;
+    private Vector4 poseTarget = PoseIdle;   // (기울기°, 가로 배율, 세로 배율, 앞으로 이동)
+    private Vector4 poseNow = PoseIdle;
+
+    private static readonly Vector4 PoseIdle = new Vector4(0f, 1f, 1f, 0f);
+
+    public string CurrentPose { get { return currentPose; } }
 
     void Awake()
     {
@@ -61,13 +81,96 @@ public class SpriteCharacter : MonoBehaviour
         if (BodyRenderer != null) BodyRenderer.flipX = facingRight != facesRightByDefault;
     }
 
+    // ─────────────────────────── 합 포즈 ───────────────────────────
+
+    /// <summary>
+    /// 포즈 바꾸기 (Unit.PlayAnim이 부름): Slash/Thrust/Blunt/Guard/Evade/Hit/Down, "Idle"이면 기본 자세.
+    /// Poses에 그림이 있으면 그 그림으로 바꾸고, 없으면 기본 그림을 기울이고 늘여서 자세를 흉내 낸다.
+    /// Down(쓰러짐)은 돌아오지 않는다 — ResetPose로 풀 것.
+    /// </summary>
+    public void SetPose(string pose)
+    {
+        if (body == null) return;
+        if (pose == "Idle") { ResetPose(); return; }
+        if (currentPose == "Down") return;   // 쓰러진 뒤에는 맞는 연출 등으로 다시 일어서지 않게
+
+        Sprite art = poses != null ? poses.Get(pose) : null;
+        ShowSprite(art != null ? art : IdleSprite());
+
+        // 그림이 있으면 그림이 자세를 보여주므로 살짝만, 없으면 크게 움직인다
+        Vector4 motion = PlaceholderMotion(pose);
+        poseTarget = art != null ? Vector4.Lerp(PoseIdle, motion, pose == "Down" ? 0f : 0.25f) : motion;
+
+        currentPose = pose;
+        poseTimer = pose == "Down" ? float.PositiveInfinity : poseHoldTime;
+    }
+
+    /// <summary>기본 그림 · 기본 자세로 되돌린다.</summary>
+    public void ResetPose()
+    {
+        currentPose = "Idle";
+        poseTimer = 0f;
+        poseTarget = PoseIdle;
+        if (body != null) ShowSprite(IdleSprite());
+    }
+
+    /// <summary>그림이 없을 때의 임시 동작: (앞으로 기울기°, 가로 배율, 세로 배율, 앞으로 이동)</summary>
+    private static Vector4 PlaceholderMotion(string pose)
+    {
+        switch (pose)
+        {
+            case "Slash":  return new Vector4(18f, 1.06f, 0.97f, 0.15f);    // 앞으로 숙이며 벤다
+            case "Thrust": return new Vector4(6f, 1.18f, 0.94f, 0.3f);      // 길게 뻗어 찌른다
+            case "Blunt":  return new Vector4(24f, 1f, 0.88f, 0.1f);        // 짓누르듯 내려친다
+            case "Guard":  return new Vector4(-4f, 1.08f, 0.86f, -0.05f);   // 웅크려 막는다
+            case "Evade":  return new Vector4(-20f, 0.95f, 1.02f, -0.35f);  // 뒤로 젖히며 빠진다
+            case "Hit":    return new Vector4(-14f, 0.95f, 1f, -0.1f);      // 맞고 젖혀진다
+            case "Down":   return new Vector4(-80f, 1f, 1f, -0.2f);         // 뒤로 쓰러진다
+            default:       return PoseIdle;
+        }
+    }
+
+    void Update()
+    {
+        if (currentPose == "Idle") return;
+        poseTimer -= Time.deltaTime;
+        if (poseTimer <= 0f) ResetPose();
+    }
+
     void LateUpdate()
     {
+        if (body == null) return;
+
+        // 포즈: 목표 자세로 부드럽게 (히트스톱 중에도 자세가 잡히도록 unscaled)
+        poseNow = Vector4.Lerp(poseNow, poseTarget, 1f - Mathf.Exp(-poseSpeed * Time.unscaledDeltaTime));
+
         // 빌보드: 카메라의 좌우 회전만 따라간다 (위에서 내려다봐도 캐릭터가 눕지 않게)
+        // + 포즈 기울기: 바라보는 쪽으로 숙인다 (오른쪽을 보면 시계 방향)
         Camera cam = Camera.main;
-        if (cam != null && body != null)
-            body.rotation = Quaternion.Euler(0f, cam.transform.eulerAngles.y, 0f);
+        float yaw = cam != null ? cam.transform.eulerAngles.y : 0f;
+        float forward = facingRight ? 1f : -1f;
+        body.rotation = Quaternion.Euler(0f, yaw, 0f) * Quaternion.Euler(0f, 0f, -poseNow.x * forward);
+
+        body.localScale = new Vector3(bodyScale * poseNow.y, bodyScale * poseNow.z, bodyScale);
+
+        Vector3 right = cam != null ? cam.transform.right : Vector3.right;
+        Vector3 shift = transform.InverseTransformDirection(right) * (poseNow.w * forward);
+        body.localPosition = new Vector3(0f, footOffset * poseNow.z, 0f) + shift;
     }
+
+    private Sprite IdleSprite()
+    {
+        return sprite != null ? sprite : PlaceholderSilhouette();
+    }
+
+    /// <summary>그림 교체. 배율은 기본 그림 기준으로 고정하고, 발만 바닥에 맞춘다.</summary>
+    private void ShowSprite(Sprite shown)
+    {
+        if (BodyRenderer.sprite == shown) return;
+        BodyRenderer.sprite = shown;
+        footOffset = -shown.bounds.min.y * bodyScale;
+    }
+
 
     // ─────────────────────────── 생성 ───────────────────────────
 
@@ -82,16 +185,20 @@ public class SpriteCharacter : MonoBehaviour
             BodyRenderer = body.gameObject.AddComponent<SpriteRenderer>();
         }
 
-        Sprite shown = sprite != null ? sprite : PlaceholderSilhouette();
+        Sprite shown = IdleSprite();
         BodyRenderer.sprite = shown;
+        currentPose = "Idle";
+        poseTarget = poseNow = PoseIdle;
         BodyRenderer.color = tint;
         BodyRenderer.flipX = facingRight != facesRightByDefault;
 
         // 키를 height에 맞추고, 피벗과 상관없이 발이 루트 위치(바닥)에 오게 한다
         float spriteHeight = Mathf.Max(0.01f, shown.bounds.size.y);
         float scale = height / spriteHeight;
+        bodyScale = scale;
+        footOffset = -shown.bounds.min.y * scale;
         body.localScale = Vector3.one * scale;
-        body.localPosition = new Vector3(0f, -shown.bounds.min.y * scale, 0f);
+        body.localPosition = new Vector3(0f, footOffset, 0f);
 
         // 2) 클릭 판정용 콜라이더를 몸 크기에 맞춤
         float width = shown.bounds.size.x * scale;

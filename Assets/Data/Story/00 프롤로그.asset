@@ -24,7 +24,7 @@ MonoBehaviour:
     text: "시계 마을이야. 종탑이 멈춘 날부터 물이 차오르기 시작했어."
     portrait: {fileID: 0}
   - speaker: "틱"
-    text: "사람들의 기억은 책장이 되어 물 위를 떠다녀. 그걸 손에 쥐면 싸울 힘이 되지."
+    text: "사람들의 기억은 태엽판이 되어 물 위를 떠다녀. 그걸 손에 쥐면 싸울 힘이 되지."
     portrait: {fileID: 0}
   - speaker: "이안"
     text: "남의 기억으로 싸운다고?"

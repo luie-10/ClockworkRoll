@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: "시계 마을 이야기"
   m_EditorClassIdentifier: Assembly-CSharp::StoryData
   storyTitle: "시계 마을 이야기"
-  summary: "멈춘 종탑 때문에 물에 잠긴 시계 마을. 이안은 태엽 인형 틱과 함께 떠다니는 기억(책장)을 삼키며 종탑으로 향한다."
+  summary: "멈춘 종탑 때문에 물에 잠긴 시계 마을. 이안은 태엽 인형 틱과 함께 떠다니는 기억(태엽판)을 삼키며 종탑으로 향한다."
   startingDeck:
   - {fileID: 11400000, guid: c752f0de72672fb75770bf0156e2234a, type: 2}
   - {fileID: 11400000, guid: c752f0de72672fb75770bf0156e2234a, type: 2}

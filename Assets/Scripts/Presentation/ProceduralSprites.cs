@@ -4,11 +4,12 @@ using UnityEngine;
 /// 코드로 만드는 공용 스프라이트 (에셋 없이).
 ///   RoundedBox : 모서리가 둥근 상자 — 9-slice(Sliced)라 어떤 크기로 늘려도 모서리가 찌그러지지 않는다
 ///   Square     : 흰 사각형 (게이지 바 등)
+///   Circle     : 가장자리가 부드러운 흰 원 (시계판 등)
 /// 월드 공간(SpriteRenderer, drawMode = Sliced)과 UI(Image, type = Sliced) 모두에 쓸 수 있다.
 /// </summary>
 public static class ProceduralSprites
 {
-    private static Sprite roundedBox, square;
+    private static Sprite roundedBox, square, circle;
 
     public const int BoxSize = 64;
     public const int BoxCorner = 14;   // 모서리 반지름(px) = 9-slice 테두리
@@ -24,6 +25,31 @@ public static class ProceduralSprites
             roundedBox.name = "RoundedBox";
         }
         return roundedBox;
+    }
+
+    public static Sprite Circle()
+    {
+        if (circle == null)
+        {
+            const int size = 128;
+            Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            tex.wrapMode = TextureWrapMode.Clamp;
+            Color[] px = new Color[size * size];
+            float r = size * 0.5f;
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    float d = Vector2.Distance(new Vector2(x + 0.5f, y + 0.5f), new Vector2(r, r));
+                    px[y * size + x] = new Color(1f, 1f, 1f, Mathf.Clamp01(r - d));   // 가장자리 1px 안티에일리어싱
+                }
+            }
+            tex.SetPixels(px);
+            tex.Apply();
+            circle = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f);
+            circle.name = "Circle";
+        }
+        return circle;
     }
 
     public static Sprite Square()

@@ -19,12 +19,19 @@ public class EnemyData : ScriptableObject
     public Sprite sprite;
     [Tooltip("화면에서의 키 (월드 단위)")]
     public float spriteHeight = 2f;
+    [Tooltip("합 중에 바뀌는 그림 (참격/관통/타격/가드/회피/피격/쓰러짐). 비워둔 칸은 기본 그림을 기울이는 임시 동작")]
+    public PoseSprites poses = new PoseSprites();
 
     [Header("3D 외형 (Model Prefab이 있으면 Sprite보다 우선)")]
     public GameObject modelPrefab;
     [Tooltip("큐브/실루엣 색")]
     public Color tintColor = new Color(0.8f, 0.25f, 0.25f);
 
-    [Header("이 적이 사용하는 책장(카드) 목록")]
+    [Header("시계판")]
+    [Tooltip("한 라운드(시계판 한 바퀴)에 하는 행동 수 — 보스는 2 이상")]
+    [Range(1, 4)]
+    public int actionsPerRound = 1;
+
+    [Header("이 적이 사용하는 태엽판(카드) 목록")]
     public List<CardData> deck = new List<CardData>();
 }

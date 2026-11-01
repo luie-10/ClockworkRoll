@@ -111,8 +111,8 @@ public class CardTooltip : MonoBehaviour
 
         string rarityHex = "#" + ColorUtility.ToHtmlStringRGB(DiceInfo.RarityColor(d.rarity));
         string s = $"<size=26><b>{(absorbed ? "◈ " : "")}{d.cardName}</b></size>   " +
-                   $"<color={rarityHex}>{DiceInfo.RarityName(d.rarity)}</color> · <color=#8cd9ff>기력 {d.cost}</color>";
-        if (d.requireEmotionLevel > 0) s += $" · <color=#ffcc59>감정 {d.requireEmotionLevel} 필요</color>";
+                   $"<color={rarityHex}>{DiceInfo.RarityName(d.rarity)}</color> · <color=#8cd9ff>기력 {d.cost}</color> · <color=#ffd159>{TimedAction.LengthOf(d)}칸</color>";
+        if (d.requireEmotionLevel > 0) s += $" · <color=#ffcc59>장력 {d.requireEmotionLevel} 필요</color>";
 
         if (!string.IsNullOrEmpty(d.cardDescription))
             s += $"\n<color=#a8a8a8><i>{d.cardDescription}</i></color>";

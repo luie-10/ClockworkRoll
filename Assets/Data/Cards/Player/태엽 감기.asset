@@ -17,7 +17,7 @@ MonoBehaviour:
   rarity: 1
   cost: 1
   requireEmotionLevel: 0
-  cardDescription: "틱이 나눠 준 태엽. 버티면 기력이 돌고, 베면 책장이 손에 감긴다."
+  cardDescription: "틱이 나눠 준 태엽. 버티면 기력이 돌고, 베면 태엽판이 손에 감긴다."
   diceList:
   - diceName: 
     diceType: 1

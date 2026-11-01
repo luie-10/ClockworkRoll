@@ -106,7 +106,6 @@ public static class RuinaSceneSetup
         bm.emotionGauge = ui.emotionGauge;
         bm.phaseText = ui.phaseText;
         bm.endTurnButton = ui.endTurnButton;
-        bm.battleLogText = ui.logText;
 
         Undo.RecordObject(hm, "wire");
         hm.cardViewPrefab = cardPrefab;
@@ -286,7 +285,7 @@ public static class RuinaSceneSetup
         public GameObject dialoguePanel;
         public Text speakerText, bodyText;
         public Image portrait;
-        public Text stageText, kiText, emotionText, phaseText, logText;
+        public Text stageText, kiText, emotionText, phaseText;
         public Image emotionGauge;
         public Button endTurnButton, restartButton;
         public Transform handPanel;
@@ -380,11 +379,6 @@ public static class RuinaSceneSetup
 
         Color gold = new Color(1f, 0.84f, 0.55f);
 
-        // ── 전투 기록 (좌상단, 마우스 휠로 스크롤) ──
-        ui.logText = UIBuilder.ScrollLog("BattleLogPanel", hud, "전투 기록   (마우스 휠로 스크롤)");
-        RectTransform logPanel = (RectTransform)ui.logText.transform.parent.parent;   // Content → Viewport → Panel
-        UIBuilder.Place(logPanel, new Vector2(0f, 0.47f), new Vector2(0.3f, 0.98f), new Vector2(0f, 1f), new Vector2(20f, -20f), new Vector2(-20f, -20f));
-
         // ── 무대 이름 배너 + 턴 표시 (상단 가운데) ──
         Image banner = UIBuilder.Panel("StageBanner", hud);
         UIBuilder.Place(banner.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -20f), new Vector2(560f, 64f));
@@ -467,7 +461,7 @@ public static class RuinaSceneSetup
         statePanel.messageText = message;
         result.gameObject.SetActive(false);
 
-        report.Add("+ UI: 스크롤 전투 기록 · 무대 배너 · 턴 표시 · 기력/감정 게이지 · 손패 받침대 · 턴 종료 · 대사창 · 결과 화면 (" + canvas.name + "/" + UIRootName + ")");
+        report.Add("+ UI: 무대 배너 · 턴 표시 · 기력/장력 게이지 · 손패 받침대 · 턴 종료 · 대사창 · 결과 화면 (" + canvas.name + "/" + UIRootName + ")");
         return ui;
     }
 

@@ -343,6 +343,9 @@ MonoBehaviour:
   diceText: {fileID: 6422865171436455825}
   backgroundImage: {fileID: 8758598551883965953}
   selectedColor: {r: 1, g: 0.9, b: 0.4, a: 1}
+  hoverScale: 1.15
+  selectedScale: 1.08
+  unusableAlpha: 0.55
 --- !u!1 &5679367397730297403
 GameObject:
   m_ObjectHideFlags: 0

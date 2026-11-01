@@ -10,19 +10,19 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 64319ab3dd94be547b66c1346fc27ddd, type: 3}
-  m_Name: "기본 타격"
+  m_Name: "관통"
   m_EditorClassIdentifier: Assembly-CSharp::CardData
-  cardName: "기본 타격"
+  cardName: "관통"
   cardArt: {fileID: 0}
   rarity: 0
-  cost: 2
+  cost: 1
   requireEmotionLevel: 0
   cardDescription: ""
   diceList:
   - diceName: 
     diceType: 0
-    diceDetail: 2
-    minRoll: 3
-    maxRoll: 8
+    diceDetail: 1
+    minRoll: 1
+    maxRoll: 6
     diceEffectDescription: 
     effects: []

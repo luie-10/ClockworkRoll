@@ -44,7 +44,7 @@ public class HandManager : MonoBehaviour
         while (hand.Count < handLimit && DrawOne()) { }
     }
 
-    /// <summary>책장 n장 뽑기 (주사위 효과용). 손패 한도를 넘지 않는다. 실제로 뽑은 장수를 돌려준다.</summary>
+    /// <summary>태엽판 n장 뽑기 (주사위 효과용). 손패 한도를 넘지 않는다. 실제로 뽑은 장수를 돌려준다.</summary>
     public int DrawCards(int count)
     {
         int drawn = 0;

@@ -8,7 +8,7 @@ using UnityEngine.UI;
 /// - 적에게서 흡수한 카드(◈)는 보라색 톤과 침식 수치가 표시된다.
 /// - 주사위 줄: ▶ 공격 / ◆ 수비 + 종류 색 + 범위, 효과는 그 아래 └ 줄.
 /// - 마우스를 올리면 카드가 커지며 맨 앞으로 오고, 위에 상세 정보창(CardTooltip)이 뜬다.
-/// - 기력/감정 단계가 모자라 지금 못 쓰는 카드는 흐려지고 기력 글자가 빨개진다.
+/// - 기력/장력 단계가 모자라 지금 못 쓰는 카드는 흐려지고 기력 글자가 빨개진다.
 /// - 클릭하면 BattleManager로 전달된다.
 /// 프리팹 구조는 그대로 — 추가 연출(정렬용 Canvas, CanvasGroup 등)은 실행 중에 알아서 붙인다.
 /// </summary>
@@ -62,6 +62,7 @@ public class CardView : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
         // 효과 줄이 많아도 판 밖으로 넘치지 않게 글자 크기 자동 맞춤
         FitText(diceText, 11);
         FitText(nameText, 14);
+        FitText(costText, 11);
     }
 
     private static void FitText(Text t, int minSize)
@@ -117,9 +118,11 @@ public class CardView : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
         }
 
         if (costText != null)
-            costText.text = d.requireEmotionLevel > 0 ? $"기력 {d.cost} · 감정{d.requireEmotionLevel}" : $"기력 {d.cost}";
+            costText.text = d.requireEmotionLevel > 0
+                ? $"기력 {d.cost} · {TimedAction.LengthOf(d)}칸 · 장력{d.requireEmotionLevel}"
+                : $"기력 {d.cost} · {TimedAction.LengthOf(d)}칸";   // 칸 = 시계판에서 차지하는 시간
 
-        // 주사위 줄 (예: "▶ 참격 2~6") + 효과 줄 (" └ [적중시] 다음 턴 출혈 1") + 흡수 카드면 침식 수치
+        // 주사위 줄 (예: "▶ 참격 2~6") + 효과 줄 (" └ [적중시] 다음 턴 녹 1") + 흡수 카드면 침식 수치
         if (diceText != null)
         {
             System.Text.StringBuilder sb = new System.Text.StringBuilder();
@@ -173,7 +176,7 @@ public class CardView : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
         UpdateUsable();
     }
 
-    /// <summary>지금 낼 수 있는 카드인지 (기력 · 감정 단계)에 따라 흐리게 / 기력 글자 빨갛게.</summary>
+    /// <summary>지금 낼 수 있는 카드인지 (기력 · 장력 단계)에 따라 흐리게 / 기력 글자 빨갛게.</summary>
     private void UpdateUsable()
     {
         if (BoundCard == null || BoundCard.data == null) return;
