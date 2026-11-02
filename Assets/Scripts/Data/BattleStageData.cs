@@ -21,6 +21,8 @@ public class BattleStageData : ScriptableObject
 
     [Tooltip("이 무대의 배경 (씬에 해당 배경 오브젝트가 있어야 함)")]
     public BackdropType backdrop = BackdropType.Alley;
+    [Tooltip("배경 변형 번호 (-1 = 전투마다 무작위). 배경마다 0~2")]
+    public int backdropVariant = -1;
 
     [Header("기력 (자원)")]
     public int startKi = 3;      // 무대 시작 시 기력

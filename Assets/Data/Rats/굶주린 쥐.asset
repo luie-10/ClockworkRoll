@@ -10,24 +10,35 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c432b655cc2ee62408eb86f1bf1d0dbc, type: 3}
-  m_Name: "굶주린 쥐"
+  m_Name: "\uAD76\uC8FC\uB9B0 \uC950"
   m_EditorClassIdentifier: Assembly-CSharp::EnemyData
-  enemyName: "굶주린 쥐"
+  enemyName: "\uAD76\uC8FC\uB9B0 \uC950"
+  nicknames:
+  - "\uD5C8\uAE30"
+  - "\uAC08\uBE44\uBF08"
+  - "\uBE48 \uBC30"
+  - "\uC4F0\uB808\uAE30\uD1B5 \uC655"
+  - "\uD565\uB294 \uD600"
   maxHp: 45
   resistance:
     slash: 1
     thrust: 0
     blunt: 1
+  sprite: {fileID: 21300000, guid: cf1d8ff0212f1d740a81ed60de047de4, type: 3}
+  spriteHeight: 2
+  poses:
+    slash: {fileID: 21300000, guid: 9b1a73f899277a040954195aed4b77e9, type: 3}
+    thrust: {fileID: 21300000, guid: 36edf7b1cc1a05041953a7abfe698ffb, type: 3}
+    blunt: {fileID: 21300000, guid: ec3b4be2ffd69ba45a7b173fd0ab4366, type: 3}
+    guard: {fileID: 21300000, guid: 8c744707409b8224b9afbee6d924cadd, type: 3}
+    evade: {fileID: 21300000, guid: 9809a40c75636bb4089450c0f05fcc17, type: 3}
+    hit: {fileID: 21300000, guid: e91835caff1f73b40b9c03bd266f51eb, type: 3}
+    down: {fileID: 0}
   modelPrefab: {fileID: 0}
   tintColor: {r: 0.4, g: 0.5, b: 0.85, a: 1}
+  actionsPerRound: 1
   deck:
   - {fileID: 11400000, guid: cc5d7fdfb1f5c3cbb975e9cf38434ad3, type: 2}
   - {fileID: 11400000, guid: d12930928e4b887d3a10eb4720dff8bd, type: 2}
   - {fileID: 11400000, guid: 9c9df5d014e9ec463acfd400bad0e99a, type: 2}
   - {fileID: 11400000, guid: f5a42dec2d5e3cf25668d751609e75d6, type: 2}
-  nicknames:
-  - "허기"
-  - "갈비뼈"
-  - "빈 배"
-  - "쓰레기통 왕"
-  - "핥는 혀"

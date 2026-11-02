@@ -10,14 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 64319ab3dd94be547b66c1346fc27ddd, type: 3}
-  m_Name: "톱니 물림"
+  m_Name: "\uD1B1\uB2C8 \uBB3C\uB9BC"
   m_EditorClassIdentifier: Assembly-CSharp::CardData
-  cardName: "톱니 물림"
-  cardArt: {fileID: 0}
+  cardName: "\uD1B1\uB2C8 \uBB3C\uB9BC"
+  cardArt: {fileID: 21300000, guid: 31ca904ff3f736e4894e8e66e2e888a4, type: 3}
   rarity: 1
   cost: 2
   requireEmotionLevel: 0
-  cardDescription: "맞물린 톱니는 놓아주지 않는다."
+  cardDescription: "\uB9DE\uBB3C\uB9B0 \uD1B1\uB2C8\uB294 \uB193\uC544\uC8FC\uC9C0
+    \uC54A\uB294\uB2E4."
   diceList:
   - diceName: 
     diceType: 0

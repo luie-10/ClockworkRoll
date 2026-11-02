@@ -14,10 +14,16 @@ using UnityEngine;
 /// 빈 오브젝트에 붙이면 Play 시작 때 생성된다 (편집 화면에서는 보이지 않음).
 /// 기준 위치는 이 오브젝트의 위치 — 무대 중앙(바닥 높이)에 두면 된다.
 /// Battle Stage의 Backdrop이 ClockTower인 무대에서 켜진다.
+///
+/// 변형: 0 황동 태엽탑 (인스펙터 값) / 1 녹슨 태엽탑 (붉은 녹 + 연기) / 2 물에 잠긴 태엽탑 (푸른 쇠 + 바닥에 찬 물 + 물방울)
 /// </summary>
 public class ClockworkBackdrop : StageBackdrop
 {
     public override BackdropType Type { get { return BackdropType.ClockTower; } }
+    public override int VariantCount { get { return 3; } }
+    public override string VariantName { get { return Variant == 1 ? "녹슨 태엽탑" : Variant == 2 ? "물에 잠긴 태엽탑" : "황동 태엽탑"; } }
+
+    private Color[] inspectorColors;   // 변형 0 = 처음 지을 때의 인스펙터 색 (황동, 구리, 쇠, 조명)
 
     [Header("회전")]
     [Tooltip("평상시 주 회전 속도 (도/초)")]
@@ -61,9 +67,47 @@ public class ClockworkBackdrop : StageBackdrop
 
     protected override void OnShown()
     {
-        RenderSettings.fog = false;   // 태엽 탑은 안개 없이 또렷하게
-        Light sun = FindSun();
-        if (sun != null) sun.intensity = 0.8f;
+        // 다른 배경이 바꿔 둔 하늘색/주변광을 태엽탑에 맞게 되돌린다
+        if (Variant == 1)
+            ApplyAtmosphere(new Color(0.12f, 0.06f, 0.04f), 0.018f, new Color(0.2f, 0.13f, 0.1f), new Color(0.08f, 0.04f, 0.03f), 0.7f);
+        else if (Variant == 2)
+            ApplyAtmosphere(new Color(0.04f, 0.07f, 0.1f), 0.02f, new Color(0.12f, 0.16f, 0.22f), new Color(0.03f, 0.05f, 0.08f), 0.6f);
+        else
+            ApplyAtmosphere(Color.black, 0f, new Color(0.2f, 0.18f, 0.15f), new Color(0.05f, 0.045f, 0.04f), 0.8f);   // 안개 없이 또렷하게
+    }
+
+    /// <summary>변형에 맞춰 금속 색을 바꾼다 (Build 직전)</summary>
+    private void ApplyPalette()
+    {
+        if (inspectorColors == null) inspectorColors = new[] { brass, copper, iron, lampColor };
+
+        brass = inspectorColors[0]; copper = inspectorColors[1]; iron = inspectorColors[2]; lampColor = inspectorColors[3];
+        if (Variant == 1)   // 녹슨: 붉은 녹, 탁한 주황 조명
+        {
+            brass = new Color(0.5f, 0.3f, 0.17f); copper = new Color(0.45f, 0.2f, 0.11f);
+            iron = new Color(0.22f, 0.18f, 0.16f); lampColor = new Color(1f, 0.45f, 0.25f);
+        }
+        else if (Variant == 2)   // 물에 잠긴: 푸르게 바랜 쇠, 차가운 조명
+        {
+            brass = new Color(0.45f, 0.55f, 0.55f); copper = new Color(0.3f, 0.48f, 0.45f);
+            iron = new Color(0.18f, 0.22f, 0.27f); lampColor = new Color(0.55f, 0.78f, 1f);
+        }
+    }
+
+    /// <summary>변형 전용 소품: 녹슨 탑엔 연기, 잠긴 탑엔 바닥의 물과 떨어지는 물방울</summary>
+    private void BuildVariantExtras()
+    {
+        if (Variant == 1)
+        {
+            MakeMotes(root, "Smoke", new Vector3(0f, 2f, 9f), new Vector3(26f, 3f, 8f), 14f, new Color(0.35f, 0.3f, 0.28f, 0.25f), 2.2f, -0.02f, 7f);
+            MakeMotes(root, "Embers", new Vector3(0f, 0.5f, 4f), new Vector3(18f, 1f, 6f), 10f, new Color(1f, 0.5f, 0.2f, 0.9f), 0.06f, -0.08f, 3f);
+        }
+        else if (Variant == 2)
+        {
+            Transform water = Block("Water", new Vector3(0f, 0.03f, 8f), new Vector3(60f, 0.04f, 40f), MakeMaterial(new Color(0.04f, 0.08f, 0.1f), 0.85f, 0.97f), root);
+            water.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            MakeMotes(root, "Drips", new Vector3(0f, 11f, 8f), new Vector3(24f, 0.5f, 10f), 18f, new Color(0.6f, 0.8f, 1f, 0.8f), 0.05f, 0.6f, 2.5f);
+        }
     }
 
     /// <summary>타격 임팩트 — 태엽이 확 감긴다. strength 1 = 큰 타격, 0.3 = 가벼운 충돌.</summary>
@@ -113,6 +157,8 @@ public class ClockworkBackdrop : StageBackdrop
     protected override void Build(Transform contentRoot)
     {
         root = contentRoot;
+        gears.Clear();
+        ApplyPalette();
         brassMat = MakeMaterial(brass, 0.85f, 0.55f);
         copperMat = MakeMaterial(copper, 0.8f, 0.5f);
         ironMat = MakeMaterial(iron, 0.6f, 0.35f);
@@ -164,6 +210,8 @@ public class ClockworkBackdrop : StageBackdrop
         lamp.color = lampColor;
         lamp.range = 18f;
         lamp.intensity = lampBaseIntensity = 1.6f;
+
+        BuildVariantExtras();
     }
 
     private void BuildClock(Vector3 center, float radius)

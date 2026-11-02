@@ -32,3 +32,29 @@ MonoBehaviour:
   - {fileID: 11400000, guid: e169478c71f8497743c3996798136224, type: 2}
   - {fileID: 11400000, guid: c8eadc25ffba4a3ceee6cda5fce8ed68, type: 2}
   - {fileID: 11400000, guid: 0323428cb9c8b2da177b3440a119782e, type: 2}
+  rewardPool:
+  - {fileID: 11400000, guid: eacafe56db1bfc736a3723b678ad3452, type: 2}
+  - {fileID: 11400000, guid: e383ce9d3c2ed4b37c90bd2060b164be, type: 2}
+  - {fileID: 11400000, guid: b8e4d38567bb6d0ebc3ad8ab6b154122, type: 2}
+  - {fileID: 11400000, guid: 3732bce0510c65cf58aee78e13f4a66b, type: 2}
+  - {fileID: 11400000, guid: 5c1bacfa1fdd7b3484641a0a26e9766c, type: 2}
+  - {fileID: 11400000, guid: 0a29602a2b98c377d5b70e0ca3d769d4, type: 2}
+  - {fileID: 11400000, guid: 420036299999eac363005e611a33e835, type: 2}
+  - {fileID: 11400000, guid: 6baa526e77ff290f7d6e6c276a74acb2, type: 2}
+  - {fileID: 11400000, guid: 648d13ec50fb75cebf109512b90762a0, type: 2}
+  - {fileID: 11400000, guid: 1d72e9fa20fe13b3fd6fb7a9a92eadf4, type: 2}
+  - {fileID: 11400000, guid: 7981341a6405e7837c6cff2f9b69c05c, type: 2}
+  - {fileID: 11400000, guid: f5f724797ccaefc28317ef920253b939, type: 2}
+  - {fileID: 11400000, guid: 75f66b6e31a9f95f1a88cffe04c9a617, type: 2}
+  - {fileID: 11400000, guid: 01a2589298414b26a2b95ea2856d7139, type: 2}
+  - {fileID: 11400000, guid: 1840e30d2ba9ec9ea77249d39ec7f087, type: 2}
+  - {fileID: 11400000, guid: 29c92a8d7a3db495f6da3df133f85a45, type: 2}
+  - {fileID: 11400000, guid: 19abb1dae3b5f5bf69b32681c951b040, type: 2}
+  - {fileID: 11400000, guid: 45d8ae862a880eb8888e4d023aa3aafb, type: 2}
+  - {fileID: 11400000, guid: 7d47765346b75acc852caa6d35f10217, type: 2}
+  - {fileID: 11400000, guid: 817a75163627f0d80b0ef5eceab71c9e, type: 2}
+  - {fileID: 11400000, guid: aa90f1303a653cd850578cbb6ce3850d, type: 2}
+  - {fileID: 11400000, guid: 57d33356b14a969560375e6ce7aa3bbd, type: 2}
+  - {fileID: 11400000, guid: e54a8bef8fabaf8d52eeaf1ef098c89c, type: 2}
+  - {fileID: 11400000, guid: c63e3754b8a6507d620ce01bfea1b395, type: 2}
+  - {fileID: 11400000, guid: 2e44cd28a19424915b985048ffe17dc8, type: 2}

@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 64319ab3dd94be547b66c1346fc27ddd, type: 3}
-  m_Name: "멈춘 시계"
+  m_Name: "\uBA48\uCD98 \uC2DC\uACC4"
   m_EditorClassIdentifier: Assembly-CSharp::CardData
-  cardName: "멈춘 시계"
-  cardArt: {fileID: 0}
+  cardName: "\uBA48\uCD98 \uC2DC\uACC4"
+  cardArt: {fileID: 21300000, guid: 172d9a52db88bd3478edc198858c97f9, type: 3}
   rarity: 0
   cost: 1
   requireEmotionLevel: 0
-  cardDescription: ""
+  cardDescription: 
   diceList:
   - diceName: 
     diceType: 1

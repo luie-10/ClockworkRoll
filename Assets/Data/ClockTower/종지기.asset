@@ -10,22 +10,31 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c432b655cc2ee62408eb86f1bf1d0dbc, type: 3}
-  m_Name: "종지기"
+  m_Name: "\uC885\uC9C0\uAE30"
   m_EditorClassIdentifier: Assembly-CSharp::EnemyData
-  enemyName: "종지기"
+  enemyName: "\uC885\uC9C0\uAE30"
+  nicknames: []
   maxHp: 70
   resistance:
     slash: 1
     thrust: 0
     blunt: 0
-  sprite: {fileID: 0}
+  sprite: {fileID: 21300000, guid: 5736948e78be610499dc6bf38bf9e581, type: 3}
   spriteHeight: 2.6
+  poses:
+    slash: {fileID: 21300000, guid: b9b8c7d3f19243f408b6391ce83a1a0d, type: 3}
+    thrust: {fileID: 21300000, guid: d71ab2308dc2b0247afc1224096db511, type: 3}
+    blunt: {fileID: 21300000, guid: 0a241ec25740b7e4f8187146ca852a35, type: 3}
+    guard: {fileID: 21300000, guid: 3b757cab7f61b954690c828f6ad9270b, type: 3}
+    evade: {fileID: 21300000, guid: 4205d42cdd1809a4480287a2acd013b9, type: 3}
+    hit: {fileID: 21300000, guid: 7e0dcfe6cbf041a4a93d24a82e16cdd7, type: 3}
+    down: {fileID: 0}
   modelPrefab: {fileID: 0}
   tintColor: {r: 0.55, g: 0.45, b: 0.7, a: 1}
+  actionsPerRound: 2
   deck:
   - {fileID: 11400000, guid: 60fb7e29dc5488b4f58a214d48ddd058, type: 2}
   - {fileID: 11400000, guid: d6eddaad42be87bc2c026bd889a21601, type: 2}
   - {fileID: 11400000, guid: 336e92373224a41dfb746014cdde1356, type: 2}
   - {fileID: 11400000, guid: 8e43b874fa58d37a8693c959f7582238, type: 2}
   - {fileID: 11400000, guid: 585dcbcaf5454f9d604386847f234c77, type: 2}
-  actionsPerRound: 2

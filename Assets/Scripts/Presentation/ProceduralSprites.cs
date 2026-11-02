@@ -9,7 +9,7 @@ using UnityEngine;
 /// </summary>
 public static class ProceduralSprites
 {
-    private static Sprite roundedBox, square, circle;
+    private static Sprite roundedBox, square, circle, verticalFade;
 
     public const int BoxSize = 64;
     public const int BoxCorner = 14;   // 모서리 반지름(px) = 9-slice 테두리
@@ -50,6 +50,26 @@ public static class ProceduralSprites
             circle.name = "Circle";
         }
         return circle;
+    }
+
+    /// <summary>아래는 불투명, 위로 갈수록 투명해지는 세로 그러데이션 (손패 받침대 그늘 등)</summary>
+    public static Sprite VerticalFade()
+    {
+        if (verticalFade == null)
+        {
+            const int h = 64;
+            Texture2D tex = new Texture2D(1, h, TextureFormat.RGBA32, false);
+            tex.wrapMode = TextureWrapMode.Clamp;
+            for (int y = 0; y < h; y++)
+            {
+                float a = 1f - y / (h - 1f);
+                tex.SetPixel(0, y, new Color(1f, 1f, 1f, a * a * (3f - 2f * a)));   // smoothstep: 경계가 보이지 않게
+            }
+            tex.Apply();
+            verticalFade = Sprite.Create(tex, new Rect(0, 0, 1, h), new Vector2(0.5f, 0.5f), 100f);
+            verticalFade.name = "VerticalFade";
+        }
+        return verticalFade;
     }
 
     public static Sprite Square()

@@ -10,14 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 64319ab3dd94be547b66c1346fc27ddd, type: 3}
-  m_Name: "태엽 충전"
+  m_Name: "\uD0DC\uC5FD \uCDA9\uC804"
   m_EditorClassIdentifier: Assembly-CSharp::CardData
-  cardName: "태엽 충전"
-  cardArt: {fileID: 0}
+  cardName: "\uD0DC\uC5FD \uCDA9\uC804"
+  cardArt: {fileID: 21300000, guid: 19a8baad3bbb92f44a77716af901aa63, type: 3}
   rarity: 1
   cost: 1
   requireEmotionLevel: 0
-  cardDescription: "등의 태엽을 한껏 감는다. 이번 턴 동안 몸이 무겁게 휘두른다."
+  cardDescription: "\uB4F1\uC758 \uD0DC\uC5FD\uC744 \uD55C\uAECF \uAC10\uB294\uB2E4.
+    \uC774\uBC88 \uD134 \uB3D9\uC548 \uBAB8\uC774 \uBB34\uAC81\uAC8C \uD718\uB450\uB978\uB2E4."
   diceList:
   - diceName: 
     diceType: 0

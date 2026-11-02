@@ -73,7 +73,12 @@ public enum DiceEffectType
     Fragile,        // 상대에게 취약 (공격받을 때 피해 +n)
     Paralysis,      // 상대에게 마비 (주사위 n개가 최솟값으로 굴러감)
     PowerNextDie,   // 이 태엽판의 다음 주사위 위력 +n
-    DestroyNextDie  // 상대 태엽판의 다음 주사위 파괴
+    DestroyNextDie, // 상대 태엽판의 다음 주사위 파괴
+    Overwind,       // 과감기: 체력 n을 태워 이 태엽판의 모든 주사위 위력 +n ([사용시]에 쓴다)
+    Resonance,      // 울림: 다른 모든 적에게도 피해 n (범위 공격 — 플레이어만)
+    Corrode,        // 부식: 상대의 녹 x n 만큼 추가 피해
+    Plating,        // 철갑: 자신에게 철갑 n (받는 피해 -n)
+    OnTheHour       // 정각: 이 주사위를 3·6·9·12시에 굴리면 위력 +n (발동 시점과 상관없이 늘 적용)
 }
 
 [Serializable]
@@ -110,6 +115,11 @@ public class DiceEffect
             case DiceEffectType.Fragile:        what = $"취약 {amount}"; break;
             case DiceEffectType.Paralysis:      what = $"마비 {amount}"; break;
             case DiceEffectType.PowerNextDie:   what = $"다음 주사위 위력 +{amount}"; break;
+            case DiceEffectType.Overwind:       what = $"과감기 {amount}"; break;
+            case DiceEffectType.Resonance:      what = $"울림 {amount}"; break;
+            case DiceEffectType.Corrode:        what = $"부식 x{amount}"; break;
+            case DiceEffectType.Plating:        what = $"철갑 {amount}"; break;
+            case DiceEffectType.OnTheHour:      return $"[정각] 위력 +{amount}";   // 발동 시점이 아니라 굴리는 시각으로 정해진다
             default:                            what = "상대의 다음 주사위 파괴"; break;
         }
 
@@ -127,6 +137,7 @@ public class DiceEffect
             case DiceEffectType.Feeble:
             case DiceEffectType.Fragile:
             case DiceEffectType.Paralysis:
+            case DiceEffectType.Plating:
                 return true;
             default:
                 return false;

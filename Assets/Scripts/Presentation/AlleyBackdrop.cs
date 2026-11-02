@@ -10,12 +10,16 @@ using UnityEngine;
 ///   - 안개 + 비 파티클 (감정 단계가 오를수록 빗줄기가 거세진다)
 ///   - 타격 임팩트: 가로등이 지직거리고, 간판이 흔들리고, 드럼통 불길이 치솟는다
 ///
-/// 벽돌 / 아스팔트 텍스처도 코드로 그린다 (Mathf.PerlinNoise). 무작위 배치는 고정 시드라 매번 같은 모양.
+/// 벽돌 / 아스팔트 텍스처도 코드로 그린다 (Mathf.PerlinNoise). 무작위 배치는 변형마다 고정 시드.
+///
+/// 변형: 0 비 내리는 밤 (인스펙터 값) / 1 안개 낀 새벽 / 2 붉은 폭우
 /// Battle Stage의 Backdrop이 Alley인 무대(기본값)에서 켜진다.
 /// </summary>
 public class AlleyBackdrop : StageBackdrop
 {
     public override BackdropType Type { get { return BackdropType.Alley; } }
+    public override int VariantCount { get { return 3; } }
+    public override string VariantName { get { return Variant == 1 ? "안개 낀 새벽" : Variant == 2 ? "붉은 폭우" : "비 내리는 밤"; } }
 
     [Header("분위기")]
     public Color fogColor = new Color(0.035f, 0.04f, 0.05f);
@@ -44,6 +48,35 @@ public class AlleyBackdrop : StageBackdrop
     private float neonTimer;
 
     private System.Random rng;
+
+    private struct Preset
+    {
+        public Color fog, ambient, lamp, neon, fire;
+        public float fogDensity, sun, rain;
+    }
+    private Preset? inspectorPreset;   // 변형 0 = 처음 지을 때의 인스펙터 값
+
+    /// <summary>변형에 맞춰 분위기 값을 바꾼다 (Build 직전)</summary>
+    private void ApplyPreset()
+    {
+        if (inspectorPreset == null)
+            inspectorPreset = new Preset { fog = fogColor, ambient = ambient, lamp = lampColor, neon = neonColor, fire = fireColor, fogDensity = fogDensity, sun = sunIntensity, rain = rainRate };
+
+        Preset p = inspectorPreset.Value;
+        if (Variant == 1)   // 안개 낀 새벽: 희뿌옇고 조용하다, 가랑비
+        {
+            p.fog = new Color(0.17f, 0.18f, 0.2f); p.fogDensity = 0.06f; p.ambient = new Color(0.24f, 0.24f, 0.27f);
+            p.sun = 0.55f; p.lamp = new Color(0.85f, 0.9f, 1f); p.neon = new Color(0.2f, 0.9f, 1f); p.rain = 70f;
+        }
+        else if (Variant == 2)   // 붉은 폭우: 붉은 하늘, 거센 비, 주황 네온
+        {
+            p.fog = new Color(0.07f, 0.025f, 0.03f); p.fogDensity = 0.045f; p.ambient = new Color(0.15f, 0.07f, 0.07f);
+            p.sun = 0.2f; p.lamp = new Color(1f, 0.45f, 0.3f); p.neon = new Color(1f, 0.55f, 0.1f); p.rain = 950f;
+        }
+
+        fogColor = p.fog; fogDensity = p.fogDensity; ambient = p.ambient; sunIntensity = p.sun;
+        lampColor = p.lamp; neonColor = p.neon; fireColor = p.fire; rainRate = p.rain;
+    }
 
     // ─────────────────────────── 배경 이벤트 ───────────────────────────
 
@@ -141,7 +174,8 @@ public class AlleyBackdrop : StageBackdrop
 
     protected override void Build(Transform root)
     {
-        rng = new System.Random(20261031);   // 고정 시드 → 매번 같은 골목
+        rng = VariantRandom(20261031);   // 변형마다 고정 시드 → 같은 변형이면 같은 골목
+        ApplyPreset();
 
         Texture2D brickTex = BrickTexture();
         Texture2D asphaltTex = AsphaltTexture();
@@ -437,19 +471,6 @@ public class AlleyBackdrop : StageBackdrop
         pr.sharedMaterial = new Material(Shader.Find("Sprites/Default"));
 
         ps.Play();
-    }
-
-    private static Light AddLight(string name, Vector3 pos, Color color, float intensity, float range, Transform parent)
-    {
-        GameObject go = new GameObject(name);
-        go.transform.SetParent(parent, false);
-        go.transform.localPosition = pos;
-        Light l = go.AddComponent<Light>();
-        l.type = LightType.Point;
-        l.color = color;
-        l.intensity = intensity;
-        l.range = range;
-        return l;
     }
 
     // ─────────────────────────── 텍스처 (코드로 그림) ───────────────────────────

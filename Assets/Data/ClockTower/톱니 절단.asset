@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 64319ab3dd94be547b66c1346fc27ddd, type: 3}
-  m_Name: "톱니 절단"
+  m_Name: "\uD1B1\uB2C8 \uC808\uB2E8"
   m_EditorClassIdentifier: Assembly-CSharp::CardData
-  cardName: "톱니 절단"
-  cardArt: {fileID: 0}
+  cardName: "\uD1B1\uB2C8 \uC808\uB2E8"
+  cardArt: {fileID: 21300000, guid: 99bc7fb4d4d94ae4bbfd8fd1f747d049, type: 3}
   rarity: 1
   cost: 2
   requireEmotionLevel: 0
-  cardDescription: ""
+  cardDescription: 
   diceList:
   - diceName: 
     diceType: 0

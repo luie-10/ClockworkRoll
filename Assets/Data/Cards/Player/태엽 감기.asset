@@ -10,14 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 64319ab3dd94be547b66c1346fc27ddd, type: 3}
-  m_Name: "태엽 감기"
+  m_Name: "\uD0DC\uC5FD \uAC10\uAE30"
   m_EditorClassIdentifier: Assembly-CSharp::CardData
-  cardName: "태엽 감기"
-  cardArt: {fileID: 0}
+  cardName: "\uD0DC\uC5FD \uAC10\uAE30"
+  cardArt: {fileID: 21300000, guid: 143813a7cc2c10a4ba00ca32b6cd7b7a, type: 3}
   rarity: 1
   cost: 1
   requireEmotionLevel: 0
-  cardDescription: "틱이 나눠 준 태엽. 버티면 기력이 돌고, 베면 태엽판이 손에 감긴다."
+  cardDescription: "\uD2F1\uC774 \uB098\uB220 \uC900 \uD0DC\uC5FD. \uBC84\uD2F0\uBA74
+    \uAE30\uB825\uC774 \uB3CC\uACE0, \uBCA0\uBA74 \uD0DC\uC5FD\uD310\uC774 \uC190\uC5D0
+    \uAC10\uAE34\uB2E4."
   diceList:
   - diceName: 
     diceType: 1

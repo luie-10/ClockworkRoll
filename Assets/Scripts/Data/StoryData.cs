@@ -15,6 +15,9 @@ public class StoryData : ScriptableObject
     [Header("플레이어가 처음부터 가지는 덱(태엽판)")]
     public List<CardData> startingDeck = new List<CardData>();
 
+    [Header("갈래길 보상으로만 나오는 태엽판 (궤짝 · 강적 · 이벤트)")]
+    public List<CardData> rewardPool = new List<CardData>();
+
     [Header("챕터 (진행 순서대로)")]
     public List<ChapterData> chapters = new List<ChapterData>();
 }

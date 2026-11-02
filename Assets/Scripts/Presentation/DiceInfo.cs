@@ -92,6 +92,7 @@ public static class DiceInfo
             case StatusType.Feeble:    return "허약";
             case StatusType.Fragile:   return "취약";
             case StatusType.Paralysis: return "마비";
+            case StatusType.Plating:   return "철갑";
             default:                   return t.ToString();
         }
     }
@@ -99,6 +100,7 @@ public static class DiceInfo
     /// <summary>이로운 상태 = 금색, 해로운 상태 = 보라색</summary>
     public static string StatusColorHex(StatusType t)
     {
+        if (t == StatusType.Plating) return "#9fc4e0";   // 쇠 색
         return t == StatusType.Strength || t == StatusType.Endurance ? "#ffcc59" : "#bf8cff";
     }
 
@@ -142,6 +144,11 @@ public static class DiceInfo
             case DiceEffectType.Fragile:        return "<color=#bf8cff>취약</color>: 이번 라운드 동안 공격에 맞을 때 피해 +n";
             case DiceEffectType.Paralysis:      return "<color=#bf8cff>마비</color>: 주사위 n개가 최솟값으로 굴러감";
             case DiceEffectType.DestroyNextDie: return "<color=#bf8cff>파괴</color>: 이번 라운드에 상대가 다음으로 굴릴 주사위 하나가 사라짐";
+            case DiceEffectType.Overwind:       return "<color=#ff6b6b>과감기</color>: 체력 n을 태워 이 태엽판의 모든 주사위 위력 +n (체력은 1 아래로 내려가지 않음)";
+            case DiceEffectType.Resonance:      return "<color=#ffd159>울림</color>: 공격이 적중하면 다른 모든 적에게도 피해 n (범위 공격)";
+            case DiceEffectType.Corrode:        return "<color=#d98040>부식</color>: 적중하면 상대의 녹(다음 턴 녹 포함) x n 만큼 추가 피해";
+            case DiceEffectType.Plating:        return "<color=#9fc4e0>철갑</color>: 이번 라운드 동안 공격에 맞을 때마다 받는 피해 -n";
+            case DiceEffectType.OnTheHour:      return "<color=#ffd98a>정각</color>: 3·6·9·12시 칸에서 굴리면 이 주사위 위력 +n";
             default:                            return null;
         }
     }

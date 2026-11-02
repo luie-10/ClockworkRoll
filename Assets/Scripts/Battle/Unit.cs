@@ -10,7 +10,8 @@ public enum StatusType
     Endurance,  // 인내: 수비 주사위 위력 +n
     Feeble,     // 허약: 공격 주사위 위력 -n
     Fragile,    // 취약: 공격 주사위에 맞을 때 피해 +n
-    Paralysis   // 마비: 주사위 n개가 최솟값으로 굴러감 (굴릴 때마다 1씩 줄어듦)
+    Paralysis,  // 마비: 주사위 n개가 최솟값으로 굴러감 (굴릴 때마다 1씩 줄어듦)
+    Plating     // 철갑: 공격에 맞을 때 받는 피해 -n
 }
 
 /// <summary>
@@ -78,6 +79,13 @@ public class Unit : MonoBehaviour
 
         SpriteCharacter sc = GetComponent<SpriteCharacter>();
         if (sc != null) sc.ResetPose();   // 이전 무대에서 쓰러진 자세 등이 남지 않게
+    }
+
+    /// <summary>외형(그림/색)을 바꾼 뒤 호출 — 피격 깜빡임이 끝나면 돌아갈 '원래 색'을 다시 기억한다</summary>
+    public void RememberBodyColor()
+    {
+        if (bodyRenderer == null) bodyRenderer = GetComponentInChildren<Renderer>();
+        if (bodyRenderer != null) originalColor = GetBodyColor();
     }
 
     public void RestoreFullHp()

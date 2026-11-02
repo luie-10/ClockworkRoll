@@ -10,25 +10,34 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c432b655cc2ee62408eb86f1bf1d0dbc, type: 3}
-  m_Name: "태엽 병정"
+  m_Name: "\uD0DC\uC5FD \uBCD1\uC815"
   m_EditorClassIdentifier: Assembly-CSharp::EnemyData
-  enemyName: "태엽 병정"
+  enemyName: "\uD0DC\uC5FD \uBCD1\uC815"
+  nicknames:
+  - "7\uD638"
+  - "12\uD638"
+  - "\uB179\uC2A8 3\uD638"
+  - "\uC678\uD314 9\uD638"
+  - "\uB35C\uCEF9\uC774"
   maxHp: 35
   resistance:
     slash: 0
     thrust: 0
     blunt: 2
-  sprite: {fileID: 0}
+  sprite: {fileID: 21300000, guid: 801a215e048b7b041961d3adff4aede1, type: 3}
   spriteHeight: 2
+  poses:
+    slash: {fileID: 21300000, guid: 259ba80dc6771bf458984f1b07abd46d, type: 3}
+    thrust: {fileID: 21300000, guid: 6fac357b709c41c41a5f9285f0e73974, type: 3}
+    blunt: {fileID: 21300000, guid: e9a5f4e7812d1554993147dbb5656026, type: 3}
+    guard: {fileID: 21300000, guid: ca5f5014b2388ed49989212a92c9c8dc, type: 3}
+    evade: {fileID: 21300000, guid: 2a3bd542b0803544d8e1183bd5b5a208, type: 3}
+    hit: {fileID: 21300000, guid: 49737bd2a256f2545bab6bf56ccd45af, type: 3}
+    down: {fileID: 0}
   modelPrefab: {fileID: 0}
   tintColor: {r: 0.75, g: 0.6, b: 0.35, a: 1}
+  actionsPerRound: 1
   deck:
   - {fileID: 11400000, guid: d6eddaad42be87bc2c026bd889a21601, type: 2}
   - {fileID: 11400000, guid: 336e92373224a41dfb746014cdde1356, type: 2}
   - {fileID: 11400000, guid: a0d597effcbc6c11e76fc54902a88eee, type: 2}
-  nicknames:
-  - "7호"
-  - "12호"
-  - "녹슨 3호"
-  - "외팔 9호"
-  - "덜컹이"

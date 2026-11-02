@@ -10,14 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 64319ab3dd94be547b66c1346fc27ddd, type: 3}
-  m_Name: "쓰레기 방패"
+  m_Name: "\uC4F0\uB808\uAE30 \uBC29\uD328"
   m_EditorClassIdentifier: Assembly-CSharp::CardData
-  cardName: "쓰레기 방패"
-  cardArt: {fileID: 0}
+  cardName: "\uC4F0\uB808\uAE30 \uBC29\uD328"
+  cardArt: {fileID: 21300000, guid: c135bc4a6fbf253409297d4d2c7ffd8f, type: 3}
   rarity: 0
   cost: 1
   requireEmotionLevel: 0
-  cardDescription: "주워 든 냄비 뚜껑. 막고 나면 숨을 돌린다."
+  cardDescription: "\uC8FC\uC6CC \uB4E0 \uB0C4\uBE44 \uB69C\uAED1. \uB9C9\uACE0 \uB098\uBA74
+    \uC228\uC744 \uB3CC\uB9B0\uB2E4."
   diceList:
   - diceName: 
     diceType: 1

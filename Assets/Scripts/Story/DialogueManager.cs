@@ -54,17 +54,23 @@ public class DialogueManager : MonoBehaviour
         Instance = this;
 
         if (dialoguePanel != null) dialoguePanel.SetActive(false);
+    }
 
-        if (portraitImage != null && bodyText != null && speakerNameText != null)
-        {
-            // 이름표 상자(SpeakerPlate)가 있으면 상자째로, 없으면 글자만 옮긴다
-            Transform parent = speakerNameText.transform.parent;
-            speakerRect = dialoguePanel != null && parent != dialoguePanel.transform
-                ? (RectTransform)parent : speakerNameText.rectTransform;
-            speakerX = speakerRect.anchoredPosition.x;
-            bodyLeft = bodyText.rectTransform.offsetMin.x;
-            portraitShift = portraitImage.rectTransform.sizeDelta.x + 20f;
-        }
+    /// <summary>
+    /// 초상화가 있을 때의 이름표/대사 위치를 기억한다 (초상화 없는 줄은 여기서 왼쪽으로 당긴다).
+    /// Awake가 아니라 첫 대사 때 기억한다 — 그 사이 UITheme이 대사창 배치를 바꾸므로 (실행 순서와 무관하게).
+    /// </summary>
+    private void CaptureLayout()
+    {
+        if (speakerRect != null || portraitImage == null || bodyText == null || speakerNameText == null) return;
+
+        // 이름표 상자(SpeakerPlate)가 있으면 상자째로, 없으면 글자만 옮긴다
+        Transform parent = speakerNameText.transform.parent;
+        speakerRect = dialoguePanel != null && parent != dialoguePanel.transform
+            ? (RectTransform)parent : speakerNameText.rectTransform;
+        speakerX = speakerRect.anchoredPosition.x;
+        bodyLeft = bodyText.rectTransform.offsetMin.x;
+        portraitShift = portraitImage.rectTransform.sizeDelta.x + 20f;
     }
 
     /// <summary>대사 줄의 초상화 → 없으면 화자 이름으로 등록된 기본 초상화</summary>
@@ -75,7 +81,18 @@ public class DialogueManager : MonoBehaviour
         {
             if (sp != null && sp.portrait != null && sp.speaker == line.speaker) return sp.portrait;
         }
-        return null;
+        // 등록된 초상화가 없으면 자동 일러스트 (나레이션 '―' 이나 '???' 는 초상화 없음)
+        return Illustrator.Portrait(line.speaker, PortraitTint(line.speaker));
+    }
+
+    /// <summary>자동 초상화의 옷 색 — 같은 이름의 적이 있으면 그 적의 색</summary>
+    private static Color PortraitTint(string speaker)
+    {
+        foreach (EnemyData e in Resources.FindObjectsOfTypeAll<EnemyData>())
+        {
+            if (e != null && e.enemyName == speaker) return e.tintColor;
+        }
+        return new Color(0.45f, 0.5f, 0.6f);
     }
 
     /// <summary>대사 목록 재생 시작. 끝나면 onComplete 콜백 실행.</summary>
@@ -100,6 +117,7 @@ public class DialogueManager : MonoBehaviour
 
     private void ShowCurrentLine()
     {
+        CaptureLayout();
         DialogueLine line = lines[index];
 
         if (speakerNameText != null) speakerNameText.text = line.speaker;

@@ -10,14 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 64319ab3dd94be547b66c1346fc27ddd, type: 3}
-  m_Name: "정비"
+  m_Name: "\uC815\uBE44"
   m_EditorClassIdentifier: Assembly-CSharp::CardData
-  cardName: "정비"
-  cardArt: {fileID: 0}
+  cardName: "\uC815\uBE44"
+  cardArt: {fileID: 21300000, guid: 2d77523adeeec764c890513457c6b705, type: 3}
   rarity: 0
   cost: 1
   requireEmotionLevel: 0
-  cardDescription: "틱이 가르쳐 준 응급 정비. 버티는 사이에 나사를 조인다."
+  cardDescription: "\uD2F1\uC774 \uAC00\uB974\uCCD0 \uC900 \uC751\uAE09 \uC815\uBE44.
+    \uBC84\uD2F0\uB294 \uC0AC\uC774\uC5D0 \uB098\uC0AC\uB97C \uC870\uC778\uB2E4."
   diceList:
   - diceName: 
     diceType: 1

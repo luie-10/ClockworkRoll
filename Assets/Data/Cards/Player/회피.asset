@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 64319ab3dd94be547b66c1346fc27ddd, type: 3}
-  m_Name: "회피"
+  m_Name: "\uD68C\uD53C"
   m_EditorClassIdentifier: Assembly-CSharp::CardData
-  cardName: "회피"
-  cardArt: {fileID: 0}
+  cardName: "\uD68C\uD53C"
+  cardArt: {fileID: 21300000, guid: b081904bf308b9e4683ceac9c5a5c9ea, type: 3}
   rarity: 0
   cost: 1
   requireEmotionLevel: 0
-  cardDescription: ""
+  cardDescription: 
   diceList:
   - diceName: 
     diceType: 1

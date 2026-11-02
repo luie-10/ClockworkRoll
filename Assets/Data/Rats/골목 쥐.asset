@@ -10,25 +10,36 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c432b655cc2ee62408eb86f1bf1d0dbc, type: 3}
-  m_Name: "골목 쥐"
+  m_Name: "\uACE8\uBAA9 \uC950"
   m_EditorClassIdentifier: Assembly-CSharp::EnemyData
-  enemyName: "골목 쥐"
+  enemyName: "\uACE8\uBAA9 \uC950"
+  nicknames:
+  - "\uCC0D\uCC0D\uC774"
+  - "\uAF2C\uB9AC \uC798\uB9B0 \uB188"
+  - "\uD68C\uC0C9\uBC1C"
+  - "\uC816\uC740 \uC218\uC5FC"
+  - "\uAE68\uC9C4 \uC55E\uB2C8"
+  - "\uC950\uAD6C\uBA4D"
   maxHp: 30
   resistance:
     slash: 0
     thrust: 1
     blunt: 2
+  sprite: {fileID: 21300000, guid: 797e810f6ea375344b9abfeaf9775fc1, type: 3}
+  spriteHeight: 2
+  poses:
+    slash: {fileID: 21300000, guid: a7d4d4c792517764da1d7c1f51a921da, type: 3}
+    thrust: {fileID: 21300000, guid: 545c08bded5f1e544973a8e89d38ac42, type: 3}
+    blunt: {fileID: 21300000, guid: 7cd5c5c3997068d40837785d74896127, type: 3}
+    guard: {fileID: 21300000, guid: 1997cfbba9a70ff42851a334c53cb027, type: 3}
+    evade: {fileID: 21300000, guid: 54cf5ac1cfff5d644bcb24b17c5732b6, type: 3}
+    hit: {fileID: 21300000, guid: 08dae85e25eadc8469598d4e9f32d028, type: 3}
+    down: {fileID: 0}
   modelPrefab: {fileID: 0}
   tintColor: {r: 0.8, g: 0.35, b: 0.3, a: 1}
+  actionsPerRound: 1
   deck:
   - {fileID: 11400000, guid: 44b0abacae1fa621c1687a272e55b9dd, type: 2}
   - {fileID: 11400000, guid: 9392751af3ba81aaaf1e426e8e2e209d, type: 2}
   - {fileID: 11400000, guid: a0966b9cb0990d1a7ff70e6e51d0f522, type: 2}
   - {fileID: 11400000, guid: 85b8c60c53b2c58e2797f1866fa20091, type: 2}
-  nicknames:
-  - "찍찍이"
-  - "꼬리 잘린 놈"
-  - "회색발"
-  - "젖은 수염"
-  - "깨진 앞니"
-  - "쥐구멍"

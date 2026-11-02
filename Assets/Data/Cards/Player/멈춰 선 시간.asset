@@ -10,14 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 64319ab3dd94be547b66c1346fc27ddd, type: 3}
-  m_Name: "멈춰 선 시간"
+  m_Name: "\uBA48\uCDB0 \uC120 \uC2DC\uAC04"
   m_EditorClassIdentifier: Assembly-CSharp::CardData
-  cardName: "멈춰 선 시간"
-  cardArt: {fileID: 0}
+  cardName: "\uBA48\uCDB0 \uC120 \uC2DC\uAC04"
+  cardArt: {fileID: 21300000, guid: c16a6f499eb69eb4993097d7c4b7e44c, type: 3}
   rarity: 4
   cost: 5
   requireEmotionLevel: 2
-  cardDescription: "종탑의 시간이 멈춘 그 순간의 기억. 상대의 한 수가 통째로 사라진다."
+  cardDescription: "\uC885\uD0D1\uC758 \uC2DC\uAC04\uC774 \uBA48\uCD98 \uADF8 \uC21C\uAC04\uC758
+    \uAE30\uC5B5. \uC0C1\uB300\uC758 \uD55C \uC218\uAC00 \uD1B5\uC9F8\uB85C \uC0AC\uB77C\uC9C4\uB2E4."
   diceList:
   - diceName: 
     diceType: 0

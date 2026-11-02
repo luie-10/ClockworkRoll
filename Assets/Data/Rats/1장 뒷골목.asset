@@ -43,3 +43,20 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 1d72e9fa20fe13b3fd6fb7a9a92eadf4, type: 2}
   - {fileID: 11400000, guid: 7981341a6405e7837c6cff2f9b69c05c, type: 2}
   - {fileID: 11400000, guid: 1a48df408d7a9e83c7decb164b607f39, type: 2}
+  routeFights:
+  - {fileID: 11400000, guid: 912c0aa390acad03ea47aa1e5afddc07, type: 2}
+  - {fileID: 11400000, guid: 4dc2f2c5549821d067093b7181663c4a, type: 2}
+  - {fileID: 11400000, guid: e7f089e424f0ecd1827047831928f089, type: 2}
+  - {fileID: 11400000, guid: 0de89c4418d8d940d2cc43f0440bed6f, type: 2}
+  - {fileID: 11400000, guid: 62628dac1741dc51c4032bfa62c68ec0, type: 2}
+  - {fileID: 11400000, guid: 7f8ab0ced301cdcfb8a6c52cdfb57dc4, type: 2}
+  - {fileID: 11400000, guid: 41b194b6c7eb999789297a1c822c4523, type: 2}
+  - {fileID: 11400000, guid: 53d1e8c028eed34c6a456a8859e47462, type: 2}
+  - {fileID: 11400000, guid: fdcad4a3da9db616b12fde5ef8bc0420, type: 2}
+  - {fileID: 11400000, guid: 875cf63b7628db3f9b9912b88a7630d0, type: 2}
+  - {fileID: 11400000, guid: ce9e13f578c963a3d4113e7ec27fa0db, type: 2}
+  routeElites:
+  - {fileID: 11400000, guid: c5d80f702ce2f5be5d92a4c57314bc87, type: 2}
+  - {fileID: 11400000, guid: 5c39a32d3df057f7f0660a48566b2e35, type: 2}
+  - {fileID: 11400000, guid: 348dde8a338422c0f2a7920150c33f4e, type: 2}
+  - {fileID: 11400000, guid: 9f7845c0b37d364adb96590aef2f7cf9, type: 2}

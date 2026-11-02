@@ -60,7 +60,8 @@ public class DeckViewer : MonoBehaviour
         BattleHUD hud = FindAnyObjectByType<BattleHUD>();
         Transform buttonParent = hud != null ? hud.transform : canvasGO.transform;
         Button open = UIBuilder.Button("DeckButton", buttonParent, "덱 보기 (Tab)", new Color(0.22f, 0.3f, 0.4f), 26);
-        UIBuilder.Place((RectTransform)open.transform, Vector2.zero, Vector2.zero, Vector2.zero, new Vector2(30f, 305f), new Vector2(230f, 70f));
+        UITheme.StyleButton(open, false, 22);
+        UIBuilder.Place((RectTransform)open.transform, Vector2.zero, Vector2.zero, Vector2.zero, new Vector2(28f, 300f), new Vector2(200f, 56f));
         open.onClick.AddListener(Toggle);
     }
 
@@ -204,7 +205,8 @@ public class DeckViewer : MonoBehaviour
         }
 
         Button close = UIBuilder.Button("Close", window.transform, "닫기 (Tab / Esc)", new Color(0.35f, 0.25f, 0.12f), 24);
-        UIBuilder.Place((RectTransform)close.transform, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-24f, 14f), new Vector2(260f, 48f));
+        UITheme.StyleButton(close, false, 20);
+        UIBuilder.Place((RectTransform)close.transform, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-24f, 14f), new Vector2(240f, 46f));
         close.onClick.AddListener(() => panelRoot.SetActive(false));
 
         panelRoot.SetActive(false);

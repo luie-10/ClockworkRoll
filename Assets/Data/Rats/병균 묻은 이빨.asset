@@ -10,14 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 64319ab3dd94be547b66c1346fc27ddd, type: 3}
-  m_Name: "병균 묻은 이빨"
+  m_Name: "\uBCD1\uADE0 \uBB3B\uC740 \uC774\uBE68"
   m_EditorClassIdentifier: Assembly-CSharp::CardData
-  cardName: "병균 묻은 이빨"
-  cardArt: {fileID: 0}
+  cardName: "\uBCD1\uADE0 \uBB3B\uC740 \uC774\uBE68"
+  cardArt: {fileID: 21300000, guid: a34aaa4bbd584414ebd792b3f8ca3c77, type: 3}
   rarity: 0
   cost: 1
   requireEmotionLevel: 0
-  cardDescription: "더러운 이빨에 물린 상처는 힘을 갉아먹는다."
+  cardDescription: "\uB354\uB7EC\uC6B4 \uC774\uBE68\uC5D0 \uBB3C\uB9B0 \uC0C1\uCC98\uB294
+    \uD798\uC744 \uAC09\uC544\uBA39\uB294\uB2E4."
   diceList:
   - diceName: 
     diceType: 0

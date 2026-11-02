@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c003ed42cc88e314487d92d5af1e7bb6, type: 3}
+  m_Name: "떠돌이 시계공의 공방"
+  m_EditorClassIdentifier: Assembly-CSharp::BattleStageData
+  stageName: "떠돌이 시계공의 공방"
+  backdrop: 4
+  backdropVariant: -1
+  startKi: 4
+  kiPerTurn: 1
+  enemies:
+  - enemy: {fileID: 11400000, guid: b089ec537c0e345c3c4050df3dcd7516, type: 2}
+    spawnPosition: {x: 3, y: 0, z: 0.8}
+  - enemy: {fileID: 11400000, guid: 60120be236d48f6f5a2b4f1861ac71be, type: 2}
+    spawnPosition: {x: 4.4, y: 0, z: -1.2}
+  deckOverride: []

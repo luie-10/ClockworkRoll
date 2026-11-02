@@ -78,7 +78,8 @@ public class ClockDial : MonoBehaviour
 
         RectTransform root = UIBuilder.Rect("ClockDial", parent);
         // 자원 패널(우상단) 바로 아래, 턴 종료 버튼 위
-        UIBuilder.Place(root, Vector2.one, Vector2.one, Vector2.one, new Vector2(-20f, -200f), new Vector2(400f, 470f));
+        UIBuilder.Place(root, Vector2.one, Vector2.one, Vector2.one, new Vector2(-20f, -156f), new Vector2(400f, 470f));
+        root.localScale = Vector3.one * 0.85f;   // 오른쪽 적 이름표를 가리지 않게 조금 작게 (자원 패널 폭 340에 맞춤)
         instance = root.gameObject.AddComponent<ClockDial>();
         instance.Build(root);
     }
@@ -93,7 +94,7 @@ public class ClockDial : MonoBehaviour
         RectTransform face = UIBuilder.Rect("Face", root);
         UIBuilder.Place(face, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 0.5f), new Vector2(0f, -200f), new Vector2(400f, 400f));
 
-        Image disc = NewImage("Disc", face, ProceduralSprites.Circle(), new Color(0.12f, 0.1f, 0.07f, 0.85f));
+        Image disc = NewImage("Disc", face, ProceduralSprites.Circle(), new Color(0.09f, 0.08f, 0.07f, 0.9f));
         disc.rectTransform.sizeDelta = new Vector2(Radius * 2f + CellSize, Radius * 2f + CellSize);
         Image rim = NewImage("Rim", face, ProceduralSprites.Circle(), new Color(0.75f, 0.6f, 0.35f, 0.5f));
         rim.rectTransform.sizeDelta = new Vector2(Radius * 2f - CellSize + 8f, Radius * 2f - CellSize + 8f);
@@ -117,12 +118,13 @@ public class ClockDial : MonoBehaviour
 
         // 아래쪽 설명 줄
         infoText = UIBuilder.Label("Info", root, "", 18, Color.white, TextAnchor.MiddleCenter);
-        UIBuilder.Place(infoText.rectTransform, Vector2.zero, new Vector2(1f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 6f), new Vector2(-20f, 62f));
+        UIBuilder.Place(infoText.rectTransform, Vector2.zero, new Vector2(1f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 10f), new Vector2(-36f, 60f));
         infoText.raycastTarget = false;
         infoText.horizontalOverflow = HorizontalWrapMode.Wrap;
         infoText.resizeTextForBestFit = true;
         infoText.resizeTextMinSize = 12;
         infoText.resizeTextMaxSize = 18;
+        infoText.color = UITheme.TextMuted;
     }
 
     private Cell BuildCell(RectTransform face, int hour)

@@ -19,6 +19,7 @@ public class GameManager : MonoBehaviour
     {
         Story,      // 대사 진행 중
         Battle,     // 전투 진행 중
+        Route,      // 전투 뒤 갈림길 (휴식 · 이벤트 · 태엽판 삭제 ...)
         Clear,      // 모든 챕터 클리어
         GameOver    // 패배
     }
@@ -36,6 +37,10 @@ public class GameManager : MonoBehaviour
 
     [Header("플레이어가 처음부터 가지는 덱(태엽판)")]
     public List<CardData> startingDeck = new List<CardData>();
+
+    [Header("갈림길 지도 (전투에서 이긴 뒤, 다음 챕터 전투까지)")]
+    [Tooltip("지도의 층 수 = 다음 챕터 전투까지 거치는 칸 수 (0 = 지도 없음)")]
+    public int routeRows = 6;
 
     [Header("침식(흡수 카드 부작용) 설정")]
     [Tooltip("침식 1인 흡수 카드를 사용할 때 발동 확률")]
@@ -81,6 +86,7 @@ public class GameManager : MonoBehaviour
             }
         }
 
+        BattleManager.DressUnit(playerUnit);   // 그림이 비어 있으면 자동 일러스트 (스토리 장면부터 보이게)
         NextChapter();
     }
 
@@ -164,6 +170,16 @@ public class GameManager : MonoBehaviour
         // 1) 고른 적의 태엽판을 흡수한다 (덱 오염 = 이 게임의 핵심 트레이드오프)
         if (absorbed != null && absorbed.Count > 0) AbsorbCards(absorbed);
 
+        // 지도 위 전투였으면 챕터 보상/대사 없이 지도로 돌아간다
+        if (routeBattleWon != null)
+        {
+            Action back = routeBattleWon;
+            routeBattleWon = null;
+            SetState(GameState.Route);
+            back();
+            return;
+        }
+
         // 2) 기존 보상 카드 지급 (침식 없는 순수 획득)
         if (chapter.rewardCards != null)
         {
@@ -175,16 +191,95 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        // 3) 아웃트로 대사 → 다음 챕터
+        // 3) 아웃트로 대사 → (전투를 이겼고 앞에 전투가 남았으면 갈림길) → 다음 챕터
         if (chapter.outroLines != null && chapter.outroLines.Count > 0)
         {
             SetState(GameState.Story);
-            dialogueManager.PlayLines(chapter.outroLines, NextChapter);
+            dialogueManager.PlayLines(chapter.outroLines, AfterChapter);
+        }
+        else
+        {
+            AfterChapter();
+        }
+    }
+
+    /// <summary>챕터가 끝난 뒤: 전투를 이긴 챕터이고 앞에 전투가 남아 있으면 갈림길을 거쳐 다음 챕터로</summary>
+    private void AfterChapter()
+    {
+        bool foughtHere = chapters[ChapterIndex].battle != null;
+        ChapterData next = NextBattleChapter();
+        if (foughtHere && routeRows > 0 && next != null)
+        {
+            SetState(GameState.Route);
+            ChapterData here = chapters[ChapterIndex];
+            RouteScreen.Play(routeRows, here.battle, here.routeFights, here.routeElites, next.battle.stageName, NextChapter);
         }
         else
         {
             NextChapter();
         }
+    }
+
+    /// <summary>앞으로 남은 첫 전투 챕터 (없으면 null) — 지도 꼭대기의 목적지</summary>
+    private ChapterData NextBattleChapter()
+    {
+        for (int i = ChapterIndex + 1; i < chapters.Count; i++)
+        {
+            if (chapters[i] != null && chapters[i].battle != null) return chapters[i];
+        }
+        return null;
+    }
+
+    // ─────────────────────────── 갈림길용 (RouteScreen이 호출) ───────────────────────────
+
+    private Action routeBattleWon;   // 지도 위 전투 중이면 이긴 뒤 지도로 돌아갈 콜백
+
+    /// <summary>지도의 전투 칸: 챕터 진행과 별개로 전투를 하고, 이기면 onWon (지도로 복귀). 지면 평소처럼 패배.</summary>
+    public void StartRouteBattle(BattleStageData stage, Action onWon)
+    {
+        routeBattleWon = onWon;
+        SetState(GameState.Battle);
+        battleManager.StartBattle(stage, playerUnit);
+    }
+
+    /// <summary>침식 없는 태엽판 1장을 덱에 넣는다</summary>
+    public void AddCard(CardData card)
+    {
+        if (card == null) return;
+        OwnedDeck.Add(new DeckEntry(card, false, 0));
+        Debug.Log($"태엽판 획득: [{card.cardName}]");
+    }
+
+    /// <summary>
+    /// 갈래길 보상으로 나올 수 있는 태엽판 = 스토리의 보상 전용 태엽판 + 챕터 보상에 등장하는 태엽판 (중복 제외).
+    /// 보상 전용 목록이 비어 있으면 시작 덱의 태엽판도 넣는다.
+    /// </summary>
+    public List<CardData> RouteCardPool()
+    {
+        List<CardData> pool = new List<CardData>();
+        if (story != null && story.rewardPool != null)
+        {
+            foreach (CardData c in story.rewardPool)
+            {
+                if (c != null && !pool.Contains(c)) pool.Add(c);
+            }
+        }
+        if (pool.Count == 0)
+        {
+            foreach (CardData c in startingDeck)
+            {
+                if (c != null && !pool.Contains(c)) pool.Add(c);
+            }
+        }
+        foreach (ChapterData ch in chapters)
+        {
+            if (ch == null || ch.rewardCards == null) continue;
+            foreach (CardData c in ch.rewardCards)
+            {
+                if (c != null && !pool.Contains(c)) pool.Add(c);
+            }
+        }
+        return pool;
     }
 
     /// <summary>BattleManager가 패배 시 호출.</summary>
@@ -248,9 +343,10 @@ public class GameManager : MonoBehaviour
 
     // ─────────────────────────── 기타 ───────────────────────────
 
-    /// <summary>패배 UI의 버튼에 연결해서 사용.</summary>
+    /// <summary>패배 UI의 버튼에 연결해서 사용. 씬을 다시 불러 덱·챕터까지 처음부터 시작한다.</summary>
     public void RestartScene()
     {
+        Time.timeScale = 1f;   // 히트스톱 중에 끝났어도 멈춘 시간이 다음 판으로 넘어가지 않게
         UnityEngine.SceneManagement.SceneManager.LoadScene(
             UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex);
     }

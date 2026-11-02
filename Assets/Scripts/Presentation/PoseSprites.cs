@@ -26,6 +26,12 @@ public class PoseSprites
     [Tooltip("쓰러졌을 때")]
     public Sprite down;
 
+    /// <summary>포즈 그림이 하나도 없는가 (자동 일러스트로 채울지 판단)</summary>
+    public bool IsEmpty
+    {
+        get { return slash == null && thrust == null && blunt == null && guard == null && evade == null && hit == null && down == null; }
+    }
+
     /// <summary>포즈 이름(Slash/Thrust/Blunt/Guard/Evade/Hit/Down)에 해당하는 그림. 없으면 null.</summary>
     public Sprite Get(string pose)
     {

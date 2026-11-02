@@ -10,14 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 64319ab3dd94be547b66c1346fc27ddd, type: 3}
-  m_Name: "역회전"
+  m_Name: "\uC5ED\uD68C\uC804"
   m_EditorClassIdentifier: Assembly-CSharp::CardData
-  cardName: "역회전"
-  cardArt: {fileID: 0}
+  cardName: "\uC5ED\uD68C\uC804"
+  cardArt: {fileID: 21300000, guid: 24df8f34407eea1408444982f65c13c2, type: 3}
   rarity: 2
   cost: 2
   requireEmotionLevel: 0
-  cardDescription: "시계를 거꾸로 돌리듯 상대의 수를 되감는다."
+  cardDescription: "\uC2DC\uACC4\uB97C \uAC70\uAFB8\uB85C \uB3CC\uB9AC\uB4EF \uC0C1\uB300\uC758
+    \uC218\uB97C \uB418\uAC10\uB294\uB2E4."
   diceList:
   - diceName: 
     diceType: 1

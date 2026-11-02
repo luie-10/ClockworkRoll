@@ -31,4 +31,10 @@ public class ChapterData : ScriptableObject
 
     [Header("클리어 보상 (보유 덱에 추가되는 카드)")]
     public List<CardData> rewardCards = new List<CardData>();
+
+    [Header("이 챕터 뒤 갈래길 지도에 나오는 적 무리 (비워두면 이 챕터 무대의 적을 다시 쓴다)")]
+    [Tooltip("'전' 칸 — 무작위로 하나")]
+    public List<BattleStageData> routeFights = new List<BattleStageData>();
+    [Tooltip("'강' 칸 — 무작위로 하나 (이기면 태엽판 3장 중 1장)")]
+    public List<BattleStageData> routeElites = new List<BattleStageData>();
 }

@@ -10,14 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 64319ab3dd94be547b66c1346fc27ddd, type: 3}
-  m_Name: "자정의 일격"
+  m_Name: "\uC790\uC815\uC758 \uC77C\uACA9"
   m_EditorClassIdentifier: Assembly-CSharp::CardData
-  cardName: "자정의 일격"
-  cardArt: {fileID: 0}
+  cardName: "\uC790\uC815\uC758 \uC77C\uACA9"
+  cardArt: {fileID: 21300000, guid: d8d324514fb3a9444b7ac1056ad6a8c8, type: 3}
   rarity: 3
   cost: 4
   requireEmotionLevel: 1
-  cardDescription: "열두 번의 종이 울리는 순간에만 휘두를 수 있는 일격."
+  cardDescription: "\uC5F4\uB450 \uBC88\uC758 \uC885\uC774 \uC6B8\uB9AC\uB294 \uC21C\uAC04\uC5D0\uB9CC
+    \uD718\uB450\uB97C \uC218 \uC788\uB294 \uC77C\uACA9."
   diceList:
   - diceName: 
     diceType: 0

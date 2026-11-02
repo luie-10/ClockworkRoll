@@ -10,8 +10,8 @@ public static class UIBuilder
     /// <summary>패널에 쓸 둥근 상자 스프라이트. 에디터에서는 저장된 PNG 에셋을 넣어준다 (씬에 저장되도록).</summary>
     public static Sprite BoxSprite;
 
-    public static readonly Color PanelColor = new Color(0.04f, 0.04f, 0.05f, 0.4f);   // 반투명: 뒤의 무대가 비쳐 보임
-    public static readonly Color PanelBorder = new Color(0.75f, 0.6f, 0.35f, 0.9f);   // 황동색 테두리
+    public static readonly Color PanelColor = UITheme.Ink;          // 먹색 반투명: 뒤의 무대가 은은하게 비친다
+    public static readonly Color PanelBorder = UITheme.BrassLine;   // 얇은 황동 테두리
 
     private static Font font;
 
@@ -29,6 +29,9 @@ public static class UIBuilder
     }
 
     private static Sprite Box { get { return BoxSprite != null ? BoxSprite : ProceduralSprites.RoundedBox(); } }
+
+    /// <summary>패널 상자 스프라이트 (에디터에서 저장한 에셋이 있으면 그것, 없으면 코드로 만든 것)</summary>
+    public static Sprite BoxSpriteOrDefault { get { return Box; } }
 
     // ─────────────────────────── 기본 ───────────────────────────
 
@@ -63,14 +66,14 @@ public static class UIBuilder
         Image img = rt.gameObject.AddComponent<Image>();
         img.sprite = Box;
         img.type = Image.Type.Sliced;
-        img.pixelsPerUnitMultiplier = 1f;
+        img.pixelsPerUnitMultiplier = 1.6f;   // 모서리를 조금 더 작게 → 덜 투박하게
         img.color = color ?? PanelColor;
 
         if (border)
         {
             Outline o = rt.gameObject.AddComponent<Outline>();
             o.effectColor = PanelBorder;
-            o.effectDistance = new Vector2(2f, -2f);
+            o.effectDistance = new Vector2(UITheme.BorderWidth, -UITheme.BorderWidth);
         }
         return img;
     }
@@ -90,9 +93,10 @@ public static class UIBuilder
 
         if (outline)
         {
-            Outline o = rt.gameObject.AddComponent<Outline>();
-            o.effectColor = new Color(0f, 0f, 0f, 0.9f);
-            o.effectDistance = new Vector2(1.5f, -1.5f);
+            // 두꺼운 외곽선은 한글을 뭉개 보이게 해서 옅은 그림자로 대신한다
+            Shadow s = rt.gameObject.AddComponent<Shadow>();
+            s.effectColor = new Color(0f, 0f, 0f, 0.6f);
+            s.effectDistance = new Vector2(1f, -1.5f);
         }
         return t;
     }
@@ -109,7 +113,7 @@ public static class UIBuilder
         cb.disabledColor = new Color(0.45f, 0.45f, 0.45f, 0.6f);
         button.colors = cb;
 
-        Text t = Label("Label", img.transform, label, fontSize, Color.white, TextAnchor.MiddleCenter);
+        Text t = Label("Label", img.transform, label, fontSize, UITheme.TextMain, TextAnchor.MiddleCenter);
         Stretch(t.rectTransform);
         return button;
     }

@@ -117,6 +117,10 @@ public class BattleManager : MonoBehaviour
         { DiceDetail.Blunt, DiceDetail.Slash },    // 타격은 참격을 흔든다
     };
 
+    /// <summary>현재 무대의 적들 (디버그 창 등 읽기용)</summary>
+    public IReadOnlyList<Unit> Enemies { get { return enemies; } }
+    public Unit PlayerUnit { get { return playerUnit; } }
+
     private BattleStageData stage;
     private Unit playerUnit;
     private readonly List<Unit> enemies = new List<Unit>();
@@ -131,6 +135,8 @@ public class BattleManager : MonoBehaviour
     // 한 라운드(시계 한 바퀴) 안에서만 유효한 효과 (라운드가 끝나면 비운다)
     private readonly Dictionary<Unit, int> nextDieBonus = new Dictionary<Unit, int>();   // [다음 주사위 위력 +n]
     private readonly HashSet<Unit> destroyNextDie = new HashSet<Unit>();                 // 이 유닛의 다음 주사위는 파괴됨
+    // [과감기]로 오른 주사위 위력 — (주인, 주사위) 단위 (같은 태엽판을 쓰는 적이 여럿이어도 섞이지 않게)
+    private readonly Dictionary<(Unit, DiceData), int> cardPower = new Dictionary<(Unit, DiceData), int>();
     private readonly Dictionary<TimedAction, ClashDiceDisplay> displays = new Dictionary<TimedAction, ClashDiceDisplay>();   // 진행 중인 행동의 머리 위 주사위 줄
 
     void Awake()
@@ -228,6 +234,7 @@ public class BattleManager : MonoBehaviour
         if (playerUnit != null)
         {
             playerUnit.CaptureHome();
+            DressUnit(playerUnit);
             playerUnit.ClearStatus();   // 이전 무대의 녹·상태이상이 넘어오지 않게
         }
         AttachStatusLabels();
@@ -235,11 +242,25 @@ public class BattleManager : MonoBehaviour
         handManager.BuildDeck(GetPlayerDeck());
 
         if (StageLighting.Instance != null) StageLighting.Instance.SetEmotion(0);
-        StageBackdrop.Show(stage.backdrop);   // 무대에 맞는 배경으로 전환
+        StageBackdrop.Show(stage.backdrop, stage.backdropVariant);   // 무대에 맞는 배경으로 전환 (변형은 보통 무작위)
         StageBackdrop.SetTempo(0);
         UpdateHUD();
 
         StartCoroutine(BattleStartRoutine());
+    }
+
+    /// <summary>유닛(플레이어) 그림이 비어 있으면 자동 일러스트를 입힌다 (한 번만 — 이미 그림이 있으면 그대로)</summary>
+    public static void DressUnit(Unit unit)
+    {
+        if (unit == null) return;
+        SpriteCharacter sc = unit.GetComponent<SpriteCharacter>();
+        if (sc == null || sc.sprite != null) return;
+
+        Illustrator.CharacterArt gen = Illustrator.Character(unit.unitName, sc.tint);
+        PoseSprites poses = sc.poses != null && !sc.poses.IsEmpty ? sc.poses : gen.poses;
+        sc.Setup(gen.idle, sc.height, Color.white);
+        sc.poses = poses;
+        unit.RememberBodyColor();   // 피격 깜빡임 뒤 예전 실루엣 색으로 돌아가지 않게
     }
 
     private List<DeckEntry> GetPlayerDeck()
@@ -374,6 +395,7 @@ public class BattleManager : MonoBehaviour
         Log("── 시계 진행 ──");
         nextDieBonus.Clear();
         destroyNextDie.Clear();
+        cardPower.Clear();
 
         for (int h = 1; h <= ClockHours; h++)
         {
@@ -503,8 +525,8 @@ public class BattleManager : MonoBehaviour
 
         // 주사위 굴림 (없는 쪽은 자동 패배). bonus = 상성·힘·허약 등으로 더해진 값 (머리 위 주사위에 표시)
         int atkBonus = 0, defBonus = 0;
-        int atkRoll = atkDie != null ? ComputeRoll(attacker, atkDie, defDie, out atkBonus) : -1;
-        int defRoll = defDie != null ? ComputeRoll(defender, defDie, atkDie, out defBonus) : -1;
+        int atkRoll = atkDie != null ? ComputeRoll(attacker, atkDie, defDie, hour, out atkBonus) : -1;
+        int defRoll = defDie != null ? ComputeRoll(defender, defDie, atkDie, hour, out defBonus) : -1;
 
         string atkLabel = atkDie != null ? $"{DiceInfo.Name(atkDie.diceDetail)} {atkRoll}" : "-";
         string defLabel = defDie != null ? $"{DiceInfo.Name(defDie.diceDetail)} {defRoll}" : "-";
@@ -664,6 +686,7 @@ public class BattleManager : MonoBehaviour
         playerActions.Clear();
         nextDieBonus.Clear();
         destroyNextDie.Clear();
+        cardPower.Clear();
         CurrentHour = 0;
         IsBusy = false;
         if (BattleCamera.Instance != null) BattleCamera.Instance.Release();
@@ -882,7 +905,7 @@ public class BattleManager : MonoBehaviour
     /// 주사위를 굴리고 보정을 적용한다. bonus = 기본 굴림에 더해진 총합 (음수 가능).
     /// 순서: 녹(최댓값 감소) → 마비(최솟값 고정) → 힘/허약/인내/최대 장력 → [다음 주사위 위력 +n] → 상성/회피 보정
     /// </summary>
-    private int ComputeRoll(Unit self, DiceData mine, DiceData theirs, out int bonus)
+    private int ComputeRoll(Unit self, DiceData mine, DiceData theirs, int hour, out int bonus)
     {
         bonus = 0;
         int roll = RollBase(self, mine);
@@ -904,6 +927,21 @@ public class BattleManager : MonoBehaviour
         {
             bonus += power;
             nextDieBonus.Remove(self);
+        }
+
+        // [과감기]: 체력을 태워 감아 둔 위력
+        if (cardPower.TryGetValue((self, mine), out int wound) && wound > 0) bonus += wound;
+
+        // [정각]: 3·6·9·12시 칸에서 굴리면 위력이 오른다
+        if (hour % 3 == 0 && mine.effects != null)
+        {
+            foreach (DiceEffect fx in mine.effects)
+            {
+                if (fx == null || fx.effect != DiceEffectType.OnTheHour) continue;
+                bonus += fx.amount;
+                Log($"  → 정각! {hour}시 종이 울린다 — 위력 +{fx.amount}");
+                if (clashFx) StatusPopup(self, $"정각 +{fx.amount}", onTheHourColor);
+            }
         }
 
         if (theirs != null)
@@ -949,6 +987,12 @@ public class BattleManager : MonoBehaviour
                 // 내성: 맞는 쪽이 이 공격 종류(참격/관통/타격)에 약하면 피해가 x1.5 / x2.0
                 int damage = target.ApplyResistance(roll, die.diceDetail, out Resistance res);
                 damage += target.GetStatus(StatusType.Fragile);   // 취약: 내성 배율 뒤에 고정 피해 +n
+                int plate = target.GetStatus(StatusType.Plating);
+                if (plate > 0)
+                {
+                    damage = Mathf.Max(0, damage - plate);   // 철갑: 맞을 때마다 피해 -n
+                    Log($"  → {target.unitName}의 철갑이 피해를 {plate} 막았다");
+                }
                 lastDamage = damage;
                 lastResistance = res;
 
@@ -997,8 +1041,41 @@ public class BattleManager : MonoBehaviour
         if (card == null || card.diceList == null) return;
         foreach (DiceData die in card.diceList)
         {
-            if (die != null) TriggerDiceEffects(self, opponent, die, DiceTrigger.OnUse);
+            if (die == null) continue;
+            // [사용시] 과감기는 태엽판 전체에 걸리므로 여기서 처리한다
+            if (die.effects != null)
+                foreach (DiceEffect fx in die.effects)
+                    if (fx != null && fx.trigger == DiceTrigger.OnUse && fx.effect == DiceEffectType.Overwind) Overwind(self, card, fx.amount);
+            TriggerDiceEffects(self, opponent, die, DiceTrigger.OnUse);
         }
+    }
+
+    /// <summary>과감기: 체력 n을 태워(최소 1은 남는다) 이 태엽판의 모든 주사위 위력 +n</summary>
+    private void Overwind(Unit self, CardData card, int amount)
+    {
+        if (!self.IsAlive || amount <= 0) return;
+        int lost = Mathf.Min(amount, self.Hp - 1);
+        if (lost > 0) self.TakeDamage(lost);
+        foreach (DiceData d in card.diceList)
+        {
+            if (d == null) continue;
+            cardPower.TryGetValue((self, d), out int now);
+            cardPower[(self, d)] = now + amount;
+        }
+        Log($"  {self.unitName}이(가) 태엽을 과하게 감는다 — 체력 -{lost}, 이 태엽판 위력 +{amount}");
+        if (clashFx) StatusPopup(self, $"과감기! 위력 +{amount}", overwindColor);
+        StageBackdrop.Impact(0.4f);
+    }
+
+    /// <summary>범위/추가 피해 공통: 취약 더하고 철갑 빼고 준다. 실제 피해를 돌려준다</summary>
+    private int DealExtraDamage(Unit target, int amount, string label, Color color)
+    {
+        if (target == null || !target.IsAlive || amount <= 0) return 0;
+        int damage = Mathf.Max(0, amount + target.GetStatus(StatusType.Fragile) - target.GetStatus(StatusType.Plating));
+        if (damage <= 0) return 0;
+        target.TakeDamage(damage);
+        if (clashFx) DamagePopup.Spawn(HeadPosition(target) + Vector3.up * 0.4f, $"{label} {damage}", color, 1f);
+        return damage;
     }
 
     private void TriggerDiceEffects(Unit self, Unit opponent, DiceData die, DiceTrigger trigger)
@@ -1076,6 +1153,43 @@ public class BattleManager : MonoBehaviour
                 destroyNextDie.Add(opponent);
                 Log($"  {fx.Describe()} → {opponent.unitName}");
                 break;
+
+            case DiceEffectType.Overwind:
+                // [사용시]는 TriggerCardUse가 태엽판 전체에 건다. 그 밖의 시점이면: 체력을 태워 다음 주사위 위력 +n
+                if (fx.trigger == DiceTrigger.OnUse || !self.IsAlive) return;
+                int burned = Mathf.Min(fx.amount, self.Hp - 1);
+                if (burned > 0) self.TakeDamage(burned);
+                nextDieBonus.TryGetValue(self, out int wound);
+                nextDieBonus[self] = wound + fx.amount;
+                Log($"  {fx.Describe()} → 체력 -{burned}, 다음 주사위 위력 +{fx.amount}");
+                if (clashFx) StatusPopup(self, $"과감기! 다음 +{fx.amount}", overwindColor);
+                break;
+
+            case DiceEffectType.Resonance:
+                // 범위 공격: 맞은 대상 말고 다른 모든 적에게 (적이 쓰면 다른 대상이 없으니 아무 일 없음)
+                if (!self.isPlayer) return;
+                int total = 0;
+                foreach (Unit e in new List<Unit>(enemies))
+                {
+                    if (e == null || e == opponent || !e.IsAlive) continue;
+                    total += DealExtraDamage(e, fx.amount, "울림", resonanceColor);
+                }
+                Log($"  {fx.Describe()} → 다른 적 모두 (총 {total})");
+                if (total > 0) StageBackdrop.Impact(0.6f);
+                break;
+
+            case DiceEffectType.Corrode:
+                int rust = opponent.Rust + opponent.PendingRust;
+                int corroded = DealExtraDamage(opponent, rust * fx.amount, "부식", rustPopupColor);
+                Log($"  {fx.Describe()} → {opponent.unitName} (녹 {rust} → 피해 {corroded})");
+                break;
+
+            case DiceEffectType.Plating:
+                ApplyStatus(self, StatusType.Plating, fx, platingColor);
+                break;
+
+            case DiceEffectType.OnTheHour:
+                break;   // 굴릴 때 ComputeRoll에서 적용
         }
     }
 
@@ -1104,6 +1218,10 @@ public class BattleManager : MonoBehaviour
     private static readonly Color healPopupColor = new Color(0.45f, 1f, 0.55f);
     private static readonly Color statusBuffColor = new Color(1f, 0.8f, 0.35f);
     private static readonly Color statusDebuffColor = new Color(0.75f, 0.55f, 1f);
+    private static readonly Color overwindColor = new Color(1f, 0.42f, 0.42f);
+    private static readonly Color resonanceColor = new Color(1f, 0.82f, 0.35f);
+    private static readonly Color platingColor = new Color(0.62f, 0.77f, 0.88f);
+    private static readonly Color onTheHourColor = new Color(1f, 0.85f, 0.55f);
 
     /// <summary>주사위 한 쌍이 부딪히는 순간: 굴림 값 표시 → 양쪽 돌진 → 중간 지점에 불꽃.</summary>
     private IEnumerator ClashImpactRoutine(Unit a, DiceData aDie, int aRoll, int aBonus,
@@ -1269,16 +1387,27 @@ public class BattleManager : MonoBehaviour
 
     // ─────────────────────────── 승패 판정 ───────────────────────────
 
+    /// <summary>디버그: 유닛을 즉사시킨다. 라운드 진행 중이면 진행 루프가 승패를 판정하고, 아니면 바로 판정한다.</summary>
+    public void DebugKill(Unit unit)
+    {
+        if (unit == null || !unit.IsAlive || Phase == BattlePhase.End) return;
+
+        Log($"[디버그] {unit.unitName} 즉사");
+        unit.TakeDamage(unit.Hp);
+        UpdateHUD();
+        if (!IsBusy) CheckBattleEnd();
+    }
+
     private bool CheckBattleEnd()
     {
         if (Phase == BattlePhase.End) return true;
 
         if (!playerUnit.IsAlive) { EndBattle(false); return true; }
 
-        bool allDead = enemies.Count == 0;   // 적을 안 배치한 무대는 자동 클리어 처리
+        bool allDead = true;   // 살아 있는 적이 하나도 없으면 클리어 (적을 안 배치한 무대도 자동 클리어)
         foreach (Unit e in enemies)
         {
-            if (e.IsAlive) { allDead = false; break; }
+            if (e != null && e.IsAlive) { allDead = false; break; }
         }
 
         if (allDead) { EndBattle(true); return true; }
@@ -1306,7 +1435,7 @@ public class BattleManager : MonoBehaviour
         }
     }
 
-    /// <summary>승리: VICTORY 연출 → 장력 단계만큼 적의 태엽판을 골라 흡수 → 다음 챕터로</summary>
+    /// <summary>승리: "승리!" 연출 → 장력 단계만큼 적의 태엽판을 골라 흡수 → 다음 챕터로</summary>
     private IEnumerator VictoryRoutine()
     {
         yield return new WaitForSeconds(0.6f);   // 마지막 일격의 여운
@@ -1354,10 +1483,18 @@ public class BattleManager : MonoBehaviour
                 pos.y = spriteGroundY;   // 스프라이트는 발이 루트 위치 → 바닥 높이에 맞춘다
                 go.transform.position = pos;
 
+                // 그림이 없으면 자동 일러스트 (이름으로 생김새, Tint Color로 색) — 포즈 그림도 같이
                 SpriteCharacter sc = go.AddComponent<SpriteCharacter>();
-                Color tint = info.enemy.sprite != null ? Color.white : info.enemy.tintColor;
-                sc.Setup(info.enemy.sprite, info.enemy.spriteHeight, tint);   // Unit을 붙이기 전에 외형 완성
-                sc.poses = info.enemy.poses;
+                Sprite art = info.enemy.sprite;
+                PoseSprites poses = info.enemy.poses;
+                if (art == null)
+                {
+                    Illustrator.CharacterArt gen = Illustrator.Character(info.enemy.enemyName, info.enemy.tintColor);
+                    art = gen.idle;
+                    if (poses == null || poses.IsEmpty) poses = gen.poses;
+                }
+                sc.Setup(art, info.enemy.spriteHeight, Color.white);   // Unit을 붙이기 전에 외형 완성
+                sc.poses = poses;
             }
             else
             {

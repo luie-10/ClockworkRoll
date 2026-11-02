@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c003ed42cc88e314487d92d5af1e7bb6, type: 3}
+  m_Name: "녹 먹는 벌레 떼"
+  m_EditorClassIdentifier: Assembly-CSharp::BattleStageData
+  stageName: "녹 먹는 벌레 떼"
+  backdrop: 3
+  startKi: 3
+  kiPerTurn: 1
+  enemies:
+  - enemy: {fileID: 11400000, guid: 4fdc5ca7b73d354b54d6e649f6ac436a, type: 2}
+    spawnPosition: {x: 2, y: 0, z: 1.4}
+  - enemy: {fileID: 11400000, guid: 4fdc5ca7b73d354b54d6e649f6ac436a, type: 2}
+    spawnPosition: {x: 3.3, y: 0, z: -1.3}
+  - enemy: {fileID: 11400000, guid: 4fdc5ca7b73d354b54d6e649f6ac436a, type: 2}
+    spawnPosition: {x: 4.6, y: 0, z: 0.4}
+  deckOverride: []

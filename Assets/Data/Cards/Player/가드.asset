@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 64319ab3dd94be547b66c1346fc27ddd, type: 3}
-  m_Name: "가드"
+  m_Name: "\uAC00\uB4DC"
   m_EditorClassIdentifier: Assembly-CSharp::CardData
-  cardName: "가드"
-  cardArt: {fileID: 0}
+  cardName: "\uAC00\uB4DC"
+  cardArt: {fileID: 21300000, guid: ed404ae78bd7b4d419ad674647eff1bb, type: 3}
   rarity: 0
   cost: 1
   requireEmotionLevel: 0
-  cardDescription: ""
+  cardDescription: 
   diceList:
   - diceName: 
     diceType: 1

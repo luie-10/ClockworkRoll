@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c432b655cc2ee62408eb86f1bf1d0dbc, type: 3}
+  m_Name: "\uB5A0\uB3CC\uC774 \uC2DC\uACC4\uACF5"
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyData
+  enemyName: "\uB5A0\uB3CC\uC774 \uC2DC\uACC4\uACF5"
+  nicknames:
+  - "\uC678\uB208 \uC548\uACBD"
+  - "\uAE30\uB984 \uC190"
+  maxHp: 44
+  resistance:
+    slash: 1
+    thrust: 0
+    blunt: 0
+  sprite: {fileID: 21300000, guid: ba8760e9ff3a15d48bda65013b11f56a, type: 3}
+  spriteHeight: 2
+  poses:
+    slash: {fileID: 21300000, guid: 8c36d66a0f364b741886bec51a2e6653, type: 3}
+    thrust: {fileID: 21300000, guid: d0fdf78eb56d43942966d4049961e432, type: 3}
+    blunt: {fileID: 21300000, guid: 3dec255d68eab6944996c46e7df10aac, type: 3}
+    guard: {fileID: 21300000, guid: 19dd03f5bd508ea4c82cec3a32dc0f3c, type: 3}
+    evade: {fileID: 21300000, guid: 229b1d8dd7b489848880d2d5cd9e8ec8, type: 3}
+    hit: {fileID: 21300000, guid: fb0fd392122a6ef40987ede561534c35, type: 3}
+    down: {fileID: 0}
+  modelPrefab: {fileID: 0}
+  tintColor: {r: 0.75, g: 0.7, b: 0.5, a: 1}
+  actionsPerRound: 2
+  deck:
+  - {fileID: 11400000, guid: e697ac32fa4f512aad5abf5413cf2a90, type: 2}
+  - {fileID: 11400000, guid: 895fd60c6e0f60056d960a0bdf3e1354, type: 2}
+  - {fileID: 11400000, guid: bfa2322a175bac3258e198518c75abf1, type: 2}
