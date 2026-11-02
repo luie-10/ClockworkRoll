@@ -392,3 +392,7 @@ crashlytics-build.properties
 # Unity 패키지 목록은 반드시 커밋 (위 NuGet 규칙 **/[Pp]ackages/* 에서 제외)
 !/Packages/manifest.json
 !/Packages/packages-lock.json
+
+# Unity가 비정상 종료 때 만드는 씬 복구 사본
+/[Aa]ssets/_Recovery/
+/[Aa]ssets/_Recovery.meta
