@@ -7,7 +7,7 @@ using UnityEngine;
 /// 한 씬 안에서 상태만 전환하며 [스토리 → 전투 → 승리/보상 → 다음 스토리]를 반복한다.
 ///
 /// 덱 성장 시스템:
-/// - 전투에서 이기면 쓰러뜨린 적의 태엽판을 장력 단계만큼 골라 내 덱으로 '흡수'한다 (◈ 표시, 1단계 = 1장).
+/// - 전투에서 이기면 쓰러뜨린 적의 태엽판 한 장을 골라 내 덱으로 '흡수'한다 (◈ 표시, 전투마다 확정).
 /// - 흡수 카드는 강력하지만, 사용할 때 확률적으로 '침식'이 발동해 사용자가 피해를 입는다.
 /// - 같은 태엽판을 중복 흡수하면 침식 수치가 누적되어 발동 확률과 피해가 커진다.
 /// </summary>
@@ -38,6 +38,10 @@ public class GameManager : MonoBehaviour
     [Header("플레이어가 처음부터 가지는 덱(태엽판)")]
     public List<CardData> startingDeck = new List<CardData>();
 
+    [Header("기력")]
+    [Tooltip("시작할 때의 최대 기력 (라운드마다 이만큼 찬다. 부품으로 늘어난다)")]
+    public int startingMaxKi = 3;
+
     [Header("갈림길 지도 (전투에서 이긴 뒤, 다음 챕터 전투까지)")]
     [Tooltip("지도의 층 수 = 다음 챕터 전투까지 거치는 칸 수 (0 = 지도 없음)")]
     public int routeRows = 6;
@@ -50,6 +54,12 @@ public class GameManager : MonoBehaviour
 
     /// <summary>현재 보유 덱 (적 태엽판 흡수 + 챕터 보상으로 계속 불어난다)</summary>
     public List<DeckEntry> OwnedDeck { get; private set; }
+
+    /// <summary>이번 판의 최대 기력 (부품으로 늘어난다)</summary>
+    public int MaxKi { get; private set; }
+
+    /// <summary>이번 판에 얻은 부품</summary>
+    public List<RunItem> OwnedItems { get; } = new List<RunItem>();
 
     public GameState State { get; private set; }
     public int ChapterIndex { get; private set; } = -1;
@@ -77,6 +87,7 @@ public class GameManager : MonoBehaviour
             Debug.Log($"── 스토리: {story.storyTitle} ──");
         }
 
+        MaxKi = startingMaxKi;
         OwnedDeck = new List<DeckEntry>();
         if (startingDeck != null)
         {
@@ -161,7 +172,7 @@ public class GameManager : MonoBehaviour
 
     /// <summary>
     /// BattleManager가 승리 시 호출 (전투 없는 챕터는 바로 호출).
-    /// absorbed = 승리 화면에서 고른 적의 태엽판 (장력 단계만큼). 없으면 null.
+    /// absorbed = 승리 화면에서 고른 적의 태엽판. 없으면 null.
     /// </summary>
     public void OnBattleWon(List<CardData> absorbed = null)
     {
@@ -248,6 +259,20 @@ public class GameManager : MonoBehaviour
         if (card == null) return;
         OwnedDeck.Add(new DeckEntry(card, false, 0));
         Debug.Log($"태엽판 획득: [{card.cardName}]");
+    }
+
+    public void AddMaxKi(int amount)
+    {
+        MaxKi = Mathf.Max(1, MaxKi + amount);
+    }
+
+    /// <summary>부품을 얻는다 (효과는 바로 적용되고 이번 판 내내 유지)</summary>
+    public void GainItem(RunItem item)
+    {
+        if (item == null || OwnedItems.Contains(item)) return;
+        OwnedItems.Add(item);
+        item.onGain(this);
+        Debug.Log($"부품 획득: [{item.name}]");
     }
 
     /// <summary>

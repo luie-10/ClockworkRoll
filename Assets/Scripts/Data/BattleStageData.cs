@@ -24,10 +24,6 @@ public class BattleStageData : ScriptableObject
     [Tooltip("배경 변형 번호 (-1 = 전투마다 무작위). 배경마다 0~2")]
     public int backdropVariant = -1;
 
-    [Header("기력 (자원)")]
-    public int startKi = 3;      // 무대 시작 시 기력
-    public int kiPerTurn = 1;    // 턴마다 회복되는 기력
-
     [Header("등장하는 적들")]
     public List<EnemySpawnInfo> enemies = new List<EnemySpawnInfo>();
 

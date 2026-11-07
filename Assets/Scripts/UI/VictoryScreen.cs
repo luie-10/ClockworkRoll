@@ -8,8 +8,7 @@ using UnityEngine.UI;
 /// 전투 승리 연출 + 흡수할 태엽판 고르기.
 ///
 ///   1) 화면 가운데 "승리!"가 크게 떴다가
-///   2) 쓰러뜨린 적들의 태엽판이 카드로 펼쳐진다 → 장력 단계만큼 골라서 흡수 (1단계 = 1장, 2단계 = 2장 ...)
-///      장력 0이면 아무것도 삼키지 못하고 넘어간다.
+///   2) 쓰러뜨린 적들의 태엽판이 카드로 펼쳐진다 → 전투마다 확정으로 한 장을 골라 흡수
 ///   3) [흡수] 버튼 → 고른 태엽판이 덱에 ◈로 들어간다 (이미 가진 것이면 침식 +1)
 ///
 /// 직접 붙일 필요 없음 — BattleManager가 승리 시 VictoryScreen.Play()로 띄운다 (전용 Canvas를 알아서 만든다).
@@ -39,13 +38,13 @@ public class VictoryScreen : MonoBehaviour
 
     /// <summary>
     /// 승리 연출 → 고르기. 끝나면 onDone(고른 태엽판 목록)을 부른다.
-    /// tension = 전투가 끝났을 때의 장력 단계 (= 고를 수 있는 장수). ownedSources = 이미 흡수한 태엽판 이름 (침식 경고용)
+    /// count = 고를 수 있는 장수. ownedSources = 이미 흡수한 태엽판 이름 (침식 경고용)
     /// </summary>
-    public static Coroutine Play(MonoBehaviour host, int tension, List<CardData> spoils, ICollection<string> ownedSources,
+    public static Coroutine Play(MonoBehaviour host, int count, List<CardData> spoils, ICollection<string> ownedSources,
                                  Action<List<CardData>> onDone)
     {
         if (instance == null) instance = Create();
-        return host.StartCoroutine(instance.PlayRoutine(tension, spoils, ownedSources, onDone));
+        return host.StartCoroutine(instance.PlayRoutine(count, spoils, ownedSources, onDone));
     }
 
     /// <summary>테스트 자동 진행용: 앞에서부터 고를 수 있는 만큼 골라 바로 흡수</summary>
@@ -57,7 +56,7 @@ public class VictoryScreen : MonoBehaviour
         instance.confirmed = true;
     }
 
-    private IEnumerator PlayRoutine(int tension, List<CardData> spoils, ICollection<string> ownedSources,
+    private IEnumerator PlayRoutine(int count, List<CardData> spoils, ICollection<string> ownedSources,
                                     Action<List<CardData>> onDone)
     {
         IsOpen = true;
@@ -68,7 +67,7 @@ public class VictoryScreen : MonoBehaviour
         {
             if (c != null && !pool.Contains(c)) pool.Add(c);   // 같은 태엽판은 한 번만 보여준다
         }
-        pickCount = Mathf.Min(Mathf.Max(0, tension), pool.Count);
+        pickCount = Mathf.Min(Mathf.Max(0, count), pool.Count);
 
         root.gameObject.SetActive(true);
         cardScroll.gameObject.SetActive(false);
@@ -100,14 +99,12 @@ public class VictoryScreen : MonoBehaviour
 
         if (pickCount <= 0)
         {
-            subText.text = pool.Count == 0
-                ? "삼킬 기억이 없다."
-                : "<color=#ff8a6b>장력이 0이라 아무 기억도 삼키지 못했다.</color>\n<size=22>(장력 1단계 = 1장, 2단계 = 2장 ... 싸우는 동안 적중시켜 장력을 올리자)</size>";
+            subText.text = "삼킬 기억이 없다.";
             yield return new WaitForSecondsRealtime(2.2f);
         }
         else
         {
-            subText.text = $"쓰러뜨린 적의 기억을 삼킨다 — <color=#ffd159>장력 {tension}단계 → {pickCount}장</color> 고르기";
+            subText.text = $"쓰러뜨린 적의 기억을 삼킨다 — <color=#ffd159>{pickCount}장</color> 고르기";
             BuildCards(ownedSources);
             cardScroll.gameObject.SetActive(true);
             scroll.verticalNormalizedPosition = 1f;   // 맨 위부터
@@ -153,6 +150,8 @@ public class VictoryScreen : MonoBehaviour
             UIBuilder.Stretch(label.rectTransform, 14f);
             label.rectTransform.offsetMax = new Vector2(-14f, -104f);   // 위쪽은 그림 칸
             AddCardArt(frame.rectTransform, card);
+            CardHover hover = frame.gameObject.AddComponent<CardHover>();
+            hover.card = card;
             label.resizeTextForBestFit = true;
             label.resizeTextMinSize = 12;
             label.resizeTextMaxSize = 19;
@@ -190,15 +189,15 @@ public class VictoryScreen : MonoBehaviour
         {
             bool on = picked.Contains(pool[i]);
             cardFrames[i].color = on ? framePicked : frameNormal;
-            cardFrames[i].rectTransform.localScale = Vector3.one * (on ? 1.06f : 1f);
+            cardFrames[i].GetComponent<CardHover>().baseScale = on ? 1.06f : 1f;
         }
 
         bool ready = picked.Count == pickCount;
         confirmButton.interactable = ready;
         confirmLabel.text = ready ? $"흡수 ({picked.Count}장)" : $"{picked.Count} / {pickCount}장 선택";
         hintText.text = pool.Count > 6
-            ? "카드를 클릭해서 고르기 · 다시 클릭하면 취소 · <color=#dcb06b>마우스 휠로 스크롤해서 더 보기</color>"
-            : "카드를 클릭해서 고르기 · 다시 클릭하면 취소";
+            ? "마우스를 올리면 자세히 · 클릭해서 고르기 · <color=#dcb06b>마우스 휠로 스크롤해서 더 보기</color>"
+            : "마우스를 올리면 자세히 · 클릭해서 고르기";
     }
 
     // ─────────────────────────── 생성 ───────────────────────────

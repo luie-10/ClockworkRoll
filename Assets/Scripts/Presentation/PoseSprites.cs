@@ -11,15 +11,15 @@ using UnityEngine;
 [Serializable]
 public class PoseSprites
 {
-    [Tooltip("참격 주사위를 굴릴 때 (베는 자세)")]
+    [Tooltip("참격 칸을 쓸 때 (베는 자세)")]
     public Sprite slash;
-    [Tooltip("관통 주사위를 굴릴 때 (찌르는 자세)")]
+    [Tooltip("관통 칸을 쓸 때 (찌르는 자세)")]
     public Sprite thrust;
-    [Tooltip("타격 주사위를 굴릴 때 (내려치는 자세)")]
+    [Tooltip("타격 칸을 쓸 때 (내려치는 자세)")]
     public Sprite blunt;
-    [Tooltip("가드 주사위를 굴릴 때 (막는 자세)")]
+    [Tooltip("가드 칸을 쓸 때 (막는 자세)")]
     public Sprite guard;
-    [Tooltip("회피 주사위를 굴릴 때 (피하는 자세)")]
+    [Tooltip("회피 칸을 쓸 때 (피하는 자세)")]
     public Sprite evade;
     [Tooltip("공격을 맞았을 때")]
     public Sprite hit;

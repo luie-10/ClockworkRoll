@@ -102,8 +102,6 @@ public static class RuinaSceneSetup
         bm.handManager = hm;
         bm.stageNameText = ui.stageText;
         bm.kiText = ui.kiText;
-        bm.emotionText = ui.emotionText;
-        bm.emotionGauge = ui.emotionGauge;
         bm.phaseText = ui.phaseText;
         bm.endTurnButton = ui.endTurnButton;
 
@@ -285,8 +283,7 @@ public static class RuinaSceneSetup
         public GameObject dialoguePanel;
         public Text speakerText, bodyText;
         public Image portrait;
-        public Text stageText, kiText, emotionText, phaseText;
-        public Image emotionGauge;
+        public Text stageText, kiText, phaseText;
         public Button endTurnButton, restartButton;
         public Transform handPanel;
     }
@@ -388,18 +385,14 @@ public static class RuinaSceneSetup
         ui.phaseText = UIBuilder.Label("PhaseText", hud, "", 32, Color.white, TextAnchor.MiddleCenter);
         UIBuilder.Place(ui.phaseText.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -92f), new Vector2(400f, 46f));
 
-        // ── 자원 패널 (우상단): 기력 / 감정 + 게이지 ──
+        // ── 자원 패널 (왼쪽 아래): 기력 ──
         Image res = UIBuilder.Panel("ResourcePanel", hud);
-        UIBuilder.Place(res.rectTransform, Vector2.one, Vector2.one, Vector2.one, new Vector2(-20f, -20f), new Vector2(380f, 170f));
+        UIBuilder.Place(res.rectTransform, Vector2.zero, Vector2.zero, Vector2.zero, new Vector2(24f, 20f), new Vector2(210f, 76f));
 
-        ui.kiText = UIBuilder.Label("KiText", res.transform, "기력 0", 46, new Color(0.55f, 0.88f, 1f), TextAnchor.MiddleLeft);
-        UIBuilder.Place(ui.kiText.rectTransform, new Vector2(0f, 1f), Vector2.one, new Vector2(0.5f, 1f), new Vector2(0f, -10f), new Vector2(-48f, 64f));
+        ui.kiText = UIBuilder.Label("KiText", res.transform, "기력 0", 38, new Color(0.55f, 0.88f, 1f), TextAnchor.MiddleCenter);
+        UIBuilder.Stretch(ui.kiText.rectTransform, 6f);
 
-        ui.emotionText = UIBuilder.Label("EmotionText", res.transform, "감정 LV.0", 28, new Color(1f, 0.72f, 0.72f), TextAnchor.MiddleLeft);
-        UIBuilder.Place(ui.emotionText.rectTransform, new Vector2(0f, 1f), Vector2.one, new Vector2(0.5f, 1f), new Vector2(0f, -80f), new Vector2(-48f, 40f));
 
-        ui.emotionGauge = UIBuilder.Gauge("EmotionGauge", res.transform, new Color(1f, 0.38f, 0.42f));
-        UIBuilder.Place((RectTransform)ui.emotionGauge.transform.parent, new Vector2(0f, 1f), Vector2.one, new Vector2(0.5f, 1f), new Vector2(0f, -128f), new Vector2(-48f, 22f));
 
         // ── 손패 (하단) — 카드 뒤에 어두운 받침대 ──
         Image tray = UIBuilder.Panel("HandTray", hud, new Color(0f, 0f, 0f, 0.28f), false);
@@ -461,7 +454,7 @@ public static class RuinaSceneSetup
         statePanel.messageText = message;
         result.gameObject.SetActive(false);
 
-        report.Add("+ UI: 무대 배너 · 턴 표시 · 기력/장력 게이지 · 손패 받침대 · 턴 종료 · 대사창 · 결과 화면 (" + canvas.name + "/" + UIRootName + ")");
+        report.Add("+ UI: 무대 배너 · 턴 표시 · 기력 · 손패 받침대 · 턴 종료 · 대사창 · 결과 화면 (" + canvas.name + "/" + UIRootName + ")");
         return ui;
     }
 
@@ -490,7 +483,7 @@ public static class RuinaSceneSetup
         Image dicePlate = UIBuilder.Panel("DicePlate", root.transform, new Color(0f, 0f, 0f, 0.6f), false);
         dicePlate.raycastTarget = false;
         UIBuilder.Place(dicePlate.rectTransform, Vector2.zero, new Vector2(1f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 8f), new Vector2(-14f, 150f));
-        Text diceText = UIBuilder.Label("DiceText", dicePlate.transform, "주사위", 17, new Color(0.95f, 0.95f, 0.95f), TextAnchor.LowerLeft, false);
+        Text diceText = UIBuilder.Label("DiceText", dicePlate.transform, "칸", 17, new Color(0.95f, 0.95f, 0.95f), TextAnchor.LowerLeft, false);
         UIBuilder.Stretch(diceText.rectTransform, 6f);
 
         CardView view = root.AddComponent<CardView>();

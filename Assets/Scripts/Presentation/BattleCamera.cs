@@ -18,7 +18,7 @@ public class BattleCamera : MonoBehaviour
     [Header("클로즈업")]
     [Tooltip("포커스 타겟 기준 카메라 위치 오프셋 (뒤쪽 -Z가 카메라 쪽)")]
     public Vector3 focusOffset = new Vector3(0f, 1.6f, -4.5f);
-    [Tooltip("포커스 타겟의 어느 높이를 바라볼지 (머리 위 주사위 표시까지 화면에 들어오게)")]
+    [Tooltip("포커스 타겟의 어느 높이를 바라볼지 (머리 위 칸 표시까지 화면에 들어오게)")]
     public float lookHeight = 1.8f;
     [Tooltip("카메라 이동 속도")]
     public float moveSpeed = 3f;

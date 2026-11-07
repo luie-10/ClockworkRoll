@@ -88,6 +88,13 @@ public class Unit : MonoBehaviour
         if (bodyRenderer != null) originalColor = GetBodyColor();
     }
 
+    /// <summary>최대 체력을 늘리거나 줄인다 (부품). 늘어난 만큼 현재 체력도 오르고, 줄면 최대치에 맞춘다</summary>
+    public void ChangeMaxHp(int delta)
+    {
+        maxHp = Mathf.Max(1, maxHp + delta);
+        Hp = Mathf.Clamp(Hp + Mathf.Max(0, delta), 1, maxHp);
+    }
+
     public void RestoreFullHp()
     {
         Hp = maxHp;

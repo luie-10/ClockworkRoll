@@ -39,7 +39,7 @@ public class DebugWindow : MonoBehaviour
 
     void OnGUI()
     {
-        if (!visible) return;
+        if (!visible || ClockDial.IsRunning) return;   // 시계가 도는 동안엔 시계판이 이 자리에 온다
 
         if (labelStyle == null)
         {
@@ -110,7 +110,7 @@ public class DebugWindow : MonoBehaviour
     {
         GUILayout.BeginHorizontal();
         GUILayout.Label("<b>카드</b>", headerStyle);
-        showDetail = GUILayout.Toggle(showDetail, "주사위 보기");
+        showDetail = GUILayout.Toggle(showDetail, "칸 보기");
         GUILayout.EndHorizontal();
 
         GameManager gm = GameManager.Instance;

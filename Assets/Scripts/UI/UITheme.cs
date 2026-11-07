@@ -21,7 +21,6 @@ public static class UITheme
     public static readonly Color TextMuted = new Color(0.64f, 0.62f, 0.58f);
     public static readonly Color TextOnBrass = new Color(0.09f, 0.07f, 0.05f);
     public static readonly Color Ki = new Color(0.52f, 0.84f, 1f);
-    public static readonly Color Tension = new Color(1f, 0.44f, 0.44f);
     public static readonly Color Danger = new Color(0.62f, 0.2f, 0.18f);
 
     public const float BorderWidth = 1.5f;
@@ -125,28 +124,27 @@ public static class UITheme
             Place(phase.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -80f), new Vector2(600f, 34f));
         }
 
-        // 2) 우상단: 기력 / 장력
+        // 2) 왼쪽 아래 바닥: 기력
         Image res = FindImage(root, "ResourcePanel");
         if (res != null)
         {
             StylePanel(res, Ink, BrassLine);
-            Place(res.rectTransform, Vector2.one, new Vector2(-20f, -18f), new Vector2(340f, 124f));
+            Place(res.rectTransform, Vector2.zero, new Vector2(24f, 20f), new Vector2(210f, 76f));
+            res.rectTransform.SetAsLastSibling();   // 손패 받침대의 그늘에 덮이지 않게
 
             Text ki = FindText(res.transform, "KiText");
-            StyleText(ki, 36, Ki, FontStyle.Bold);
-            if (ki != null) Inset(ki.rectTransform, new Vector2(20f, -10f), new Vector2(-40f, 46f));
-
-            Text emo = FindText(res.transform, "EmotionText");
-            StyleText(emo, 19, TextMain);
-            if (emo != null) Inset(emo.rectTransform, new Vector2(20f, -60f), new Vector2(-40f, 26f));
-
-            Image gauge = FindImage(res.transform, "EmotionGauge");
-            if (gauge != null)
+            StyleText(ki, 38, Ki, FontStyle.Bold);
+            if (ki != null)
             {
-                StylePanel(gauge, new Color(0f, 0f, 0f, 0.55f), null);
-                Inset(gauge.rectTransform, new Vector2(20f, -94f), new Vector2(-40f, 12f));
-                Image fill = FindImage(gauge.transform, "Fill");
-                if (fill != null) { fill.color = Tension; UIBuilder.Stretch(fill.rectTransform, 2f); }
+                UIBuilder.Stretch(ki.rectTransform, 6f);
+                ki.alignment = TextAnchor.MiddleCenter;
+            }
+
+            // 예전 씬에 남아 있는 장력 표시는 숨긴다
+            foreach (string old in new[] { "EmotionText", "EmotionGauge" })
+            {
+                Transform t = FindDeep(res.transform, old);
+                if (t != null) t.gameObject.SetActive(false);
             }
         }
 
@@ -246,16 +244,6 @@ public static class UITheme
     private static void Place(RectTransform rt, Vector2 anchor, Vector2 pos, Vector2 size)
     {
         rt.anchorMin = rt.anchorMax = rt.pivot = anchor;
-        rt.anchoredPosition = pos;
-        rt.sizeDelta = size;
-    }
-
-    /// <summary>부모 위쪽에 가로로 꽉 찬 줄 (좌우 여백 = -size.x / 2)</summary>
-    private static void Inset(RectTransform rt, Vector2 pos, Vector2 size)
-    {
-        rt.anchorMin = new Vector2(0f, 1f);
-        rt.anchorMax = Vector2.one;
-        rt.pivot = new Vector2(0f, 1f);
         rt.anchoredPosition = pos;
         rt.sizeDelta = size;
     }

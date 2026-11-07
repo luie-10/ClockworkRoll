@@ -20,7 +20,7 @@ using UnityEngine.UI;
 ///   쉼 휴식   : 최대 체력의 30% 회복
 ///   ?  이벤트 : 무작위 사건 — 선택지마다 결과가 다르다 (Events()에서 추가/수정)
 ///   철 고철상 : 덱에서 태엽판 1장을 버린다
-///   궤 궤짝   : 태엽판 3장 중 1장을 얻는다
+///   궤 궤짝   : 부품 3개 중 1개를 얻는다 (최대 기력이 늘어난다)
 ///
 /// 직접 붙일 필요 없음 — GameManager가 RouteScreen.Play()로 띄운다 (전용 Canvas를 알아서 만든다).
 /// 체력은 전투 사이에 이어지므로 휴식이 의미가 있다.
@@ -492,7 +492,7 @@ public class RouteScreen : MonoBehaviour
             case NodeType.Elite:    return "강한 적과 싸운다. 이기면 태엽판 3장 중 1장.";
             case NodeType.Rest:     return $"최대 체력의 {Mathf.RoundToInt(RestHealRatio * 100)}%를 회복한다.";
             case NodeType.Remove:   return "덱에서 태엽판 1장을 버린다.";
-            case NodeType.Treasure: return "태엽판 3장 중 1장을 얻는다.";
+            case NodeType.Treasure: return "부품 3개 중 1개를 얻는다. 최대 기력이 늘어난다.";
             default:                return "무슨 일이 생길지 모른다.";
         }
     }
@@ -524,8 +524,6 @@ public class RouteScreen : MonoBehaviour
             temporary = true;
             stage.stageName = fightStage.stageName + (elite ? " — 강적" : " — 잔당");
             stage.backdrop = fightStage.backdrop;
-            stage.startKi = fightStage.startKi;
-            stage.kiPerTurn = fightStage.kiPerTurn;
             if (elite) stage.enemies.AddRange(fightStage.enemies);
             else stage.enemies.Add(fightStage.enemies[UnityEngine.Random.Range(0, fightStage.enemies.Count)]);
         }
@@ -568,7 +566,7 @@ public class RouteScreen : MonoBehaviour
 
     private IEnumerator Treasure()
     {
-        yield return PickNewCard("떠내려온 궤짝", "물살에 밀려온 궤짝 안에 태엽판이 젖지 않은 채 들어 있다. 한 장을 챙긴다.");
+        yield return PickItem("떠내려온 궤짝", "물살에 밀려온 궤짝 안에 쓸 만한 부품이 들어 있다. 하나를 챙긴다.");
     }
 
     private IEnumerator Event()
@@ -676,6 +674,21 @@ public class RouteScreen : MonoBehaviour
         });
         chapel.options.Add(new EventOption { label = "지나간다", run = Nothing });
         list.Add(chapel);
+
+        RouteEvent storehouse = new RouteEvent
+        {
+            title = "버려진 태엽 창고",
+            body = "무너진 선반 아래로 아직 녹슬지 않은 부품 상자가 보인다. 꺼내려면 날카로운 쇠붙이 사이로 손을 넣어야 한다.",
+            available = () => UnownedItems().Count > 0,
+        };
+        storehouse.options.Add(new EventOption
+        {
+            label = "손을 넣는다  <color=#ff8a7a>체력 -8</color>  →  부품 3개 중 1개",
+            available = () => Player != null && Player.Hp > 8,
+            run = RaidStorehouse,
+        });
+        storehouse.options.Add(new EventOption { label = "지나간다", run = Nothing });
+        list.Add(storehouse);
 
         return list;
     }
@@ -801,6 +814,85 @@ public class RouteScreen : MonoBehaviour
         result(selected);
     }
 
+    private static List<RunItem> UnownedItems()
+    {
+        return RunItems.All.FindAll(i => !GameManager.Instance.OwnedItems.Contains(i));
+    }
+
+    private static string ItemLine()
+    {
+        List<RunItem> items = GameManager.Instance.OwnedItems;
+        if (items.Count == 0) return "";
+        List<string> names = items.ConvertAll(i => i.name);
+        return $"\n<size=18><color=#dcb06b>부품</color>  {string.Join(" · ", names)}</size>";
+    }
+
+    private IEnumerator RaidStorehouse()
+    {
+        LoseHp(8);
+        yield return PickItem("버려진 태엽 창고", "<color=#ff8a7a>체력 -8</color>\n상자 안의 부품 가운데 하나를 챙긴다.");
+    }
+
+    /// <summary>아직 없는 부품 3개 중 1개 고르기 (건너뛸 수 있음). 다 모았으면 태엽판으로 대신한다</summary>
+    private IEnumerator PickItem(string title, string body)
+    {
+        List<RunItem> pool = UnownedItems();
+        if (pool.Count == 0)
+        {
+            yield return PickNewCard(title, "이미 쓸 만한 부품은 다 챙겼다. 대신 태엽판 한 장을 챙긴다.");
+            yield break;
+        }
+
+        List<RunItem> offer = new List<RunItem>();
+        while (offer.Count < 3 && pool.Count > 0)
+        {
+            int i = UnityEngine.Random.Range(0, pool.Count);
+            offer.Add(pool[i]);
+            pool.RemoveAt(i);
+        }
+
+        RunItem picked = null;
+        bool done = false;
+        Clear();
+        titleText.text = title;
+        bodyText.text = body;
+        foreach (RunItem it in offer)
+        {
+            RunItem item = it;
+            ItemTile(item, () => { picked = item; done = true; });
+        }
+        AddButton("챙기지 않는다", false, () => done = true);
+        autoAction = () => { picked = offer[0]; done = true; };
+        while (!done) yield return null;
+
+        if (picked != null)
+        {
+            GameManager.Instance.GainItem(picked);
+            yield return Message(title, $"<color=#ffd98a>[{picked.name}]</color>을(를) 몸에 달았다.\n\n<color=#8cd9ff>최대 기력 {GameManager.Instance.MaxKi}</color>");
+        }
+    }
+
+    private void ItemTile(RunItem item, Action onClick)
+    {
+        Image frame = UIBuilder.Panel("Item " + item.name, choiceRow, UITheme.InkSolid, false);
+        frame.rectTransform.sizeDelta = new Vector2(300f, 240f);
+        frame.raycastTarget = true;
+        Outline edge = frame.gameObject.AddComponent<Outline>();
+        edge.effectColor = new Color(UITheme.Ki.r, UITheme.Ki.g, UITheme.Ki.b, 0.75f);
+        edge.effectDistance = new Vector2(2f, -2f);
+        Button b = frame.gameObject.AddComponent<Button>();
+        b.targetGraphic = frame;
+        HoverColors(b);
+        b.onClick.AddListener(() => onClick());
+
+        Text n = UIBuilder.Label("Name", frame.transform, item.name, 28, UITheme.Brass, TextAnchor.MiddleCenter);
+        n.fontStyle = FontStyle.Bold;
+        UIBuilder.Place(n.rectTransform, new Vector2(0f, 1f), Vector2.one, new Vector2(0.5f, 1f), new Vector2(0f, -36f), new Vector2(-24f, 44f));
+        Text d = UIBuilder.Label("Desc", frame.transform, item.description, 23, UITheme.TextMain, TextAnchor.UpperCenter);
+        d.lineSpacing = 1.25f;
+        UIBuilder.Place(d.rectTransform, new Vector2(0f, 1f), Vector2.one, new Vector2(0.5f, 1f), new Vector2(0f, -104f), new Vector2(-30f, 120f));
+    }
+
     /// <summary>새 태엽판 3장 중 1장 (건너뛸 수 있음)</summary>
     private IEnumerator PickNewCard(string title, string body)
     {
@@ -856,7 +948,7 @@ public class RouteScreen : MonoBehaviour
         Unit p = Player;
         int deck = GameManager.Instance != null && GameManager.Instance.OwnedDeck != null ? Deck.Count : 0;
         statusText.text = p != null
-            ? $"{p.unitName}   <color=#7ddc8c>체력 {p.Hp} / {p.MaxHp}</color>   ·   태엽판 {deck}장"
+            ? $"{p.unitName}   <color=#7ddc8c>체력 {p.Hp} / {p.MaxHp}</color>   ·   <color=#8cd9ff>최대 기력 {GameManager.Instance.MaxKi}</color>   ·   태엽판 {deck}장" + ItemLine()
             : $"태엽판 {deck}장";
 
         if (!mapLayer.gameObject.activeSelf) return;
@@ -931,6 +1023,7 @@ public class RouteScreen : MonoBehaviour
         UIBuilder.Stretch(label.rectTransform, 16f);
         label.rectTransform.offsetMax = new Vector2(-16f, -106f);   // 위쪽은 그림 칸
         VictoryScreen.AddCardArt(frame.rectTransform, card);
+        frame.gameObject.AddComponent<CardHover>().card = card;
         label.resizeTextForBestFit = true;
         label.resizeTextMinSize = 12;
         label.resizeTextMaxSize = 19;
@@ -959,6 +1052,10 @@ public class RouteScreen : MonoBehaviour
         t.rectTransform.offsetMin = new Vector2(20f, 6f);
         t.rectTransform.offsetMax = new Vector2(-10f, -6f);
         t.lineSpacing = 1.15f;
+        CardHover hover = tile.gameObject.AddComponent<CardHover>();
+        hover.card = e.data;
+        hover.entry = e;
+        hover.hoverScale = 1.03f;
         return tile;
     }
 

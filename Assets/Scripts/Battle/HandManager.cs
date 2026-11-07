@@ -39,6 +39,8 @@ public class HandManager : MonoBehaviour
         for (int i = panel.childCount - 1; i >= 0; i--)
             Destroy(panel.GetChild(i).gameObject);
 
+        if (panel.GetComponent<HandFan>() == null) panel.gameObject.AddComponent<HandFan>();   // 손패는 부채꼴로
+
         if (deck != null) drawPile.AddRange(deck);
         Shuffle(drawPile);
     }

@@ -15,7 +15,7 @@ MonoBehaviour:
   cardName: "\uC5F4\uB450 \uBC88\uC758 \uD0C0\uC885"
   cardArt: {fileID: 21300000, guid: 2739c1ff01136c949bf42207c6ba6dbe, type: 3}
   rarity: 4
-  cost: 6
+  cost: 5
   requireEmotionLevel: 3
   cardDescription: "\uC790\uC815, \uC5F4\uB450 \uBC88 \uC6B8\uB9AC\uB294 \uB3D9\uC548
     \uC544\uBB34\uB3C4 \uC11C \uC788\uC9C0 \uBABB\uD55C\uB2E4."

@@ -931,6 +931,7 @@ public static class Illustrator
                 c.Rect(Mathf.RoundToInt(o.x - s * 0.2f), Mathf.RoundToInt(o.y - s * 0.4f), Mathf.RoundToInt(o.x + s * 0.65f), Mathf.RoundToInt(o.y + s * 0.75f), new Color(0.7f, 0.82f, 1f));
                 break;
             case DiceEffectType.RecoverKi:
+            case DiceEffectType.MaxKi:
                 c.Polygon(new[] { o + new Vector2(0f, 0.85f) * s, o + new Vector2(0.55f, 0f) * s, o + new Vector2(0f, -0.85f) * s, o + new Vector2(-0.55f, 0f) * s }, new Color(0.5f, 0.85f, 1f));
                 break;
             case DiceEffectType.Strength:

@@ -37,7 +37,7 @@ public class TestBoot : MonoBehaviour
 
     private GameObject dialoguePanel;
     private Text speakerText, bodyText;
-    private Text stageText, kiText, emotionText;
+    private Text stageText, kiText;
     private Transform handPanel;
 
     private float timer;
@@ -209,10 +209,6 @@ public class TestBoot : MonoBehaviour
             new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(1f, 1f),
             new Vector2(-12f, -8f), new Vector2(200f, 28f));
 
-        emotionText = CreateText(hud, "EmotionText", "감정 LV.0",
-            TextAnchor.UpperRight, 18, new Color(1f, 0.7f, 0.7f),
-            new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(1f, 1f),
-            new Vector2(-12f, -38f), new Vector2(240f, 28f));
 
         // ── 턴 종료 버튼 (우하단, 손패 위) ──
         GameObject btnGO = new GameObject("EndTurnButton");
@@ -358,8 +354,6 @@ public class TestBoot : MonoBehaviour
         // 3) 무대
         BattleStageData stage = ScriptableObject.CreateInstance<BattleStageData>();
         stage.stageName = "테스트 무대";
-        stage.startKi = 3;
-        stage.kiPerTurn = 1;
         stage.enemies = new List<EnemySpawnInfo>
         {
             new EnemySpawnInfo { enemy = enemyA, spawnPosition = new Vector3(3f, 0f, 1.2f) },
@@ -399,7 +393,6 @@ public class TestBoot : MonoBehaviour
         battleManager.handManager = handManager;
         battleManager.stageNameText = stageText;
         battleManager.kiText = kiText;
-        battleManager.emotionText = emotionText;
         battleManager.endTurnButton = endTurnButton;
 
         handManager.cardViewPrefab = cardTemplate.GetComponent<CardView>();
@@ -428,7 +421,6 @@ public class TestBoot : MonoBehaviour
         card.cardName = cardName;
         card.rarity = rarity;
         card.cost = cost;
-        card.requireEmotionLevel = requireEmotion;
         card.cardDescription = "테스트용 런타임 생성 카드";
         card.diceList = new List<DiceData>(dice);
         return card;

@@ -45,7 +45,7 @@ public static class DiceInfo
         }
     }
 
-    /// <summary>한 줄 요약 (색 글자): "참1~4 타1~4" — 효과가 붙은 주사위에는 *</summary>
+    /// <summary>한 줄 요약 (색 글자): "참1~4 타1~4" — 효과가 붙은 칸에는 *</summary>
     public static string Summary(CardData card)
     {
         if (card == null || card.diceList == null) return "";
@@ -137,18 +137,18 @@ public static class DiceInfo
     {
         switch (type)
         {
-            case DiceEffectType.Rust:           return "<color=#d98040>녹</color>: 굴리는 주사위의 최댓값 -n, 주사위를 굴릴 때마다 1씩 벗겨짐";
-            case DiceEffectType.Strength:       return "<color=#ffcc59>힘</color>: 이번 라운드 동안 공격 주사위 위력 +n";
-            case DiceEffectType.Endurance:      return "<color=#ffcc59>인내</color>: 이번 라운드 동안 수비 주사위 위력 +n";
-            case DiceEffectType.Feeble:         return "<color=#bf8cff>허약</color>: 이번 라운드 동안 공격 주사위 위력 -n";
+            case DiceEffectType.Rust:           return "<color=#d98040>녹</color>: 칸의 최댓값 -n, 칸을 쓸 때마다 1씩 벗겨짐";
+            case DiceEffectType.Strength:       return "<color=#ffcc59>힘</color>: 이번 라운드 동안 공격 칸 위력 +n";
+            case DiceEffectType.Endurance:      return "<color=#ffcc59>인내</color>: 이번 라운드 동안 수비 칸 위력 +n";
+            case DiceEffectType.Feeble:         return "<color=#bf8cff>허약</color>: 이번 라운드 동안 공격 칸 위력 -n";
             case DiceEffectType.Fragile:        return "<color=#bf8cff>취약</color>: 이번 라운드 동안 공격에 맞을 때 피해 +n";
-            case DiceEffectType.Paralysis:      return "<color=#bf8cff>마비</color>: 주사위 n개가 최솟값으로 굴러감";
-            case DiceEffectType.DestroyNextDie: return "<color=#bf8cff>파괴</color>: 이번 라운드에 상대가 다음으로 굴릴 주사위 하나가 사라짐";
-            case DiceEffectType.Overwind:       return "<color=#ff6b6b>과감기</color>: 체력 n을 태워 이 태엽판의 모든 주사위 위력 +n (체력은 1 아래로 내려가지 않음)";
+            case DiceEffectType.Paralysis:      return "<color=#bf8cff>마비</color>: 칸 n개가 최솟값이 됨";
+            case DiceEffectType.DestroyNextDie: return "<color=#bf8cff>파괴</color>: 이번 라운드에 상대의 다음 칸 하나가 사라짐";
+            case DiceEffectType.Overwind:       return "<color=#ff6b6b>과감기</color>: 체력 n을 태워 이 태엽판의 모든 칸 위력 +n (체력은 1 아래로 내려가지 않음)";
             case DiceEffectType.Resonance:      return "<color=#ffd159>울림</color>: 공격이 적중하면 다른 모든 적에게도 피해 n (범위 공격)";
             case DiceEffectType.Corrode:        return "<color=#d98040>부식</color>: 적중하면 상대의 녹(다음 턴 녹 포함) x n 만큼 추가 피해";
             case DiceEffectType.Plating:        return "<color=#9fc4e0>철갑</color>: 이번 라운드 동안 공격에 맞을 때마다 받는 피해 -n";
-            case DiceEffectType.OnTheHour:      return "<color=#ffd98a>정각</color>: 3·6·9·12시 칸에서 굴리면 이 주사위 위력 +n";
+            case DiceEffectType.OnTheHour:      return "<color=#ffd98a>정각</color>: 3·6·9·12시에 놓이면 이 칸 위력 +n";
             default:                            return null;
         }
     }

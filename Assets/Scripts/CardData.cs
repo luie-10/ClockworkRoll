@@ -78,7 +78,8 @@ public enum DiceEffectType
     Resonance,      // 울림: 다른 모든 적에게도 피해 n (범위 공격 — 플레이어만)
     Corrode,        // 부식: 상대의 녹 x n 만큼 추가 피해
     Plating,        // 철갑: 자신에게 철갑 n (받는 피해 -n)
-    OnTheHour       // 정각: 이 주사위를 3·6·9·12시에 굴리면 위력 +n (발동 시점과 상관없이 늘 적용)
+    OnTheHour,     // 정각: 이 주사위를 3·6·9·12시에 굴리면 위력 +n (발동 시점과 상관없이 늘 적용)
+    MaxKi           // 이번 전투 동안 최대 기력 +n (플레이어만)
 }
 
 [Serializable]
@@ -106,7 +107,8 @@ public class DiceEffect
         switch (effect)
         {
             case DiceEffectType.Rust:           what = $"녹 {amount}"; break;
-            case DiceEffectType.RecoverKi:      what = $"기력 {amount} 회복"; break;
+            case DiceEffectType.RecoverKi:      what = $"다음 라운드 기력 +{amount}"; break;
+            case DiceEffectType.MaxKi:          what = $"이번 전투 최대 기력 +{amount}"; break;
             case DiceEffectType.DrawCard:       what = $"태엽판 {amount}장 뽑기"; break;
             case DiceEffectType.Heal:           what = $"체력 {amount} 회복"; break;
             case DiceEffectType.Strength:       what = $"힘 {amount} 얻음"; break;
@@ -114,13 +116,13 @@ public class DiceEffect
             case DiceEffectType.Feeble:         what = $"허약 {amount}"; break;
             case DiceEffectType.Fragile:        what = $"취약 {amount}"; break;
             case DiceEffectType.Paralysis:      what = $"마비 {amount}"; break;
-            case DiceEffectType.PowerNextDie:   what = $"다음 주사위 위력 +{amount}"; break;
+            case DiceEffectType.PowerNextDie:   what = $"다음 칸 위력 +{amount}"; break;
             case DiceEffectType.Overwind:       what = $"과감기 {amount}"; break;
             case DiceEffectType.Resonance:      what = $"울림 {amount}"; break;
             case DiceEffectType.Corrode:        what = $"부식 x{amount}"; break;
             case DiceEffectType.Plating:        what = $"철갑 {amount}"; break;
             case DiceEffectType.OnTheHour:      return $"[정각] 위력 +{amount}";   // 발동 시점이 아니라 굴리는 시각으로 정해진다
-            default:                            what = "상대의 다음 주사위 파괴"; break;
+            default:                            what = "상대의 다음 칸 파괴"; break;
         }
 
         return nextTurn && IsStatus(effect) ? $"{when} 다음 턴 {what}" : $"{when} {what}";
@@ -157,13 +159,12 @@ public class CardData : ScriptableObject
 
     [Header("비용 및 조건")]
     public int cost;                    // 빛 코스트
-    public int requireEmotionLevel;     // 필요 감정 단계
 
     [Header("태엽판 능력 설명")]
     [TextArea(3, 8)]
     public string cardDescription;      // [사용시], [무대 시작시] 효과 텍스트
 
-    [Header("주사위 목록")]
+    [Header("칸 목록")]
     public List<DiceData> diceList = new List<DiceData>(); // 이 카드에 담긴 주사위 배열
 }
 #endregion

@@ -8,7 +8,7 @@ using UnityEngine.UI;
 /// - 적에게서 흡수한 카드(◈)는 보라색 톤과 침식 수치가 표시된다.
 /// - 주사위 줄: ▶ 공격 / ◆ 수비 + 종류 색 + 범위, 효과는 그 아래 └ 줄.
 /// - 마우스를 올리면 카드가 커지며 맨 앞으로 오고, 위에 상세 정보창(CardTooltip)이 뜬다.
-/// - 기력/장력 단계가 모자라 지금 못 쓰는 카드는 흐려지고 기력 글자가 빨개진다.
+/// - 기력이 모자라 지금 못 쓰는 카드는 흐려지고 기력 글자가 빨개진다.
 /// - 클릭하면 BattleManager로 전달된다.
 /// 프리팹 구조는 그대로 — 추가 연출(정렬용 Canvas, CanvasGroup 등)은 실행 중에 알아서 붙인다.
 /// </summary>
@@ -29,6 +29,9 @@ public class CardView : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
     [SerializeField] private float unusableAlpha = 0.55f;
 
     public CardInstance BoundCard { get; private set; }
+
+    public bool IsHovered { get { return hovered; } }
+    public bool IsSelected { get { return selected; } }
 
     private System.Action<CardView> onClicked;
     private Color normalColor = Color.white;
@@ -77,7 +80,7 @@ public class CardView : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
     /// <summary>
     /// 카드 배치 (프리팹 구조는 그대로 두고 자리/색만 잡는다):
     ///   ┌──────────────────┐  테두리 = 등급 색 (흡수 카드는 보라)
-    ///   │ (2) 카드 이름     │  (2) = 기력 배지
+    ///  (2) 카드 이름       │  (2) = 왼쪽 위 모서리에 걸친 기력 배지
     ///   │     1칸 · 주석    │
     ///   │ [   그림    ]     │  cardArt (없으면 Illustrator가 주사위 종류로 그린 문양)
     ///   │ ▶ 참격 2~6        │  주사위 판이 남은 공간을 꽉 채운다
@@ -103,8 +106,8 @@ public class CardView : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
             if (plate != null && plate != transform)
             {
                 plate.anchorMin = plate.anchorMax = plate.pivot = new Vector2(0f, 1f);
-                plate.anchoredPosition = new Vector2(9f, -9f);
-                plate.sizeDelta = new Vector2(38f, 38f);
+                plate.anchoredPosition = new Vector2(-12f, 12f);   // 왼쪽 위 모서리에 걸친다 (부채꼴로 겹쳐도 왼쪽은 보인다)
+                plate.sizeDelta = new Vector2(46f, 46f);
                 Image badge = plate.GetComponent<Image>();
                 if (badge != null)
                 {
@@ -118,7 +121,7 @@ public class CardView : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
                 }
             }
             UIBuilder.Stretch(costText.rectTransform);
-            UITheme.StyleText(costText, 22, UITheme.Ki, FontStyle.Bold);
+            UITheme.StyleText(costText, 26, UITheme.Ki, FontStyle.Bold);
             costText.alignment = TextAnchor.MiddleCenter;
         }
 
@@ -126,16 +129,16 @@ public class CardView : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
         {
             RectTransform rt = nameText.rectTransform;
             rt.anchorMin = new Vector2(0f, 1f); rt.anchorMax = Vector2.one; rt.pivot = new Vector2(0f, 1f);
-            rt.anchoredPosition = new Vector2(54f, -8f);
-            rt.sizeDelta = new Vector2(-60f, 26f);
+            rt.anchoredPosition = new Vector2(40f, -8f);
+            rt.sizeDelta = new Vector2(-46f, 26f);
             UITheme.StyleText(nameText, 19, UITheme.TextMain, FontStyle.Bold);
             nameText.alignment = TextAnchor.MiddleLeft;
 
             metaText = UIBuilder.Label("MetaText", transform, "", 14, UITheme.TextMuted, TextAnchor.MiddleLeft, false);
             RectTransform m = metaText.rectTransform;
             m.anchorMin = new Vector2(0f, 1f); m.anchorMax = Vector2.one; m.pivot = new Vector2(0f, 1f);
-            m.anchoredPosition = new Vector2(54f, -33f);
-            m.sizeDelta = new Vector2(-60f, 18f);
+            m.anchoredPosition = new Vector2(40f, -33f);
+            m.sizeDelta = new Vector2(-46f, 18f);
             metaText.supportRichText = true;
         }
 
@@ -229,7 +232,6 @@ public class CardView : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
             // 칸 = 시계판에서 차지하는 시간
             string rarityHex = ColorUtility.ToHtmlStringRGB(DiceInfo.RarityColor(d.rarity));
             string meta = $"{TimedAction.LengthOf(d)}칸 · <color=#{rarityHex}>{DiceInfo.RarityName(d.rarity)}</color>";
-            if (d.requireEmotionLevel > 0) meta += $" · <color=#ff7070>장력{d.requireEmotionLevel}</color>";
             metaText.text = meta;
         }
 
@@ -291,14 +293,14 @@ public class CardView : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
         UpdateUsable();
     }
 
-    /// <summary>지금 낼 수 있는 카드인지 (기력 · 장력 단계)에 따라 흐리게 / 기력 글자 빨갛게.</summary>
+    /// <summary>지금 낼 수 있는 카드인지 (기력)에 따라 흐리게 / 기력 글자 빨갛게.</summary>
     private void UpdateUsable()
     {
         if (BoundCard == null || BoundCard.data == null) return;
 
         BattleManager bm = BattleManager.Instance;
         bool usable = bm == null ||
-                      (BoundCard.data.cost <= bm.CurrentKi && BoundCard.data.requireEmotionLevel <= bm.EmotionLevel);
+                      BoundCard.data.cost <= bm.CurrentKi;
         int state = usable ? 1 : 0;
         if (state == usableState) return;
         usableState = state;
@@ -310,6 +312,8 @@ public class CardView : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
     public void OnPointerEnter(PointerEventData eventData)
     {
         hovered = true;
+        // 들린 카드 아래쪽 빈자리까지 판정을 늘린다 (카드가 올라가며 마우스가 벗어나 떨리지 않게)
+        if (backgroundImage != null) backgroundImage.raycastPadding = new Vector4(0f, -80f, 0f, 0f);
         SetOnTop(true);
         CardTooltip.Show(this);
     }
@@ -317,6 +321,7 @@ public class CardView : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
     public void OnPointerExit(PointerEventData eventData)
     {
         hovered = false;
+        if (backgroundImage != null) backgroundImage.raycastPadding = Vector4.zero;
         SetOnTop(false);
         CardTooltip.Hide(this);
     }
@@ -336,6 +341,7 @@ public class CardView : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
     void OnDisable()
     {
         hovered = false;
+        if (backgroundImage != null) backgroundImage.raycastPadding = Vector4.zero;
         SetOnTop(false);
         CardTooltip.Hide(this);
     }
