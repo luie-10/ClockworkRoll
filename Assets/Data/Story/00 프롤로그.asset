@@ -14,26 +14,77 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ChapterData
   chapterTitle: "프롤로그. 물에 잠긴 시계 마을"
   introLines:
+  - speaker: "―"
+    text: "비가 그친 지 오래인데도, 물은 계속 차오르고 있었다."
+    portrait: {fileID: 0}
+  - speaker: "―"
+    text: "멈춘 종탑 아래, 시계 마을의 골목들은 하나씩 물에 잠겨 갔다."
+    portrait: {fileID: 0}
   - speaker: "틱"
-    text: "일어났어? 다행이다. 태엽이 다 풀린 줄 알았잖아."
+    text: "이안! 이안, 눈 좀 떠 봐."
+    portrait: {fileID: 0}
+  - speaker: "틱"
+    text: "...휴. 태엽이 다 풀린 줄 알았잖아. 한참을 흔들었다고."
     portrait: {fileID: 0}
   - speaker: "이안"
-    text: "...여긴 어디지. 발밑이 전부 물이야."
+    text: "...시끄러워. 머리 울려."
+    portrait: {fileID: 0}
+  - speaker: "이안"
+    text: "여긴 어디지. 발밑이 전부 물이야."
     portrait: {fileID: 0}
   - speaker: "틱"
-    text: "시계 마을이야. 종탑이 멈춘 날부터 물이 차오르기 시작했어."
+    text: "시계 마을이야. 기억 안 나? 너, 수로를 따라 떠내려오고 있었어."
+    portrait: {fileID: 0}
+  - speaker: "이안"
+    text: "기억... 이름 말고는 아무것도 안 떠올라."
     portrait: {fileID: 0}
   - speaker: "틱"
-    text: "사람들의 기억은 태엽판이 되어 물 위를 떠다녀. 그걸 손에 쥐면 싸울 힘이 되지."
+    text: "그럴 줄 알았어. 물에 오래 잠겨 있으면 다들 그렇게 돼."
+    portrait: {fileID: 0}
+  - speaker: "틱"
+    text: "이 마을에선 물이 제일 무서워. 쇠도, 태엽도, 기억도 전부 녹슬게 만들거든."
+    portrait: {fileID: 0}
+  - speaker: "이안"
+    text: "기억이 녹슨다고?"
+    portrait: {fileID: 0}
+  - speaker: "틱"
+    text: "응. 녹슨 기억은 몸에서 떨어져 나와. 저기 봐, 물 위에 떠 있는 판들."
+    portrait: {fileID: 0}
+  - speaker: "―"
+    text: "수면 위로 톱니 무늬가 새겨진 얇은 판들이 천천히 맴돈다."
+    portrait: {fileID: 0}
+  - speaker: "틱"
+    text: "저게 태엽판이야. 누군가 잃어버린 기억이 굳은 거지. 손에 쥐면 싸울 힘이 돼."
     portrait: {fileID: 0}
   - speaker: "이안"
     text: "남의 기억으로 싸운다고?"
     portrait: {fileID: 0}
   - speaker: "틱"
-    text: "대가는 있어. 삼킨 기억이 많을수록 그 기억이 너를 조금씩 갉아먹을 거야."
+    text: "대가는 있어. 남의 기억을 삼킬수록 그 기억이 너를 조금씩 갉아먹어."
     portrait: {fileID: 0}
   - speaker: "이안"
-    text: "...종탑으로 가자. 왜 멈췄는지 알아야겠어."
+    text: "...그러는 너는 뭔데. 인형이 말을 하네."
+    portrait: {fileID: 0}
+  - speaker: "틱"
+    text: "틱이야! 태엽 인형. 원래는 시계공 공방에서 일했어. 기름칠만 제때 해 주면 아직 쌩쌩하다고."
+    portrait: {fileID: 0}
+  - speaker: "틱"
+    text: "...요즘은 기름이 없어서 무릎이 좀 삐걱대지만."
+    portrait: {fileID: 0}
+  - speaker: "이안"
+    text: "물은 왜 이렇게 차오르는 거지?"
+    portrait: {fileID: 0}
+  - speaker: "틱"
+    text: "종탑이 멈춘 날부터야. 종이 멈추니까 수문도 같이 멈췄어. 그 뒤로 물이 안 빠져."
+    portrait: {fileID: 0}
+  - speaker: "이안"
+    text: "그럼 종탑으로 가면 되겠네."
+    portrait: {fileID: 0}
+  - speaker: "틱"
+    text: "쉽게도 말한다... 가는 길엔 기억을 먹고 미쳐 버린 것들이 잔뜩 있어."
+    portrait: {fileID: 0}
+  - speaker: "이안"
+    text: "여기 있어 봤자 나도 녹슬겠지. 가자."
     portrait: {fileID: 0}
   battle: {fileID: 0}
   outroLines:
@@ -41,8 +92,16 @@ MonoBehaviour:
     text: "잠깐, 이거 받아. 내 태엽을 조금 나눠 줄게."
     portrait: {fileID: 0}
   - speaker: "틱"
-    text: "버티는 동안 기력이 돌아올 거야. 무리하지 마."
+    text: "한 바퀴 감아 두면 버티는 동안 기력이 돌아올 거야."
+    portrait: {fileID: 0}
+  - speaker: "이안"
+    text: "너는 괜찮아?"
+    portrait: {fileID: 0}
+  - speaker: "틱"
+    text: "나? 기름 한 방울만 있으면 금방 다시 감겨. ...아마도."
     portrait: {fileID: 0}
   rewardCards:
   - {fileID: 11400000, guid: 41990bcb6445c2ab80031a436c5783cc, type: 2}
   - {fileID: 11400000, guid: 303db84955a890a2353cbde6e9fae8be, type: 2}
+  routeFights: []
+  routeElites: []

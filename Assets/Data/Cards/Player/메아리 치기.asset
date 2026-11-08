@@ -15,14 +15,14 @@ MonoBehaviour:
   cardName: "\uBA54\uC544\uB9AC \uCE58\uAE30"
   cardArt: {fileID: 21300000, guid: 6873a0516079c1844baa28d61ef821fb, type: 3}
   rarity: 2
-  cost: 3
+  cost: 2
   requireEmotionLevel: 0
   cardDescription: "\uB418\uB3CC\uC544\uC628 \uC18C\uB9AC\uAC00 \uB450 \uBC88 \uB54C\uB9B0\uB2E4."
   diceList:
   - diceName: 
     diceType: 0
     diceDetail: 1
-    minRoll: 1
+    minRoll: 2
     maxRoll: 4
     diceEffectDescription: 
     effects:
@@ -33,7 +33,7 @@ MonoBehaviour:
   - diceName: 
     diceType: 0
     diceDetail: 1
-    minRoll: 1
+    minRoll: 2
     maxRoll: 4
     diceEffectDescription: 
     effects:

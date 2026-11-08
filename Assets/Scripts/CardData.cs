@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 #region 1. 카드를 구성하는 열거형 (Enums)
 public enum CardRarity
@@ -159,6 +160,11 @@ public class CardData : ScriptableObject
 
     [Header("비용 및 조건")]
     public int cost;                    // 빛 코스트
+
+    [Tooltip("이 단계 이상의 장력(0~3)이 쌓여야 낼 수 있다. 0 = 언제나")]
+    [Range(0, 3)]
+    [FormerlySerializedAs("requireEmotionLevel")]
+    public int requireTension;          // 필요 장력 단계
 
     [Header("태엽판 능력 설명")]
     [TextArea(3, 8)]

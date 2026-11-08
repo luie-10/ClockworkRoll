@@ -104,7 +104,9 @@ public class VictoryScreen : MonoBehaviour
         }
         else
         {
-            subText.text = $"쓰러뜨린 적의 기억을 삼킨다 — <color=#ffd159>{pickCount}장</color> 고르기";
+            subText.text = pickCount > 1
+                ? $"쓰러뜨린 적의 기억을 삼킨다 — <color=#ffd159>최대 {pickCount}장</color> 고르기"
+                : $"쓰러뜨린 적의 기억을 삼킨다 — <color=#ffd159>{pickCount}장</color> 고르기";
             BuildCards(ownedSources);
             cardScroll.gameObject.SetActive(true);
             scroll.verticalNormalizedPosition = 1f;   // 맨 위부터
@@ -192,9 +194,10 @@ public class VictoryScreen : MonoBehaviour
             cardFrames[i].GetComponent<CardHover>().baseScale = on ? 1.06f : 1f;
         }
 
-        bool ready = picked.Count == pickCount;
+        // 장력으로 늘어난 장수는 "최대" — 침식이 무서우면 덜 삼켜도 된다 (최소 1장)
+        bool ready = picked.Count >= 1 && picked.Count <= pickCount;
         confirmButton.interactable = ready;
-        confirmLabel.text = ready ? $"흡수 ({picked.Count}장)" : $"{picked.Count} / {pickCount}장 선택";
+        confirmLabel.text = ready ? $"흡수 ({picked.Count}/{pickCount}장)" : $"0 / {pickCount}장 선택";
         hintText.text = pool.Count > 6
             ? "마우스를 올리면 자세히 · 클릭해서 고르기 · <color=#dcb06b>마우스 휠로 스크롤해서 더 보기</color>"
             : "마우스를 올리면 자세히 · 클릭해서 고르기";

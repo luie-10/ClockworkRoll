@@ -15,14 +15,14 @@ MonoBehaviour:
   cardName: "\uD0C0\uACA9"
   cardArt: {fileID: 21300000, guid: 33bf10682e7c45342bc1d20853e6fbde, type: 3}
   rarity: 0
-  cost: 2
+  cost: 1
   requireEmotionLevel: 0
   cardDescription: 
   diceList:
   - diceName: 
     diceType: 0
     diceDetail: 2
-    minRoll: 3
-    maxRoll: 8
+    minRoll: 2
+    maxRoll: 7
     diceEffectDescription: 
     effects: []

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: "시계 마을 이야기"
   m_EditorClassIdentifier: Assembly-CSharp::StoryData
   storyTitle: "시계 마을 이야기"
-  summary: "멈춘 종탑 때문에 물에 잠긴 시계 마을. 이안은 태엽 인형 틱과 함께 떠다니는 기억(태엽판)을 삼키며 종탑으로 향한다."
+  summary: "종탑이 멈춘 뒤 물에 잠겨 녹슬어 가는 시계 마을. 이름밖에 기억 못 하는 이안은 태엽 인형 틱과 함께 기름을 지키는 시계공, 수문장을 지나 종탑으로 향한다. 물은 기억을 녹슬게 하고, 기름은 기억을 짜내 만든 것이었다."
   startingDeck:
   - {fileID: 11400000, guid: c752f0de72672fb75770bf0156e2234a, type: 2}
   - {fileID: 11400000, guid: c752f0de72672fb75770bf0156e2234a, type: 2}
@@ -27,12 +27,19 @@ MonoBehaviour:
   - {fileID: 11400000, guid: bce74fad9d4d77cf782aa35254e39054, type: 2}
   - {fileID: 11400000, guid: e8aa1a0602b02408d5ceaa793758a14e, type: 2}
   - {fileID: 11400000, guid: 6144cbb8a0492e7e7e6e80cfaf40df2f, type: 2}
+  - {fileID: 11400000, guid: 79e7c4fe5e3b469e9114df7f6a10dc96, type: 2}
+  - {fileID: 11400000, guid: ade5896d133c42cbb57986a9b85419b3, type: 2}
   chapters:
   - {fileID: 11400000, guid: ff3247547fe5dc39ef390ee7aba714d9, type: 2}
   - {fileID: 11400000, guid: e169478c71f8497743c3996798136224, type: 2}
+  - {fileID: 11400000, guid: d7368e7f4258447a942288bc76ed1443, type: 2}
+  - {fileID: 11400000, guid: bed598be5dd5488191a483efebb17f1c, type: 2}
   - {fileID: 11400000, guid: c8eadc25ffba4a3ceee6cda5fce8ed68, type: 2}
   - {fileID: 11400000, guid: 0323428cb9c8b2da177b3440a119782e, type: 2}
   rewardPool:
+  - {fileID: 11400000, guid: 79e7c4fe5e3b469e9114df7f6a10dc96, type: 2}
+  - {fileID: 11400000, guid: ade5896d133c42cbb57986a9b85419b3, type: 2}
+  - {fileID: 11400000, guid: 349beb4a029c47068bed28bc2694021b, type: 2}
   - {fileID: 11400000, guid: eacafe56db1bfc736a3723b678ad3452, type: 2}
   - {fileID: 11400000, guid: e383ce9d3c2ed4b37c90bd2060b164be, type: 2}
   - {fileID: 11400000, guid: b8e4d38567bb6d0ebc3ad8ab6b154122, type: 2}

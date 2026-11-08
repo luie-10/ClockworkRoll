@@ -232,6 +232,7 @@ public class CardView : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
             // 칸 = 시계판에서 차지하는 시간
             string rarityHex = ColorUtility.ToHtmlStringRGB(DiceInfo.RarityColor(d.rarity));
             string meta = $"{TimedAction.LengthOf(d)}칸 · <color=#{rarityHex}>{DiceInfo.RarityName(d.rarity)}</color>";
+            if (d.requireTension > 0) meta += $" · <color=#ff9a4d>장력 {d.requireTension}</color>";
             metaText.text = meta;
         }
 
@@ -293,14 +294,14 @@ public class CardView : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
         UpdateUsable();
     }
 
-    /// <summary>지금 낼 수 있는 카드인지 (기력)에 따라 흐리게 / 기력 글자 빨갛게.</summary>
+    /// <summary>지금 낼 수 있는 카드인지 (기력 · 장력)에 따라 흐리게 / 기력 글자 빨갛게.</summary>
     private void UpdateUsable()
     {
         if (BoundCard == null || BoundCard.data == null) return;
 
         BattleManager bm = BattleManager.Instance;
         bool usable = bm == null ||
-                      BoundCard.data.cost <= bm.CurrentKi;
+                      (BoundCard.data.cost <= bm.CurrentKi && bm.HasTensionFor(BoundCard.data));
         int state = usable ? 1 : 0;
         if (state == usableState) return;
         usableState = state;
