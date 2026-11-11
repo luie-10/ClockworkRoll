@@ -37,6 +37,12 @@ public class BattleCamera : MonoBehaviour
     [Tooltip("드래그 1픽셀당 도는 각도 / 미는 거리, 휠 한 칸당 확대 비율")]
     public float orbitSpeed = 0.15f, panSpeed = 0.01f, zoomSpeed = 0.1f;
 
+    [Header("입체감 (시차)")]
+    [Tooltip("마우스가 화면 끝에 있을 때 무대 가운데를 축으로 도는 각도 (좌우, 위아래 도). 0이면 끔")]
+    public Vector2 parallaxAngle = new Vector2(2.2f, 1.1f);
+    [Tooltip("가만히 있어도 천천히 흔들리는 각도 (도). 0이면 끔")]
+    public float swayAngle = 0.8f;
+
     private Vector3 homePos;
     private Quaternion homeRot;
     private Transform focusTarget;
@@ -147,7 +153,14 @@ public class BattleCamera : MonoBehaviour
     /// <summary>둘러보기 값이 적용된 기본 시점 (축을 중심으로 돌리고, 당기고, 민다)</summary>
     private void ViewPose(out Vector3 pos, out Quaternion rot)
     {
-        Quaternion orbit = Quaternion.AngleAxis(yaw, Vector3.up) * Quaternion.AngleAxis(pitch, homeRot * Vector3.right);
+        // 시차: 마우스 위치와 느린 흔들림만큼 무대 가운데를 축으로 아주 살짝 돈다 → 앞/뒤 사물이 다르게 움직여 깊이가 보인다
+        Vector2 m = new Vector2(Input.mousePosition.x / Mathf.Max(1, Screen.width), Input.mousePosition.y / Mathf.Max(1, Screen.height)) * 2f - Vector2.one;
+        m = Vector2.ClampMagnitude(m, 1.2f);
+        float t = Time.unscaledTime;
+        float driftYaw = dragging ? 0f : m.x * parallaxAngle.x + (Mathf.PerlinNoise(t * 0.13f, 0.5f) - 0.5f) * swayAngle;
+        float driftPitch = dragging ? 0f : -m.y * parallaxAngle.y + (Mathf.PerlinNoise(0.5f, t * 0.11f) - 0.5f) * swayAngle * 0.5f;
+
+        Quaternion orbit = Quaternion.AngleAxis(yaw + driftYaw, Vector3.up) * Quaternion.AngleAxis(pitch + driftPitch, homeRot * Vector3.right);
         Vector3 fromPivot = orbit * (homePos - orbitPivot) * zoom;
         rot = orbit * homeRot;
         pos = orbitPivot + fromPivot + rot * new Vector3(pan.x, pan.y, 0f);

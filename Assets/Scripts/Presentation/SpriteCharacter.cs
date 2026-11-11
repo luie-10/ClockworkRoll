@@ -32,6 +32,10 @@ public class SpriteCharacter : MonoBehaviour
     [Tooltip("포즈가 바뀔 때 몸이 따라가는 속도")]
     public float poseSpeed = 14f;
 
+    [Header("입체감")]
+    [Tooltip("무대 조명(가로등 · 불 · 네온)을 받고 그림 모양대로 그림자를 드리운다. 끄면 예전처럼 조명과 무관한 스프라이트")]
+    public bool stageLighting = true;
+
     [Header("그림자")]
     public bool showShadow = true;
     public float shadowSize = 1.1f;
@@ -183,6 +187,14 @@ public class SpriteCharacter : MonoBehaviour
             body.SetParent(transform, false);
             body.SetAsFirstSibling();
             BodyRenderer = body.gameObject.AddComponent<SpriteRenderer>();
+
+            // 무대 조명을 받고 진짜 그림자를 드리우는 셰이더 (없거나 지원 안 되면 기본 스프라이트 그대로)
+            Shader lit = stageLighting ? Resources.Load<Shader>("StageSprite") : null;
+            if (lit != null && lit.isSupported)
+            {
+                BodyRenderer.sharedMaterial = new Material(lit);
+                BodyRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+            }
         }
 
         Sprite shown = IdleSprite();
