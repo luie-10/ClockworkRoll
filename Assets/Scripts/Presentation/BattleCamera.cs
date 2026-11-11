@@ -20,6 +20,10 @@ public class BattleCamera : MonoBehaviour
     public Vector3 focusOffset = new Vector3(0f, 1.6f, -4.5f);
     [Tooltip("포커스 타겟의 어느 높이를 바라볼지 (머리 위 칸 표시까지 화면에 들어오게)")]
     public float lookHeight = 1.8f;
+    [Tooltip("합(둘이 맞붙을 때) 클로즈업: 둘 사이 가운데 기준 카메라 위치 오프셋 — 둘의 발끝부터 머리 위 칸 표시까지 한 화면에 들어오게")]
+    public Vector3 clashOffset = new Vector3(0f, 1.5f, -5.8f);
+    [Tooltip("합 클로즈업에서 바라보는 높이")]
+    public float clashLookHeight = 1.55f;
     [Tooltip("카메라 이동 속도")]
     public float moveSpeed = 3f;
 
@@ -45,7 +49,7 @@ public class BattleCamera : MonoBehaviour
 
     private Vector3 homePos;
     private Quaternion homeRot;
-    private Transform focusTarget;
+    private Transform focusTarget, focusPartner;
 
     private Vector3 smoothPos;
     private float shakeStrength;
@@ -81,12 +85,21 @@ public class BattleCamera : MonoBehaviour
     public void Focus(Unit target)
     {
         focusTarget = target != null ? target.transform : null;
+        focusPartner = null;
+    }
+
+    /// <summary>둘이 맞붙는 장면: 둘 사이 가운데를 잡는다 (한쪽만 화면 가운데에 오고 다른 쪽이 잘리지 않게).</summary>
+    public void Focus(Unit target, Unit partner)
+    {
+        Focus(target);
+        focusPartner = partner != null && target != null ? partner.transform : null;
     }
 
     /// <summary>포커스를 해제하고 둘러보던 시점으로 복귀한다.</summary>
     public void Release()
     {
         focusTarget = null;
+        focusPartner = null;
     }
 
     /// <summary>처음 시점으로 (둘러본 각도/확대를 되돌림)</summary>
@@ -172,10 +185,12 @@ public class BattleCamera : MonoBehaviour
         // smoothPos = 흔들림을 뺀 '원래' 카메라 위치. 흔들림이 이동 계산에 섞이지 않게 따로 관리한다.
         if (focusTarget != null)
         {
-            Vector3 goal = focusTarget.position + focusOffset;
+            bool pair = focusPartner != null;
+            Vector3 center = pair ? (focusTarget.position + focusPartner.position) * 0.5f : focusTarget.position;
+            Vector3 goal = center + (pair ? clashOffset : focusOffset);
             smoothPos = Vector3.Lerp(smoothPos, goal, Time.deltaTime * moveSpeed);
 
-            Vector3 lookPoint = focusTarget.position + Vector3.up * lookHeight;
+            Vector3 lookPoint = center + Vector3.up * (pair ? clashLookHeight : lookHeight);
             Quaternion look = Quaternion.LookRotation(lookPoint - smoothPos);
             transform.rotation = Quaternion.Slerp(transform.rotation, look, Time.deltaTime * moveSpeed);
         }

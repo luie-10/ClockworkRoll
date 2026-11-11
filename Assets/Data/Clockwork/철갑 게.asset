@@ -17,7 +17,7 @@ MonoBehaviour:
   - "\uBB34\uC1E0 \uC9D1\uAC8C"
   - "\uB2EB\uD78C \uB4F1\uAECD\uC9C8"
   - "\uC606\uAC78\uC74C"
-  maxHp: 42
+  maxHp: 46
   resistance:
     slash: 1
     thrust: 0

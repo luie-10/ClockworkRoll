@@ -15,7 +15,7 @@ MonoBehaviour:
   enemyName: "\uAC15\uCCA0 \uC218\uBB38\uC7A5"
   nicknames:
   - "\uB179\uC2A8 \uC218\uBB38\uC7A5"
-  maxHp: 72
+  maxHp: 64
   resistance:
     slash: 0
     thrust: 0

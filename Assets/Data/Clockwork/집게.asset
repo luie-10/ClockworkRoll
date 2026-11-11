@@ -23,13 +23,13 @@ MonoBehaviour:
     diceType: 0
     diceDetail: 0
     minRoll: 3
-    maxRoll: 5
+    maxRoll: 6
     diceEffectDescription: 
     effects: []
   - diceName: 
     diceType: 0
     diceDetail: 0
-    minRoll: 2
-    maxRoll: 4
+    minRoll: 3
+    maxRoll: 5
     diceEffectDescription: 
     effects: []

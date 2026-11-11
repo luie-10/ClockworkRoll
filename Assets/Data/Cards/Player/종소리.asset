@@ -15,7 +15,7 @@ MonoBehaviour:
   cardName: "\uC885\uC18C\uB9AC"
   cardArt: {fileID: 21300000, guid: 95398120e14c2b54fae740f491ad3502, type: 3}
   rarity: 1
-  cost: 3
+  cost: 2
   requireEmotionLevel: 0
   cardDescription: "\uC791\uC740 \uC885 \uD558\uB098\uAC00 \uACE8\uBAA9 \uC804\uCCB4\uB97C
     \uD754\uB4E0\uB2E4."
@@ -23,8 +23,8 @@ MonoBehaviour:
   - diceName: 
     diceType: 0
     diceDetail: 2
-    minRoll: 2
-    maxRoll: 4
+    minRoll: 3
+    maxRoll: 5
     diceEffectDescription: 
     effects:
     - trigger: 0

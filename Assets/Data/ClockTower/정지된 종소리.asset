@@ -23,8 +23,8 @@ MonoBehaviour:
   - diceName: 
     diceType: 0
     diceDetail: 2
-    minRoll: 4
-    maxRoll: 7
+    minRoll: 3
+    maxRoll: 6
     diceEffectDescription: 
     effects:
     - trigger: 1

@@ -16,7 +16,7 @@ MonoBehaviour:
   nicknames:
   - "\uC678\uB208 \uC548\uACBD"
   - "\uAE30\uB984 \uC190"
-  maxHp: 44
+  maxHp: 40
   resistance:
     slash: 1
     thrust: 0

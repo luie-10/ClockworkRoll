@@ -29,7 +29,7 @@ MonoBehaviour:
     effects:
     - trigger: 3
       effect: 11
-      amount: 6
+      amount: 4
       nextTurn: 0
   - diceName: 
     diceType: 0

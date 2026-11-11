@@ -162,15 +162,17 @@ public class ClashDiceDisplay : MonoBehaviour
     private void FollowTarget()
     {
         // 머리 위 (HP/상태이상 표시보다 위)
+        Camera cam = Camera.main;
         Vector3 pos = target.transform.position + Vector3.up * 2.6f;
+        float scale = UnitStatusLabel.ScreenScale(cam, pos);   // 이름표와 같은 배율 (멀면 크게, 클로즈업이면 작게)
         if (target.bodyRenderer != null)
         {
             Bounds b = target.bodyRenderer.bounds;
-            pos = new Vector3(b.center.x, b.max.y + 1.15f, b.center.z);   // 상태창(장착 태엽판 줄 포함) 바로 위
+            pos = new Vector3(b.center.x, b.max.y + 0.3f + 0.85f * scale, b.center.z);   // 상태창(장착 태엽판 줄 포함) 바로 위
         }
         transform.position = pos;
+        transform.localScale = Vector3.one * scale;
 
-        Camera cam = Camera.main;
         if (cam != null) transform.rotation = cam.transform.rotation;   // 빌보드
     }
 

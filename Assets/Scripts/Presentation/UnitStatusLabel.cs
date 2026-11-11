@@ -125,11 +125,26 @@ public class UnitStatusLabel : MonoBehaviour
 
         Camera cam = Camera.main;
         if (cam != null) transform.rotation = cam.transform.rotation;
+        transform.localScale = Vector3.one * ScreenScale(cam, pos);
 
         UpdateBar();
         UpdateStatus();
         UpdateTargeted();
         RefreshBox();   // 글자 폭이 바뀐 직후 메시 크기를 다시 재서 상자를 맞춘다
+    }
+
+    /// <summary>이 거리에서 원래 크기(1배)로 보인다 — 기본 시점에서 무대 가운데까지의 거리쯤</summary>
+    public const float ReferenceDistance = 8.5f;
+
+    /// <summary>
+    /// 머리 위 표시(이름표 · 칸 표시)의 배율: 카메라에서 멀면 키우고 가까우면 줄여서 화면에서는 비슷한 크기로 보이게 한다.
+    /// (멀리 선 적의 글자가 깨알처럼 작아지거나, 합 클로즈업 때 이름표가 화면을 덮지 않게)
+    /// </summary>
+    public static float ScreenScale(Camera cam, Vector3 worldPos)
+    {
+        if (cam == null) return 1f;
+        float depth = Vector3.Dot(worldPos - cam.transform.position, cam.transform.forward);
+        return Mathf.Clamp(depth / ReferenceDistance, 0.7f, 1.5f);
     }
 
     /// <summary>지금 노리는 적이면 상자가 황동색으로 물든다</summary>
@@ -187,15 +202,17 @@ public class UnitStatusLabel : MonoBehaviour
         float top = 0.25f + (hasIntent ? 0.33f : 0f);
         float bottom = -0.25f - (hasStatus ? 0.2f : 0f);
 
-        float width = Mathf.Max(Width, nameText.GetComponent<MeshRenderer>().bounds.size.x + 0.24f);   // 긴 별명도 상자 안에
+        // bounds는 월드 크기라 이름표 배율(ScreenScale)로 나눠서 잰다
+        float s = Mathf.Max(0.01f, transform.lossyScale.x);
+        float width = Mathf.Max(Width, nameText.GetComponent<MeshRenderer>().bounds.size.x / s + 0.24f);   // 긴 별명도 상자 안에
         if (hasIntent)
         {
             float textWidth = Mathf.Max(intentTitle.GetComponent<MeshRenderer>().bounds.size.x,
-                                        intentDice.GetComponent<MeshRenderer>().bounds.size.x);
+                                        intentDice.GetComponent<MeshRenderer>().bounds.size.x) / s;
             width = Mathf.Max(width, textWidth + 0.24f);
         }
         if (hasStatus)
-            width = Mathf.Max(width, statusText.GetComponent<MeshRenderer>().bounds.size.x + 0.24f);
+            width = Mathf.Max(width, statusText.GetComponent<MeshRenderer>().bounds.size.x / s + 0.24f);
 
         box.size = new Vector2(width, top - bottom);
         box.transform.localPosition = new Vector3(0f, (top + bottom) * 0.5f, 0f);

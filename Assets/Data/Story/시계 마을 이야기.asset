@@ -33,6 +33,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: c8eadc25ffba4a3ceee6cda5fce8ed68, type: 2}
   - {fileID: 11400000, guid: 0323428cb9c8b2da177b3440a119782e, type: 2}
   rewardPool:
+  - {fileID: 11400000, guid: 1a48df408d7a9e83c7decb164b607f39, type: 2}
   - {fileID: 11400000, guid: eacafe56db1bfc736a3723b678ad3452, type: 2}
   - {fileID: 11400000, guid: e383ce9d3c2ed4b37c90bd2060b164be, type: 2}
   - {fileID: 11400000, guid: b8e4d38567bb6d0ebc3ad8ab6b154122, type: 2}

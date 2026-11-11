@@ -22,8 +22,8 @@ MonoBehaviour:
   - diceName: 
     diceType: 0
     diceDetail: 2
-    minRoll: 6
-    maxRoll: 12
+    minRoll: 5
+    maxRoll: 9
     diceEffectDescription: 
     effects:
     - trigger: 1
@@ -34,6 +34,6 @@ MonoBehaviour:
     diceType: 1
     diceDetail: 3
     minRoll: 4
-    maxRoll: 9
+    maxRoll: 8
     diceEffectDescription: 
     effects: []

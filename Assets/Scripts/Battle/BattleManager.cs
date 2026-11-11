@@ -495,7 +495,7 @@ public class BattleManager : MonoBehaviour
         DiceData defDie = defAct != null ? defAct.DieAt(hour) : null;
 
         // 연출: 카메라가 맞는 쪽에 살짝 다가가고, 두 캐릭터가 서로를 바라본다
-        if (BattleCamera.Instance != null) BattleCamera.Instance.Focus(defender);
+        if (BattleCamera.Instance != null) BattleCamera.Instance.Focus(defender, attacker);
         attacker.FaceTowards(defender.transform.position);
         defender.FaceTowards(attacker.transform.position);
 

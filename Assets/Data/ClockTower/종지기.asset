@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyData
   enemyName: "\uC885\uC9C0\uAE30"
   nicknames: []
-  maxHp: 70
+  maxHp: 52
   resistance:
     slash: 1
     thrust: 0

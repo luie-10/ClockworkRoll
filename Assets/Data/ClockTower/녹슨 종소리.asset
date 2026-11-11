@@ -23,7 +23,7 @@ MonoBehaviour:
     diceType: 0
     diceDetail: 2
     minRoll: 4
-    maxRoll: 8
+    maxRoll: 7
     diceEffectDescription: 
     effects: []
   - diceName: 

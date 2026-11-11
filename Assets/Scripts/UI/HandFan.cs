@@ -13,9 +13,9 @@ public class HandFan : MonoBehaviour
     [Tooltip("호의 반지름 — 클수록 완만하다")]
     public float radius = 1700f;
     [Tooltip("카드 사이 각도(도)")]
-    public float stepDegrees = 4.2f;
+    public float stepDegrees = 5f;
     [Tooltip("손패 전체가 벌어지는 최대 각도(도)")]
-    public float maxSpreadDegrees = 30f;
+    public float maxSpreadDegrees = 32f;
     [Tooltip("가운데 카드의 높이")]
     public float baseY = 70f;
     public float hoverLift = 50f;
@@ -23,6 +23,8 @@ public class HandFan : MonoBehaviour
     [Tooltip("마우스를 올린 카드 옆 카드가 비켜나는 거리")]
     public float neighborPush = 50f;
     public float followSpeed = 14f;
+    [Tooltip("시계가 도는 동안(내 차례가 아닐 때) 손패가 내려가는 거리 — 카드 윗부분만 남아 싸움을 가리지 않는다")]
+    public float tuckDrop = 205f;
 
     private static readonly Vector2 Anchor = new Vector2(0.5f, 0f);
     private readonly List<CardView> cards = new List<CardView>();
@@ -44,6 +46,11 @@ public class HandFan : MonoBehaviour
             if (view.IsHovered) hovered = cards.Count;
             cards.Add(view);
         }
+
+        // 시계가 도는 동안에는 손패를 쓸 수 없으니 아래로 내려 둔다 (마우스를 올려도 들리지 않는다)
+        BattleManager bm = BattleManager.Instance;
+        bool tucked = bm != null && bm.Phase != BattleManager.BattlePhase.PlayerTurn && bm.Phase != BattleManager.BattlePhase.Ready;
+        if (tucked) hovered = -1;
 
         int n = cards.Count;
         float step = n > 1 ? Mathf.Min(stepDegrees, maxSpreadDegrees / (n - 1)) : 0f;
@@ -73,6 +80,8 @@ public class HandFan : MonoBehaviour
                 if (hovered >= 0) pos.x += Mathf.Sign(i - hovered) * neighborPush / Mathf.Abs(i - hovered);
                 if (cards[i].IsSelected) pos.y += selectedLift;
             }
+
+            if (tucked) pos.y -= tuckDrop;
 
             rt.anchoredPosition = Vector2.Lerp(rt.anchoredPosition, pos, k);
             rt.localRotation = Quaternion.Slerp(rt.localRotation, Quaternion.Euler(0f, 0f, tilt), k);

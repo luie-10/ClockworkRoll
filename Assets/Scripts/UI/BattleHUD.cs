@@ -30,7 +30,8 @@ public class BattleHUD : MonoBehaviour
 
     void Update()
     {
-        bool show = GameManager.Instance != null && GameManager.Instance.State == GameManager.GameState.Battle;
+        // 승리 화면(태엽판 고르기)이 떠 있는 동안에도 물러난다 — 손패와 버튼이 고르기 화면 밑에 비쳐 겹쳐 보이지 않게
+        bool show = GameManager.Instance != null && GameManager.Instance.State == GameManager.GameState.Battle && !VictoryScreen.IsOpen;
         if (show != lastShown) Apply(show);
 
         float target = show ? 1f : 0f;

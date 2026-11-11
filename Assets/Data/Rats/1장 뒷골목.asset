@@ -38,11 +38,8 @@ MonoBehaviour:
     text: "아, 골목 끝에서 이걸 찾았어. 멈춘 초침... 이상하게 따뜻해."
     portrait: {fileID: 0}
   rewardCards:
-  - {fileID: 11400000, guid: f5f724797ccaefc28317ef920253b939, type: 2}
   - {fileID: 11400000, guid: 648d13ec50fb75cebf109512b90762a0, type: 2}
   - {fileID: 11400000, guid: 1d72e9fa20fe13b3fd6fb7a9a92eadf4, type: 2}
-  - {fileID: 11400000, guid: 7981341a6405e7837c6cff2f9b69c05c, type: 2}
-  - {fileID: 11400000, guid: 1a48df408d7a9e83c7decb164b607f39, type: 2}
   routeFights:
   - {fileID: 11400000, guid: 912c0aa390acad03ea47aa1e5afddc07, type: 2}
   - {fileID: 11400000, guid: 4dc2f2c5549821d067093b7181663c4a, type: 2}
