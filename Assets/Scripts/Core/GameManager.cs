@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -45,6 +46,19 @@ public class GameManager : MonoBehaviour
     [Header("갈림길 지도 (전투에서 이긴 뒤, 다음 챕터 전투까지)")]
     [Tooltip("지도의 층 수 = 다음 챕터 전투까지 거치는 칸 수 (0 = 지도 없음)")]
     public int routeRows = 6;
+    [Tooltip("챕터 전투(보스)를 이기면 최대 체력의 이만큼 회복 (0 = 회복 없음). 갈래길 위의 전투에는 적용되지 않는다")]
+    [Range(0f, 1f)]
+    public float chapterClearHealRatio = 0.35f;
+
+    [Header("시작 화면 · 로딩 화면")]
+    [Tooltip("체크: 게임을 켜면 시작 화면부터 (패배 뒤 '다시 시작'은 건너뛴다)")]
+    public bool showTitleScreen = true;
+    [Tooltip("체크: 게임 시작과 전투 진입 때 로딩 화면으로 장면 전환을 덮는다")]
+    public bool showLoadingScreen = true;
+    [Tooltip("시작 화면의 큰 제목")]
+    public string gameTitle = "CLOCKWORK ROLL";
+    [Tooltip("시작 화면 제목 아래 한 줄 소개")]
+    public string titleTagline = "멈춘 종탑 때문에 물에 잠긴 시계 마을 — 떠다니는 기억을 삼키며 종탑으로";
 
     [Header("침식(흡수 카드 부작용) 설정")]
     [Tooltip("침식 1인 흡수 카드를 사용할 때 발동 확률")]
@@ -98,7 +112,68 @@ public class GameManager : MonoBehaviour
         }
 
         BattleManager.DressUnit(playerUnit);   // 그림이 비어 있으면 자동 일러스트 (스토리 장면부터 보이게)
-        NextChapter();
+
+        // 시작 화면 → 로딩 → 첫 챕터. '다시 시작'으로 씬을 다시 불렀으면 시작 화면 없이 바로 덮고 들어간다
+        bool restarted = skipTitleOnce;
+        skipTitleOnce = false;
+        if (showTitleScreen && !restarted)
+            TitleScreen.Show(gameTitle, story != null ? story.storyTitle : "", titleTagline, () => BeginGame(false));
+        else
+            BeginGame(restarted);
+    }
+
+    // ─────────────────────────── 시작 화면 · 로딩 ───────────────────────────
+
+    private static bool skipTitleOnce;   // RestartScene이 켠다 (씬을 다시 불러도 남는다)
+
+    private void BeginGame(bool coverInstantly)
+    {
+        if (!showLoadingScreen) { NextChapter(); return; }
+        LoadingScreen.Play(story != null ? story.storyTitle : gameTitle, "태엽을 감는 중…", Prewarm(), NextChapter, 1.6f, coverInstantly);
+    }
+
+    /// <summary>
+    /// 로딩 화면 뒤에서 미리 해 둘 일: 지도 문양과, 그림이 없는 적의 자동 일러스트를 그려 둔다
+    /// (전투가 시작되는 순간 그리면 화면이 잠깐 멈춘다). 한 걸음(yield)마다 하나씩.
+    /// </summary>
+    private IEnumerator Prewarm()
+    {
+        RouteIcons.Warm();
+        yield return null;
+
+        HashSet<EnemyData> seen = new HashSet<EnemyData>();
+        foreach (ChapterData chapter in chapters)
+        {
+            if (chapter == null) continue;
+            List<BattleStageData> stages = new List<BattleStageData> { chapter.battle };
+            if (chapter.routeFights != null) stages.AddRange(chapter.routeFights);
+            if (chapter.routeElites != null) stages.AddRange(chapter.routeElites);
+
+            foreach (BattleStageData stage in stages)
+            {
+                if (stage == null || stage.enemies == null) continue;
+                foreach (EnemySpawnInfo info in stage.enemies)
+                {
+                    EnemyData enemy = info != null ? info.enemy : null;
+                    if (enemy == null || !seen.Add(enemy)) continue;
+                    if (enemy.sprite != null || enemy.modelPrefab != null) continue;   // 그림이 이미 있다
+                    Illustrator.Character(enemy.enemyName, enemy.tintColor);
+                    yield return null;
+                }
+            }
+        }
+    }
+
+    /// <summary>전투로 들어간다 — 로딩 화면이 다 덮은 뒤에 배경과 적을 바꾼다 (끄면 바로)</summary>
+    private void EnterBattle(BattleStageData stage, string caption)
+    {
+        Action begin = () =>
+        {
+            SetState(GameState.Battle);
+            battleManager.StartBattle(stage, playerUnit);
+        };
+        if (showLoadingScreen) LoadingScreen.Play(stage.stageName, caption, null, begin, 0.9f);
+        else begin();
     }
 
     // ─────────────────────────── 챕터 진행 ───────────────────────────
@@ -164,8 +239,7 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        SetState(GameState.Battle);
-        battleManager.StartBattle(chapter.battle, playerUnit);
+        EnterBattle(chapter.battle, chapter.chapterTitle);
     }
 
     // ─────────────────────────── 전투 결과 수신 ───────────────────────────
@@ -189,6 +263,13 @@ public class GameManager : MonoBehaviour
             SetState(GameState.Route);
             back();
             return;
+        }
+
+        // 1-2) 챕터의 큰 싸움을 넘겼으면 한숨 돌린다 — 다섯 장을 이어 가려면 장마다 숨 쉴 틈이 있어야 한다
+        if (chapter.battle != null && playerUnit != null && chapterClearHealRatio > 0f)
+        {
+            int healed = playerUnit.Heal(Mathf.CeilToInt(playerUnit.MaxHp * chapterClearHealRatio));
+            if (healed > 0) Debug.Log($"챕터 클리어 — 체력 +{healed}");
         }
 
         // 2) 기존 보상 카드 지급 (침식 없는 순수 획득)
@@ -249,8 +330,7 @@ public class GameManager : MonoBehaviour
     public void StartRouteBattle(BattleStageData stage, Action onWon)
     {
         routeBattleWon = onWon;
-        SetState(GameState.Battle);
-        battleManager.StartBattle(stage, playerUnit);
+        EnterBattle(stage, "갈래길");
     }
 
     /// <summary>침식 없는 태엽판 1장을 덱에 넣는다</summary>
@@ -372,6 +452,7 @@ public class GameManager : MonoBehaviour
     public void RestartScene()
     {
         Time.timeScale = 1f;   // 히트스톱 중에 끝났어도 멈춘 시간이 다음 판으로 넘어가지 않게
+        skipTitleOnce = true;  // 다시 시작은 시작 화면 없이 바로
         UnityEngine.SceneManagement.SceneManager.LoadScene(
             UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex);
     }

@@ -30,7 +30,10 @@ MonoBehaviour:
   chapters:
   - {fileID: 11400000, guid: ff3247547fe5dc39ef390ee7aba714d9, type: 2}
   - {fileID: 11400000, guid: e169478c71f8497743c3996798136224, type: 2}
+  - {fileID: 11400000, guid: d7368e7f4258447a942288bc76ed1443, type: 2}
+  - {fileID: 11400000, guid: bed598be5dd5488191a483efebb17f1c, type: 2}
   - {fileID: 11400000, guid: c8eadc25ffba4a3ceee6cda5fce8ed68, type: 2}
+  - {fileID: 11400000, guid: 013ba5d72f189ce6dc744a025332bfe5, type: 2}
   - {fileID: 11400000, guid: 0323428cb9c8b2da177b3440a119782e, type: 2}
   rewardPool:
   - {fileID: 11400000, guid: 1a48df408d7a9e83c7decb164b607f39, type: 2}

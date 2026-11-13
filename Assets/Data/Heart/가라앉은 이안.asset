@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c432b655cc2ee62408eb86f1bf1d0dbc, type: 3}
+  m_Name: "가라앉은 이안"
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyData
+  enemyName: "가라앉은 이안"
+  nicknames: []
+  maxHp: 32
+  resistance:
+    slash: 0
+    thrust: 0
+    blunt: 1
+  sprite: {fileID: 0}
+  spriteHeight: 1.7
+  poses:
+    slash: {fileID: 0}
+    thrust: {fileID: 0}
+    blunt: {fileID: 0}
+    guard: {fileID: 0}
+    evade: {fileID: 0}
+    hit: {fileID: 0}
+    down: {fileID: 0}
+  modelPrefab: {fileID: 0}
+  tintColor: {r: 0.45, g: 0.6, b: 0.75, a: 1}
+  actionsPerRound: 1
+  deck:
+  - {fileID: 11400000, guid: 317a845efca08781257fffd3b92d8ec0, type: 2}
+  - {fileID: 11400000, guid: b492c63f75657398083697ec9d63b7f2, type: 2}
+  - {fileID: 11400000, guid: c752f0de72672fb75770bf0156e2234a, type: 2}
+  - {fileID: 11400000, guid: 0e9352576c1da336396d97d2eee78a73, type: 2}

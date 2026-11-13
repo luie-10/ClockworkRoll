@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c432b655cc2ee62408eb86f1bf1d0dbc, type: 3}
+  m_Name: "큰 태엽의 망령"
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyData
+  enemyName: "큰 태엽의 망령"
+  nicknames: []
+  maxHp: 66
+  resistance:
+    slash: 0
+    thrust: 1
+    blunt: 0
+  sprite: {fileID: 0}
+  spriteHeight: 3.2
+  poses:
+    slash: {fileID: 0}
+    thrust: {fileID: 0}
+    blunt: {fileID: 0}
+    guard: {fileID: 0}
+    evade: {fileID: 0}
+    hit: {fileID: 0}
+    down: {fileID: 0}
+  modelPrefab: {fileID: 0}
+  tintColor: {r: 0.72, g: 0.3, b: 0.22, a: 1}
+  actionsPerRound: 2
+  deck:
+  - {fileID: 11400000, guid: 788e487a01d4766584d701e2038d47f1, type: 2}
+  - {fileID: 11400000, guid: 3862429a5a805f37ca023c8152cd6444, type: 2}
+  - {fileID: 11400000, guid: 280d5f124f30f670d4f26912dbf81354, type: 2}
+  - {fileID: 11400000, guid: ad3f2c68b1f5f0aca6c9d1b84755a801, type: 2}
+  - {fileID: 11400000, guid: 97ea8ed3ae8c862f1d82b9d6774e368e, type: 2}

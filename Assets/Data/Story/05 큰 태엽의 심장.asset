@@ -1,0 +1,105 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 551d2ebdc9dbf10479df475a9525e215, type: 3}
+  m_Name: "05 큰 태엽의 심장"
+  m_EditorClassIdentifier: Assembly-CSharp::ChapterData
+  chapterTitle: "5장. 큰 태엽의 심장"
+  introLines:
+  - speaker: "―"
+    text: "종지기가 비켜선 자리 뒤로, 종루로 오르는 마지막 계단이 드러난다. 종 바로 아래에는 마을의 모든 시계를 돌리던 큰 태엽이 있다."
+    portrait: {fileID: 0}
+  - speaker: "틱"
+    text: "저게 큰 태엽이야. ...원래는 금빛이었는데."
+    portrait: {fileID: 0}
+  - speaker: "―"
+    text: "큰 태엽은 붉은 녹 덩어리에 통째로 감겨 있다. 녹 사이사이에 박힌 태엽판 수백 장이 맥박처럼 깜빡인다."
+    portrait: {fileID: 0}
+  - speaker: "종지기"
+    text: "종을 멈춘 뒤로, 물에 녹아 나온 기억들이 전부 여기로 흘러들었다. 달리 갈 곳이 없었던 게지."
+    portrait: {fileID: 0}
+  - speaker: "이안"
+    text: "줄을 당겨도 종이 꿈쩍도 안 해. 태엽이 꽉 물려 있어."
+    portrait: {fileID: 0}
+  - speaker: "???"
+    text: "...배고파. ...지켜라. ...한 방울도 못 준다."
+    portrait: {fileID: 0}
+  - speaker: "틱"
+    text: "저 목소리... 쥐들이야. 수문장도, 하멜 아저씨도 섞여 있어."
+    portrait: {fileID: 0}
+  - speaker: "큰 태엽의 망령"
+    text: "울리지 마라. 종이 울리면 우리는 다시 짜여서 기름이 된다."
+    portrait: {fileID: 0}
+  - speaker: "이안"
+    text: "이번엔 달라. 아무도 짜내지 않아."
+    portrait: {fileID: 0}
+  - speaker: "큰 태엽의 망령"
+    text: "잊힌 것들은 모두 그 말을 들었다. 너도 들었다, 젖은 계단의 꼬마야."
+    portrait: {fileID: 0}
+  - speaker: "―"
+    text: "녹 덩어리 속에서 작은 그림자 하나가 걸어 나온다. 기름통을 멘, 이안과 꼭 닮은 아이."
+    portrait: {fileID: 0}
+  - speaker: "틱"
+    text: "이안... 저거, 너야. 네가 잃어버린 기억이야."
+    portrait: {fileID: 0}
+  - speaker: "이안"
+    text: "...그래서 이름밖에 안 남았던 거구나."
+    portrait: {fileID: 0}
+  - speaker: "가라앉은 이안"
+    text: "돌아가. 기억하면 아파. 가라앉아 있으면 아무것도 안 아파."
+    portrait: {fileID: 0}
+  - speaker: "이안"
+    text: "아파도 내 거야. 돌려받을게."
+    portrait: {fileID: 0}
+  - speaker: "틱"
+    text: "녹이 엄청나게 뿜어져 나와! 오래 끌면 태엽판이 전부 못 쓰게 될 거야!"
+    portrait: {fileID: 0}
+  battle: {fileID: 11400000, guid: 3beaff666506ec68d9b75472d4de31f2, type: 2}
+  outroLines:
+  - speaker: "―"
+    text: "녹 덩어리가 갈라진다. 박혀 있던 태엽판들이 하나씩 빠져나와 종루 창밖으로 흩어진다."
+    portrait: {fileID: 0}
+  - speaker: "큰 태엽의 망령"
+    text: "...우리를, 지우지 않는 거냐."
+    portrait: {fileID: 0}
+  - speaker: "이안"
+    text: "안 지워. 주인한테 돌아가. 주인이 없는 건 내가 들고 있을게."
+    portrait: {fileID: 0}
+  - speaker: "―"
+    text: "작은 그림자가 이안 앞에 선다. 기름통에서 마지막 한 방울이 떨어진다."
+    portrait: {fileID: 0}
+  - speaker: "가라앉은 이안"
+    text: "계단이 미끄러웠어. 종이 멈추던 날, 기름을 들고 올라가다가... 창밖으로 물이 차오르는 걸 봤어."
+    portrait: {fileID: 0}
+  - speaker: "이안"
+    text: "응. 이제 기억나. 종지기 할아버지가 종 앞에서 울고 있었지."
+    portrait: {fileID: 0}
+  - speaker: "종지기"
+    text: "...그날 너를 잡아 주지 못했다. 종을 멈추느라, 네가 떨어지는 소리를 듣지 못했어."
+    portrait: {fileID: 0}
+  - speaker: "이안"
+    text: "괜찮아. 떠내려간 덕분에 틱을 만났으니까."
+    portrait: {fileID: 0}
+  - speaker: "틱"
+    text: "뭐, 뭐야 갑자기... 태엽이 헛돌잖아."
+    portrait: {fileID: 0}
+  - speaker: "―"
+    text: "그림자가 이안의 손 안으로 스며든다. 차갑지 않다. 처음으로, 삼킨 기억이 따뜻하다."
+    portrait: {fileID: 0}
+  - speaker: "―"
+    text: "녹이 벗겨진 큰 태엽이 금빛을 드러낸다. 물려 있던 톱니가 한 칸, 천천히 풀린다."
+    portrait: {fileID: 0}
+  - speaker: "종지기"
+    text: "이제 줄이 움직일 게다. 당겨라, 꼬마야. 이번에는 내가 듣고 있으마."
+    portrait: {fileID: 0}
+  rewardCards: []
+  routeFights: []
+  routeElites: []

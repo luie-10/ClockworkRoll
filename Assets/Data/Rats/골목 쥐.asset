@@ -20,7 +20,7 @@ MonoBehaviour:
   - "\uC816\uC740 \uC218\uC5FC"
   - "\uAE68\uC9C4 \uC55E\uB2C8"
   - "\uC950\uAD6C\uBA4D"
-  maxHp: 34
+  maxHp: 30
   resistance:
     slash: 0
     thrust: 1

@@ -7,20 +7,17 @@ using UnityEngine.UI;
 /// <summary>
 /// 전투에서 이긴 뒤 다음 챕터 전투까지 걷는 갈래길 지도.
 ///
-///          (종) ← 다음 챕터 전투 (목적지)
-///        쉼   쉼   쉼          맨 위층은 언제나 휴식
-///       ⋮ ╲  ⋮  ╱ ⋮
-///       전  ?   강   궤         점선으로 이어진 칸만 갈 수 있다 (한 층에 한 칸)
-///        ⋮ ╱  ⋮
-///         출발
+///   맨 위 = 다음 챕터 전투 (종 문양, 목적지) · 그 아래층은 언제나 휴식 · 맨 아래 = 출발점.
+///   점선으로 이어진 칸만 갈 수 있다 (한 층에 한 칸).
+///   칸은 글자가 아니라 문양으로 그린다 (RouteIcons — 코드로 그린 그림).
 ///
-/// 칸의 종류
-///   전 전투   : 챕터의 갈래길 적 무리 중 하나와 싸운다 (이기면 흡수 화면)
-///   강 강적   : 더 센 강적 무리와 싸운다 → 이기면 태엽판 3장 중 1장 추가
-///   쉼 휴식   : 최대 체력의 30% 회복
-///   ?  이벤트 : 무작위 사건 — 선택지마다 결과가 다르다 (Events()에서 추가/수정)
-///   철 고철상 : 덱에서 태엽판 1장을 버린다
-///   궤 궤짝   : 부품 3개 중 1개를 얻는다 (최대 기력이 늘어난다)
+/// 칸의 종류 (문양)
+///   엇갈린 검 전투   : 챕터의 갈래길 적 무리 중 하나와 싸운다 (이기면 흡수 화면)
+///   뿔 해골 강적   : 더 센 강적 무리와 싸운다 → 이기면 태엽판 3장 중 1장 추가
+///   등불 휴식   : 최대 체력의 30% 회복
+///   낯선 문 이벤트 : 무작위 사건 — 선택지마다 결과가 다르다 (Events()에서 추가/수정)
+///   금 간 톱니 고철상 : 덱에서 태엽판 1장을 버린다
+///   궤짝   : 부품 3개 중 1개를 얻는다 (최대 기력이 늘어난다)
 ///
 /// 직접 붙일 필요 없음 — GameManager가 RouteScreen.Play()로 띄운다 (전용 Canvas를 알아서 만든다).
 /// 체력은 전투 사이에 이어지므로 휴식이 의미가 있다.
@@ -35,7 +32,7 @@ public class RouteScreen : MonoBehaviour
         public NodeType type;
         public Vector2 pos;                                  // 지도 위 위치 (흔들림 포함)
         public readonly List<MapNode> next = new List<MapNode>();
-        public Image view;
+        public Image view, icon;
         public bool visited;
     }
 
@@ -57,7 +54,7 @@ public class RouteScreen : MonoBehaviour
     private const float RestHealRatio = 0.45f;   // 휴식: 최대 체력의 이만큼 회복
     private const int Columns = 5;
     private const int Walks = 6;                // 아래에서 위로 그어 보는 길 수 (겹친 곳이 갈림길이 된다)
-    private const float NodeSize = 58f;
+    private const float NodeSize = 64f;
 
     private static RouteScreen instance;
 
@@ -284,9 +281,11 @@ public class RouteScreen : MonoBehaviour
         }
 
         // 출발점
-        Image startDot = Circle("Start", mapArea, start, 22f, walkedColor);
-        Text startLabel = UIBuilder.Label("StartLabel", startDot.transform, "출발", 18, UITheme.TextMuted, TextAnchor.UpperCenter);
-        UIBuilder.Place(startLabel.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0.5f, 1f), new Vector2(0f, -6f), new Vector2(120f, 26f));
+        Image startDot = Circle("Start", mapArea, start, 46f, UITheme.InkSolid);
+        Outline startRing = startDot.gameObject.AddComponent<Outline>();
+        startRing.effectColor = walkedColor;
+        startRing.effectDistance = new Vector2(1.5f, -1.5f);
+        Icon(startDot.transform, IconPainter.Start, walkedColor, 0.2f);
 
         foreach (List<MapNode> row in rows)
         {
@@ -328,9 +327,7 @@ public class RouteScreen : MonoBehaviour
         ring.effectColor = accent;
         ring.effectDistance = new Vector2(2f, -2f);
 
-        Text glyph = UIBuilder.Label("Glyph", bg.transform, TypeGlyph(n.type), 26, accent, TextAnchor.MiddleCenter);
-        glyph.fontStyle = FontStyle.Bold;
-        UIBuilder.Stretch(glyph.rectTransform);
+        n.icon = Icon(bg.transform, TypeIcon(n.type), accent, 0.17f);
 
         Button b = bg.gameObject.AddComponent<Button>();
         b.targetGraphic = bg;
@@ -346,9 +343,7 @@ public class RouteScreen : MonoBehaviour
         Outline ring = bg.gameObject.AddComponent<Outline>();
         ring.effectColor = UITheme.Brass;
         ring.effectDistance = new Vector2(3f, -3f);
-        Text glyph = UIBuilder.Label("Glyph", bg.transform, "종", 44, UITheme.Brass, TextAnchor.MiddleCenter);
-        glyph.fontStyle = FontStyle.Bold;
-        UIBuilder.Stretch(glyph.rectTransform);
+        Icon(bg.transform, IconPainter.Boss, UITheme.Brass, 0.2f);
 
         Text name = UIBuilder.Label("Name", bg.transform, bossName, 22, UITheme.Brass, TextAnchor.MiddleLeft);
         UIBuilder.Place(name.rectTransform, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(0f, 0.5f), new Vector2(18f, 0f), new Vector2(320f, 34f));
@@ -390,6 +385,7 @@ public class RouteScreen : MonoBehaviour
                 bool past = n.row <= curRow && !n.visited;
                 Color accent = TypeColor(n.type);
                 n.view.color = n.visited ? new Color(accent.r * 0.45f, accent.g * 0.45f, accent.b * 0.45f, 1f) : UITheme.InkSolid;
+                if (n.icon != null) n.icon.color = n.visited ? Color.Lerp(accent, Color.white, 0.75f) : accent;
                 CanvasGroup g = n.view.GetComponent<CanvasGroup>();
                 if (g == null) g = n.view.gameObject.AddComponent<CanvasGroup>();
                 g.alpha = past ? 0.25f : canGo || n.visited ? 1f : 0.6f;
@@ -458,17 +454,33 @@ public class RouteScreen : MonoBehaviour
         }
     }
 
-    private static string TypeGlyph(NodeType t)
+    /// <summary>칸에 그릴 문양 (글자 대신 그림 — IconPainter가 코드로 그린다)</summary>
+    private static string TypeIcon(NodeType t)
     {
         switch (t)
         {
-            case NodeType.Fight:    return "전";
-            case NodeType.Elite:    return "강";
-            case NodeType.Rest:     return "쉼";
-            case NodeType.Remove:   return "철";
-            case NodeType.Treasure: return "궤";
-            default:                return "?";
+            case NodeType.Fight:    return IconPainter.Fight;      // 엇갈린 검
+            case NodeType.Elite:    return IconPainter.Elite;      // 뿔 달린 해골
+            case NodeType.Rest:     return IconPainter.Rest;       // 등불
+            case NodeType.Remove:   return IconPainter.Remove;     // 금이 간 톱니
+            case NodeType.Treasure: return IconPainter.Treasure;   // 궤짝
+            default:                return IconPainter.Event;      // 열쇠 구멍이 난 문
         }
+    }
+
+    /// <summary>동그란 칸 안에 문양 한 장 (inset = 가장자리에서 띄우는 비율)</summary>
+    private static Image Icon(Transform parent, string kind, Color color, float inset)
+    {
+        RectTransform rt = UIBuilder.Rect("Icon", parent);
+        rt.anchorMin = new Vector2(inset, inset);
+        rt.anchorMax = new Vector2(1f - inset, 1f - inset);
+        rt.offsetMin = rt.offsetMax = Vector2.zero;
+        Image img = rt.gameObject.AddComponent<Image>();
+        img.sprite = RouteIcons.Get(kind);
+        img.color = color;
+        img.preserveAspect = true;
+        img.raycastTarget = false;
+        return img;
     }
 
     private static string TypeName(NodeType t)
@@ -529,8 +541,9 @@ public class RouteScreen : MonoBehaviour
         }
 
         bool won = false;
-        root.gameObject.SetActive(false);
         GameManager.Instance.StartRouteBattle(stage, () => won = true);
+        while (LoadingScreen.IsOpen && !LoadingScreen.Covered) yield return null;   // 로딩 화면이 다 덮은 뒤에 지도를 내린다 (그 사이 지난 전투 무대가 비치지 않게)
+        root.gameObject.SetActive(false);
         while (!won) yield return null;   // 지면 GameManager가 패배 화면을 띄운다 (지도는 숨긴 채로 끝)
         root.gameObject.SetActive(true);
         if (temporary) Destroy(stage);
@@ -605,7 +618,7 @@ public class RouteScreen : MonoBehaviour
         EventOption chosen = null;
         Clear();
         titleText.text = ev.title;
-        subText.text = "? 이벤트";
+        subText.text = "이벤트";
         bodyText.text = ev.body;
         foreach (EventOption o in ev.options)
         {
@@ -1282,13 +1295,11 @@ public class RouteScreen : MonoBehaviour
         for (int i = 0; i < order.Length; i++)
         {
             Vector2 pos = new Vector2(-70f, 120f - i * 50f);
-            Image dot = Circle("Key", legend.rectTransform, pos, 38f, UITheme.InkSolid);
+            Image dot = Circle("Key", legend.rectTransform, pos, 42f, UITheme.InkSolid);
             Outline ring = dot.gameObject.AddComponent<Outline>();
             ring.effectColor = TypeColor(order[i]);
             ring.effectDistance = new Vector2(1.5f, -1.5f);
-            Text g = UIBuilder.Label("Glyph", dot.transform, TypeGlyph(order[i]), 18, TypeColor(order[i]), TextAnchor.MiddleCenter);
-            g.fontStyle = FontStyle.Bold;
-            UIBuilder.Stretch(g.rectTransform);
+            Icon(dot.transform, TypeIcon(order[i]), TypeColor(order[i]), 0.17f);
             string label = order[i] == NodeType.Rest ? "휴식" : order[i] == NodeType.Event ? "이벤트" : TypeName(order[i]);
             Text t = UIBuilder.Label("Label", legend.transform, label, 20, UITheme.TextMain, TextAnchor.MiddleLeft);
             UIBuilder.Place(t.rectTransform, center, center, new Vector2(0f, 0.5f), new Vector2(-38f, pos.y), new Vector2(160f, 30f));

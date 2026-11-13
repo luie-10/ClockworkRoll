@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 64319ab3dd94be547b66c1346fc27ddd, type: 3}
+  m_Name: "가라앉는 종소리"
+  m_EditorClassIdentifier: Assembly-CSharp::CardData
+  cardName: "가라앉는 종소리"
+  cardArt: {fileID: 0}
+  rarity: 1
+  cost: 2
+  requireTension: 0
+  cardDescription: "물속에서 울리는 종은 아무에게도 닿지 않는다."
+  diceList:
+  - diceName: 
+    diceType: 0
+    diceDetail: 2
+    minRoll: 4
+    maxRoll: 8
+    diceEffectDescription: 
+    effects:
+    - trigger: 1
+      effect: 0
+      amount: 2
+      nextTurn: 0
+  - diceName: 
+    diceType: 1
+    diceDetail: 3
+    minRoll: 4
+    maxRoll: 8
+    diceEffectDescription: 
+    effects: []

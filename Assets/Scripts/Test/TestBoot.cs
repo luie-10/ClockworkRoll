@@ -131,6 +131,8 @@ public class TestBoot : MonoBehaviour
     private void CreateManagers()
     {
         gameManager = new GameObject("GameManager").AddComponent<GameManager>();
+        gameManager.showTitleScreen = false;     // 테스트는 시작 화면 · 로딩 없이 곧바로
+        gameManager.showLoadingScreen = false;
         dialogueManager = new GameObject("DialogueManager").AddComponent<DialogueManager>();
         battleManager = new GameObject("BattleManager").AddComponent<BattleManager>();
         handManager = battleManager.gameObject.AddComponent<HandManager>();

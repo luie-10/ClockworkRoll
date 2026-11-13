@@ -37,6 +37,18 @@ public static class RunItems
         },
         new RunItem
         {
+            name = "덧댄 철판",
+            description = "최대 체력 +8",
+            onGain = gm => gm.playerUnit.ChangeMaxHp(8),
+        },
+        new RunItem
+        {
+            name = "시계공의 구급함",
+            description = "체력 30 회복",
+            onGain = gm => gm.playerUnit.Heal(30),
+        },
+        new RunItem
+        {
             name = "무거운 태엽통",
             description = "최대 기력 +1\n최대 체력 -10",
             onGain = gm => { gm.AddMaxKi(1); gm.playerUnit.ChangeMaxHp(-10); },

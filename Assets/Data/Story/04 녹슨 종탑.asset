@@ -88,6 +88,14 @@ MonoBehaviour:
   - speaker: "종지기"
     text: "그렇다면... 종을 울려라. 이번에는 지우는 소리가 아니길 바란다."
     portrait: {fileID: 0}
-  rewardCards: []
-  routeFights: []
-  routeElites: []
+  rewardCards:
+  - {fileID: 11400000, guid: 7981341a6405e7837c6cff2f9b69c05c, type: 2}
+  - {fileID: 11400000, guid: 57d33356b14a969560375e6ce7aa3bbd, type: 2}
+  routeFights:
+  - {fileID: 11400000, guid: 875cf63b7628db3f9b9912b88a7630d0, type: 2}
+  - {fileID: 11400000, guid: 53d1e8c028eed34c6a456a8859e47462, type: 2}
+  - {fileID: 11400000, guid: fdcad4a3da9db616b12fde5ef8bc0420, type: 2}
+  - {fileID: 11400000, guid: 41b194b6c7eb999789297a1c822c4523, type: 2}
+  routeElites:
+  - {fileID: 11400000, guid: 5c39a32d3df057f7f0660a48566b2e35, type: 2}
+  - {fileID: 11400000, guid: 9f7845c0b37d364adb96590aef2f7cf9, type: 2}
