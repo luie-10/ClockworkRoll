@@ -25,7 +25,11 @@ MonoBehaviour:
     minRoll: 1
     maxRoll: 6
     diceEffectDescription: 
-    effects: []
+    effects:
+    - trigger: 1
+      effect: 9
+      amount: 1
+      nextTurn: 0
   - diceName: 
     diceType: 1
     diceDetail: 4

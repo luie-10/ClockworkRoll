@@ -12,7 +12,10 @@ using UnityEngine.UI;
 /// [합]   양쪽 주사위를 앞에서부터 한 칸씩 비교.
 ///        - 타입 상성 보정: 참격 > 관통 > 타격 > 참격 (우위 시 굴림 +2)
 ///        - 회피는 상대 공격 주사위 상대로 굴림 +2
-///        - 동점은 양쪽 모두 무효 (팽팽하게 밀림)
+///        - 동점은 양쪽 모두 무효
+///        - 회피 성공 보상은 태엽판마다 회피 칸의 [합 승리시] 효과로 정한다
+/// [장력] 서로의 칸이 맞부딪힐 때마다 차오른다 (0~3단계, 전투 동안 유지).
+///        단계만큼 승리 시 삼킬 수 있는 태엽판이 늘고, 장력 단계가 필요한 태엽판을 낼 수 있게 된다.
 /// [침식] 흡수 카드(◈) 사용 시 확률적으로 발동해 사용자가 피해를 입는다.
 /// [연출] 공격자가 응답자 곁으로 이동, 카메라 포커스.
 /// </summary>
@@ -40,6 +43,10 @@ public class BattleManager : MonoBehaviour
     public int maxLogLines = 80;
 
     [Header("기력 (자원)")]
+
+    [Header("장력 (합 게이지)")]
+    [Tooltip("장력 한 단계를 채우는 데 필요한 합(맞부딪힘) 횟수")]
+    public int tensionPerStage = 3;
 
     [Header("시계판")]
     [Tooltip("시곗바늘이 한 시각을 넘어갈 때의 대기 시간(초)")]
@@ -90,6 +97,15 @@ public class BattleManager : MonoBehaviour
 
     private int battleMaxKi;   // 이번 전투 동안만 늘어난 최대 기력 ([이번 전투 최대 기력 +n])
     private int pendingKi;     // 다음 라운드에 최대치 위로 더 받는 기력 ([기력 회복]은 시계가 도는 중에 발동하므로)
+
+    /// <summary>장력 최대 단계</summary>
+    public const int MaxTensionStage = 3;
+
+    /// <summary>쌓인 장력 (합 1번 = 1). 0 ~ tensionPerStage x 3</summary>
+    public int TensionPoints { get; private set; }
+
+    /// <summary>현재 장력 단계 (0~3)</summary>
+    public int TensionStage { get { return Mathf.Min(MaxTensionStage, TensionPoints / Mathf.Max(1, tensionPerStage)); } }
 
     /// <summary>시계판 칸 수 (1시~12시)</summary>
     public const int ClockHours = 12;
@@ -203,6 +219,7 @@ public class BattleManager : MonoBehaviour
         battleMaxKi = 0;
         pendingKi = 0;
         CurrentKi = 0;   // 첫 라운드가 시작될 때 채워진다
+        TensionPoints = 0;
         pendingCard = null;
         enemyActions.Clear();
         playerActions.Clear();
@@ -217,6 +234,7 @@ public class BattleManager : MonoBehaviour
         // 시계판 UI (씬에 없으면 전투 HUD 안에 자동 생성) + 턴 종료 버튼은 "시계 진행" 버튼으로
         ClockDial.Ensure();
         DeckViewer.Ensure();   // 왼쪽 아래 [덱 보기] 버튼 (Tab)
+        TensionGauge.Ensure(kiText);   // 기력 위의 장력 게이지
         if (endTurnButton != null)
         {
             Text label = endTurnButton.GetComponentInChildren<Text>();
@@ -524,6 +542,9 @@ public class BattleManager : MonoBehaviour
         int atkRoll = atkDie != null ? ComputeRoll(attacker, atkDie, defDie, hour, out atkBonus) : -1;
         int defRoll = defDie != null ? ComputeRoll(defender, defDie, atkDie, hour, out defBonus) : -1;
 
+        // 장력: 서로의 칸이 실제로 맞부딪혔다
+        if (atkDie != null && defDie != null) AddTension(1);
+
         string atkLabel = atkDie != null ? $"{DiceInfo.Name(atkDie.diceDetail)} {atkRoll}" : "-";
         string defLabel = defDie != null ? $"{DiceInfo.Name(defDie.diceDetail)} {defRoll}" : "-";
         Log($"{hour}시: {attacker.unitName}[{atkLabel}] vs {defender.unitName}[{defLabel}]");
@@ -547,8 +568,8 @@ public class BattleManager : MonoBehaviour
 
         if (atkRoll == defRoll)
         {
-            // 동점은 양쪽 모두 무효 — 팽팽하게 밀린다
-            Log("팽팽하게 밀렸다 — 양쪽 칸이 함께 무효화된다!");
+            // 동점은 양쪽 모두 무효
+            Log("동점 — 양쪽 칸이 함께 무효화된다!");
             if (clashFx) yield return StartCoroutine(TieFxRoutine(attacker, defender));
         }
         else if (atkRoll > defRoll)
@@ -563,6 +584,34 @@ public class BattleManager : MonoBehaviour
             ResolveDieEffects(defender, defDie, attacker, atkDie, hit);
             if (clashFx) yield return StartCoroutine(OutcomeFxRoutine(defender, attacker, defDie, defRoll));
         }
+    }
+
+    // ─────────────────────────── 장력 / 회피 보상 ───────────────────────────
+
+    private static readonly Color tensionColor = new Color(1f, 0.6f, 0.3f);
+
+    /// <summary>장력을 올린다. 단계가 오르면 알림.</summary>
+    private void AddTension(int amount)
+    {
+        int max = Mathf.Max(1, tensionPerStage) * MaxTensionStage;
+        if (amount <= 0 || TensionPoints >= max) return;
+
+        int before = TensionStage;
+        TensionPoints = Mathf.Min(max, TensionPoints + amount);
+        if (TensionStage > before)
+        {
+            Log($"<color=#ff9a4d>장력 {TensionStage}단계!</color> 삼킬 수 있는 기억 +{TensionStage}");
+            TensionGauge.Pulse();
+            if (StageLighting.Instance != null) StageLighting.Instance.SetEmotion(TensionStage);   // 장력이 오를수록 무대 조명이 달아오른다
+            if (clashFx && playerUnit != null) StatusPopup(playerUnit, $"장력 {TensionStage}단계!", tensionColor);
+        }
+        UpdateHUD();
+    }
+
+    /// <summary>이 태엽판에 필요한 장력이 지금 쌓여 있는가</summary>
+    public bool HasTensionFor(CardData card)
+    {
+        return card == null || card.requireTension <= TensionStage;
     }
 
     // ─────────────────────────── 합 이동 연출 ───────────────────────────
@@ -711,6 +760,7 @@ public class BattleManager : MonoBehaviour
         CardInstance card = view.BoundCard;
         if (card == null || card.data == null) return;
 
+        if (!HasTensionFor(card.data)) { Log($"장력이 부족하다! (장력 {card.data.requireTension}단계 필요)"); return; }
         if (card.data.cost > CurrentKi) { Log("기력이 부족하다!"); return; }
 
         if (pendingCard == card) { CancelPendingCard(); return; }   // 다시 클릭 = 선택 취소
@@ -1289,7 +1339,6 @@ public class BattleManager : MonoBehaviour
     private IEnumerator TieFxRoutine(Unit a, Unit b)
     {
         Vector3 mid = (a.transform.position + b.transform.position) * 0.5f + Vector3.up * 1.2f;
-        DamagePopup.Spawn(mid, "팽팽!", Color.white, 1.3f);
         ClashSpark.Burst(mid, Color.white, 20, 4f);
 
         Coroutine aBack = StartCoroutine(a.KnockbackRoutine(b.transform.position, knockbackDistance * 0.6f, 0.35f));
@@ -1393,8 +1442,10 @@ public class BattleManager : MonoBehaviour
         }
 
         List<CardData> picked = null;
-        Log("적의 기억 하나를 삼킬 수 있다.");
-        yield return VictoryScreen.Play(this, 1, spoils, GameManager.Instance.AbsorbedSourceNames(), p => picked = p);
+        int pickCount = 1 + TensionStage;   // 장력 단계만큼 더 삼킬 수 있다
+        Log(TensionStage > 0 ? $"장력 {TensionStage}단계 — 적의 기억 {pickCount}개를 삼킬 수 있다."
+                             : "적의 기억 하나를 삼킬 수 있다.");
+        yield return VictoryScreen.Play(this, pickCount, spoils, GameManager.Instance.AbsorbedSourceNames(), p => picked = p);
 
         GameManager.Instance.OnBattleWon(picked);
     }

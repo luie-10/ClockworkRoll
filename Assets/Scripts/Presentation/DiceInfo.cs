@@ -159,6 +159,8 @@ public static class DiceInfo
         if (card == null || card.diceList == null) return "";
         HashSet<DiceEffectType> seen = new HashSet<DiceEffectType>();
         StringBuilder sb = new StringBuilder();
+        if (card.requireTension > 0)
+            sb.Append("<color=#ff9a4d>장력</color>: 서로의 칸이 맞부딪힐 때마다 차오르는 게이지(0~3단계). 이 단계 이상이어야 낼 수 있다");
         foreach (DiceData die in card.diceList)
         {
             if (die == null || die.effects == null) continue;

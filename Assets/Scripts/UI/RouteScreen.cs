@@ -54,7 +54,7 @@ public class RouteScreen : MonoBehaviour
     }
 
     private const int MinDeckSize = 5;          // 이보다 적게는 버릴 수 없다
-    private const float RestHealRatio = 0.3f;
+    private const float RestHealRatio = 0.45f;   // 휴식: 최대 체력의 이만큼 회복
     private const int Columns = 5;
     private const int Walks = 6;                // 아래에서 위로 그어 보는 길 수 (겹친 곳이 갈림길이 된다)
     private const float NodeSize = 58f;
@@ -490,7 +490,7 @@ public class RouteScreen : MonoBehaviour
         {
             case NodeType.Fight:    return "물에 잠긴 거리의 적 무리와 싸운다.";
             case NodeType.Elite:    return "강한 적과 싸운다. 이기면 태엽판 3장 중 1장.";
-            case NodeType.Rest:     return $"최대 체력의 {Mathf.RoundToInt(RestHealRatio * 100)}%를 회복한다.";
+            case NodeType.Rest:     return $"둘 중 하나: 최대 체력의 {Mathf.RoundToInt(RestHealRatio * 100)}% 회복 / 태엽판 1장 버리기.";
             case NodeType.Remove:   return "덱에서 태엽판 1장을 버린다.";
             case NodeType.Treasure: return "부품 3개 중 1개를 얻는다. 최대 기력이 늘어난다.";
             default:                return "무슨 일이 생길지 모른다.";
@@ -538,13 +538,41 @@ public class RouteScreen : MonoBehaviour
         if (elite) yield return PickNewCard("강적을 쓰러뜨렸다", "쓰러진 적의 품에서 젖지 않은 태엽판이 나온다. 한 장을 챙긴다.");
     }
 
+    /// <summary>휴식: 체력을 회복하거나, 마른 자리에서 태엽판 하나를 손봐서 버린다 (둘 중 하나)</summary>
     private IEnumerator Rest()
     {
-        Unit p = Player;
-        int healed = p != null ? p.Heal(Mathf.CeilToInt(p.MaxHp * RestHealRatio)) : 0;
-        yield return Message("꺼지지 않은 가로등",
-            "비를 피할 처마 밑, 가로등 하나가 아직 켜져 있다. 잠시 태엽을 쉬게 한다.\n\n" +
-            $"<color=#7ddc8c>체력 +{healed}</color>");
+        const string title = "꺼지지 않은 가로등";
+        while (true)
+        {
+            Unit p = Player;
+            int amount = p != null ? Mathf.CeilToInt(p.MaxHp * RestHealRatio) : 0;
+            bool canRemove = Deck.Count > MinDeckSize;
+            int choice = 0;
+
+            Clear();
+            titleText.text = title;
+            subText.text = "휴식 — 하나를 고른다";
+            bodyText.text = "비를 피할 처마 밑, 가로등 하나가 아직 켜져 있다. 여기만은 물이 닿지 않아 바닥이 말라 있다.";
+            AddButton($"태엽을 쉬게 한다  →  <color=#7ddc8c>체력 +{amount}</color>", false, () => choice = 1, true, 560f);
+            AddButton(canRemove ? "마른 자리에서 태엽판을 손본다  →  덱에서 1장 버리기"
+                                : $"<color=#a8a29a>태엽판 손보기 (덱이 {MinDeckSize}장 이하)</color>",
+                      false, () => choice = 2, canRemove, 560f);
+            autoAction = () => choice = 1;
+            VerticalButtons();
+            while (choice == 0) yield return null;
+
+            if (choice == 1)
+            {
+                int healed = p != null ? p.Heal(amount) : 0;
+                yield return Message(title, "젖은 외투를 벗어 말리고, 가로등 불빛 아래서 잠시 눈을 붙인다.\n\n" +
+                                            $"<color=#7ddc8c>체력 +{healed}</color>");
+                yield break;
+            }
+
+            int before = Deck.Count;
+            yield return Remove(title, "물기를 닦아 내고 태엽판들을 늘어놓는다. 녹이 너무 깊이 슨 한 장을 골라 버린다.");
+            if (Deck.Count < before) yield break;   // 버렸으면 끝, 그만뒀으면 다시 고르기로
+        }
     }
 
     private IEnumerator Remove(string title, string body)
@@ -612,7 +640,7 @@ public class RouteScreen : MonoBehaviour
         });
         vending.options.Add(new EventOption
         {
-            label = "걷어찬다  →  반반 확률로 <color=#7ddc8c>체력 +8</color> / <color=#ff8a7a>체력 -5</color>",
+            label = "걷어찬다  →  반반 확률로 <color=#7ddc8c>체력 +10</color> / <color=#ff8a7a>체력 -5</color>",
             run = KickVending,
         });
         vending.options.Add(new EventOption { label = "지나간다", run = Nothing });
@@ -631,8 +659,8 @@ public class RouteScreen : MonoBehaviour
         });
         mirror.options.Add(new EventOption
         {
-            label = "비친 얼굴을 보며 숨을 고른다  →  <color=#7ddc8c>체력 +5</color>",
-            run = () => HealBy(5, "잔물결이 가라앉자 숨도 같이 가라앉는다."),
+            label = "비친 얼굴을 보며 숨을 고른다  →  <color=#7ddc8c>체력 +8</color>",
+            run = () => HealBy(8, "잔물결이 가라앉자 숨도 같이 가라앉는다."),
         });
         list.Add(mirror);
 
@@ -663,8 +691,8 @@ public class RouteScreen : MonoBehaviour
         };
         chapel.options.Add(new EventOption
         {
-            label = "기도한다  →  <color=#7ddc8c>체력 +12</color>",
-            run = () => HealBy(12, "작은 종이 한 번 울린다. 몸속 태엽이 조금 덜 삐걱거린다."),
+            label = "기도한다  →  <color=#7ddc8c>체력 +15</color>",
+            run = () => HealBy(15, "작은 종이 한 번 울린다. 몸속 태엽이 조금 덜 삐걱거린다."),
         });
         chapel.options.Add(new EventOption
         {
@@ -689,6 +717,44 @@ public class RouteScreen : MonoBehaviour
         });
         storehouse.options.Add(new EventOption { label = "지나간다", run = Nothing });
         list.Add(storehouse);
+
+        RouteEvent oilSlick = new RouteEvent
+        {
+            title = "물 위의 기름띠",
+            body = "부서진 기름통에서 새어 나온 기름이 수면 위에 무지개처럼 번져 있다. 물에 섞이지 않고 위에만 떠 있다.",
+        };
+        oilSlick.options.Add(new EventOption
+        {
+            label = "◈ 흡수한 태엽판에 기름을 먹인다  →  1장 정화",
+            available = () => Deck.Exists(e => e.absorbed),
+            run = Purify,
+        });
+        oilSlick.options.Add(new EventOption
+        {
+            label = "관절마다 기름을 바른다  →  <color=#7ddc8c>체력 +10</color>",
+            run = () => HealBy(10, "기름이 물기를 밀어낸다. 녹이 슬려던 관절이 다시 부드럽게 돈다."),
+        });
+        oilSlick.options.Add(new EventOption { label = "지나간다", run = Nothing });
+        list.Add(oilSlick);
+
+        RouteEvent rustPool = new RouteEvent
+        {
+            title = "녹물 웅덩이",
+            body = "붉게 물든 웅덩이 바닥에 녹슨 태엽판들이 가라앉아 있다. 손을 넣으면 살갗까지 녹물이 밴다.",
+        };
+        rustPool.options.Add(new EventOption
+        {
+            label = "녹슨 태엽판을 건진다  <color=#ff8a7a>체력 -5</color>  →  녹 태엽판 1장",
+            available = () => Player != null && Player.Hp > 5 && RustCards().Count > 0,
+            run = FishRustCard,
+        });
+        rustPool.options.Add(new EventOption
+        {
+            label = "빗물로 상처를 씻어 낸다  →  <color=#7ddc8c>체력 +6</color>",
+            run = () => HealBy(6, "맑은 빗물로 녹물을 씻어 낸다. 따끔하지만 상처가 덜 번진다."),
+        });
+        rustPool.options.Add(new EventOption { label = "지나간다", run = Nothing });
+        list.Add(rustPool);
 
         return list;
     }
@@ -721,7 +787,7 @@ public class RouteScreen : MonoBehaviour
     {
         if (UnityEngine.Random.value < 0.5f)
         {
-            yield return HealBy(8, "쿵! 안에서 따뜻한 기름 한 병이 굴러 나온다.");
+            yield return HealBy(10, "쿵! 안에서 따뜻한 기름 한 병이 굴러 나온다. 관절에 바르니 삐걱거림이 멎는다.");
         }
         else
         {
@@ -750,6 +816,24 @@ public class RouteScreen : MonoBehaviour
         picked.absorbed = false;
         picked.corruption = 0;
         yield return Message("시계공의 작업대", $"[{picked.data.cardName}]의 ◈ 표식이 지워졌다. 이제 온전히 내 것이다.");
+    }
+
+    /// <summary>보상 풀에서 녹을 다루는 태엽판 (녹 · 부식 효과)</summary>
+    private List<CardData> RustCards()
+    {
+        return GameManager.Instance.RouteCardPool().FindAll(c => c != null && c.diceList != null &&
+            c.diceList.Exists(d => d != null && d.effects != null &&
+                d.effects.Exists(fx => fx != null && (fx.effect == DiceEffectType.Rust || fx.effect == DiceEffectType.Corrode))));
+    }
+
+    private IEnumerator FishRustCard()
+    {
+        List<CardData> pool = RustCards();
+        int lost = LoseHp(5);
+        CardData card = pool[UnityEngine.Random.Range(0, pool.Count)];
+        GameManager.Instance.AddCard(card);
+        yield return Message(titleText.text, "손끝이 붉게 물든다. 웅덩이 바닥에서 녹이 잔뜩 슨 태엽판 한 장을 건져 낸다.\n\n" +
+                                             $"<color=#ff8a7a>체력 -{lost}</color>   ·   <color=#ffd98a>[{card.cardName}] 획득</color>");
     }
 
     private IEnumerator RobOfferingBox()

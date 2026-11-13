@@ -1,0 +1,97 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 551d2ebdc9dbf10479df475a9525e215, type: 3}
+  m_Name: "03 녹물의 수문"
+  m_EditorClassIdentifier: Assembly-CSharp::ChapterData
+  chapterTitle: "3장. 녹물의 수문"
+  introLines:
+  - speaker: "―"
+    text: "운하 끝. 거대한 수문이 반쯤 열린 채 녹물에 잠겨 있다. 틈새로 물이 쉼 없이 쏟아져 들어온다."
+    portrait: {fileID: 0}
+  - speaker: "틱"
+    text: "저기서 물이 들어오는 거구나... 소리만 들어도 무릎이 시려."
+    portrait: {fileID: 0}
+  - speaker: "이안"
+    text: "기름 발라 줬잖아."
+    portrait: {fileID: 0}
+  - speaker: "틱"
+    text: "기분이 그렇다는 거야, 기분이!"
+    portrait: {fileID: 0}
+  - speaker: "―"
+    text: "물속에서 철판이 맞부딪히는 소리가 울린다. 녹으로 뒤덮인 거인이 몸을 일으킨다."
+    portrait: {fileID: 0}
+  - speaker: "강철 수문장"
+    text: "정지. 이 수문은 종탑의 명령 없이 움직일 수 없다."
+    portrait: {fileID: 0}
+  - speaker: "이안"
+    text: "종탑은 멈췄어. 명령을 내릴 사람도 없고."
+    portrait: {fileID: 0}
+  - speaker: "강철 수문장"
+    text: "마지막 명령은 지켜라였다. 명령이 바뀌지 않았으므로, 나는 지킨다."
+    portrait: {fileID: 0}
+  - speaker: "틱"
+    text: "온몸이 다 녹슬었는데도 계속 서 있었던 거야...?"
+    portrait: {fileID: 0}
+  - speaker: "강철 수문장"
+    text: "녹은 괜찮다. 물을 먹을수록 나는 무거워지고, 무거워질수록 단단해진다."
+    portrait: {fileID: 0}
+  - speaker: "이안"
+    text: "그 물 때문에 마을이 가라앉고 있어."
+    portrait: {fileID: 0}
+  - speaker: "강철 수문장"
+    text: "그것은 내 명령이 아니다. 침입자는 물속 갑각들과 함께 밀어낸다."
+    portrait: {fileID: 0}
+  - speaker: "틱"
+    text: "이안, 저 녀석 철갑이 두꺼워! 녹이 슨 틈을 노려!"
+    portrait: {fileID: 0}
+  battle: {fileID: 11400000, guid: 348dde8a338422c0f2a7920150c33f4e, type: 2}
+  outroLines:
+  - speaker: "―"
+    text: "수문장의 무릎이 꺾인다. 이음매마다 녹물이 쏟아져 나온다."
+    portrait: {fileID: 0}
+  - speaker: "강철 수문장"
+    text: "...몸이 가볍다. 이렇게 가벼웠던 적이... 언제였던가."
+    portrait: {fileID: 0}
+  - speaker: "이안"
+    text: "이제 쉬어도 돼. 명령은 우리가 바꿀게."
+    portrait: {fileID: 0}
+  - speaker: "강철 수문장"
+    text: "수문은 종의 태엽과 하나다. 종이 울려야 수문이 닫힌다."
+    portrait: {fileID: 0}
+  - speaker: "강철 수문장"
+    text: "종지기에게 전해라. 나는... 끝까지 지켰다고."
+    portrait: {fileID: 0}
+  - speaker: "―"
+    text: "거인의 눈빛이 꺼진다. 쏟아지던 물소리가 아주 조금 작아진 것 같다."
+    portrait: {fileID: 0}
+  - speaker: "틱"
+    text: "물이... 아주 조금 줄었어."
+    portrait: {fileID: 0}
+  - speaker: "이안"
+    text: "아직 부족해. 종을 울려야 해."
+    portrait: {fileID: 0}
+  - speaker: "틱"
+    text: "종탑은 저 위야. 마을에서 유일하게 물 위에 남은 곳."
+    portrait: {fileID: 0}
+  - speaker: "이안"
+    text: "가자. 녹이 더 번지기 전에."
+    portrait: {fileID: 0}
+  rewardCards:
+  - {fileID: 11400000, guid: eacafe56db1bfc736a3723b678ad3452, type: 2}
+  - {fileID: 11400000, guid: e383ce9d3c2ed4b37c90bd2060b164be, type: 2}
+  routeFights:
+  - {fileID: 11400000, guid: 875cf63b7628db3f9b9912b88a7630d0, type: 2}
+  - {fileID: 11400000, guid: 53d1e8c028eed34c6a456a8859e47462, type: 2}
+  - {fileID: 11400000, guid: fdcad4a3da9db616b12fde5ef8bc0420, type: 2}
+  routeElites:
+  - {fileID: 11400000, guid: 5c39a32d3df057f7f0660a48566b2e35, type: 2}
+  - {fileID: 11400000, guid: 9f7845c0b37d364adb96590aef2f7cf9, type: 2}

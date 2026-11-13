@@ -15,20 +15,46 @@ MonoBehaviour:
   chapterTitle: "에필로그. 다시 울리는 종"
   introLines:
   - speaker: "―"
-    text: "멈춰 있던 종이, 아주 천천히 울리기 시작한다."
+    text: "이안이 줄을 당긴다. 녹슨 축이 비명을 지르더니, 멈춰 있던 종이 아주 천천히 울리기 시작한다."
+    portrait: {fileID: 0}
+  - speaker: "―"
+    text: "뎅―. 첫 번째 소리가 물 위로 퍼져 나간다."
+    portrait: {fileID: 0}
+  - speaker: "틱"
+    text: "들려? 수문 쪽에서 쇠 닫히는 소리가 났어!"
     portrait: {fileID: 0}
   - speaker: "틱"
     text: "물이 빠지고 있어! 이안, 저것 좀 봐!"
+    portrait: {fileID: 0}
+  - speaker: "―"
+    text: "골목마다 차 있던 물이 운하로 빠져나간다. 지붕들이 하나둘 물 밖으로 모습을 드러낸다."
     portrait: {fileID: 0}
   - speaker: "이안"
     text: "떠다니던 기억들이... 제자리로 돌아가는 걸까."
     portrait: {fileID: 0}
   - speaker: "틱"
-    text: "네 안의 태엽판들은 그대로네. 무겁지 않아?"
+    text: "이미 녹슨 건 금방은 안 돌아올 거야. 그래도 이제 더 녹슬지는 않겠지."
+    portrait: {fileID: 0}
+  - speaker: "틱"
+    text: "하멜 아저씨한테 가 보자. 물이 빠지면 공방이 다시 바빠질 거야."
+    portrait: {fileID: 0}
+  - speaker: "틱"
+    text: "...네 안의 태엽판들은 그대로네. 무겁지 않아?"
     portrait: {fileID: 0}
   - speaker: "이안"
     text: "무거워. 그래도 누군가는 들고 있어야 하니까."
     portrait: {fileID: 0}
+  - speaker: "틱"
+    text: "그럼 반은 내가 들게. 기름칠은 네가 해 주고."
+    portrait: {fileID: 0}
+  - speaker: "이안"
+    text: "...그래. 그거면 공평하네."
+    portrait: {fileID: 0}
+  - speaker: "―"
+    text: "시계 마을의 시곗바늘이, 오랜만에 한 칸 앞으로 움직였다."
+    portrait: {fileID: 0}
   battle: {fileID: 0}
   outroLines: []
   rewardCards: []
+  routeFights: []
+  routeElites: []

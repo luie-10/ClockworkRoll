@@ -1,0 +1,116 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 551d2ebdc9dbf10479df475a9525e215, type: 3}
+  m_Name: "02 기름 냄새 나는 공방"
+  m_EditorClassIdentifier: Assembly-CSharp::ChapterData
+  chapterTitle: "2장. 기름 냄새 나는 공방"
+  introLines:
+  - speaker: "―"
+    text: "수로 옆, 아직 물에 잠기지 않은 유일한 건물에서 기름 타는 냄새가 흘러나온다."
+    portrait: {fileID: 0}
+  - speaker: "틱"
+    text: "여기야! 기름 냄새... 정말 오랜만이다."
+    portrait: {fileID: 0}
+  - speaker: "이안"
+    text: "문이 열려 있어."
+    portrait: {fileID: 0}
+  - speaker: "떠돌이 시계공"
+    text: "거기 서. 한 발짝만 더 들어오면 나사로 박아 버리겠다."
+    portrait: {fileID: 0}
+  - speaker: "틱"
+    text: "하멜 아저씨? 저예요, 틱! 공방에서 같이 일했던..."
+    portrait: {fileID: 0}
+  - speaker: "떠돌이 시계공"
+    text: "틱? ...아니, 틱은 물에 떠내려갔다. 너는 녹이 꾸며 낸 헛것이겠지."
+    portrait: {fileID: 0}
+  - speaker: "이안"
+    text: "우린 기름을 조금 얻으러 왔을 뿐이야."
+    portrait: {fileID: 0}
+  - speaker: "떠돌이 시계공"
+    text: "기름. 다들 기름 이야기뿐이지. 이 마을에 남은 마지막 기름이 이 통 안에 있다."
+    portrait: {fileID: 0}
+  - speaker: "떠돌이 시계공"
+    text: "이게 떨어지면 내 손도, 내 심장 태엽도 녹슬어 멈춘다. 한 방울도 못 준다."
+    portrait: {fileID: 0}
+  - speaker: "틱"
+    text: "아저씨, 눈이... 반쯤 녹슬었어요. 그래서 저를 못 알아보는 거예요."
+    portrait: {fileID: 0}
+  - speaker: "떠돌이 시계공"
+    text: "경비 인형! 도둑이다!"
+    portrait: {fileID: 0}
+  - speaker: "이안"
+    text: "말로는 안 되겠군. 틱, 뒤로 물러나 있어."
+    portrait: {fileID: 0}
+  battle: {fileID: 11400000, guid: c5d80f702ce2f5be5d92a4c57314bc87, type: 2}
+  outroLines:
+  - speaker: "떠돌이 시계공"
+    text: "크윽... 손이, 손이 안 움직여..."
+    portrait: {fileID: 0}
+  - speaker: "틱"
+    text: "아저씨! 이안, 기름통! 기름통 좀 줘!"
+    portrait: {fileID: 0}
+  - speaker: "―"
+    text: "틱이 시계공의 손목 태엽에 기름을 몇 방울 떨어뜨린다. 녹슨 톱니가 천천히 다시 돌기 시작한다."
+    portrait: {fileID: 0}
+  - speaker: "떠돌이 시계공"
+    text: "...틱? 정말 틱이냐. 물에 휩쓸려 간 줄로만 알았는데."
+    portrait: {fileID: 0}
+  - speaker: "틱"
+    text: "이 녀석이 건져 줬어요. 이안이라고."
+    portrait: {fileID: 0}
+  - speaker: "떠돌이 시계공"
+    text: "이안... 낯익은 이름이군. 종탑에 기름을 배달하던 꼬마가 그런 이름이었지."
+    portrait: {fileID: 0}
+  - speaker: "이안"
+    text: "내가? ...기억이 안 나."
+    portrait: {fileID: 0}
+  - speaker: "떠돌이 시계공"
+    text: "물을 많이 먹었구나. 물은 쇠만 녹슬게 하는 게 아니다. 기억에도 녹이 슨다."
+    portrait: {fileID: 0}
+  - speaker: "떠돌이 시계공"
+    text: "잘 들어라. 이 마을의 시계는 전부 종탑의 큰 태엽에 이어져 있다. 수문도 마찬가지다."
+    portrait: {fileID: 0}
+  - speaker: "떠돌이 시계공"
+    text: "종이 멈추자 수문이 반쯤 열린 채로 굳었고, 그 틈으로 운하의 물이 밀려 들어온 거다."
+    portrait: {fileID: 0}
+  - speaker: "이안"
+    text: "그럼 수문을 닫으면 물이 멈춰?"
+    portrait: {fileID: 0}
+  - speaker: "떠돌이 시계공"
+    text: "닫을 수만 있다면. 하지만 수문장이 아직 버티고 있다. 아무도 수문에 손대지 말라는 마지막 명령을 붙든 채로."
+    portrait: {fileID: 0}
+  - speaker: "떠돌이 시계공"
+    text: "가져가라. 남은 기름이다. 태엽에 바르면 물을 튕겨 낸다. 녹이 붙기 전에 떨쳐 낼 수 있을 거다."
+    portrait: {fileID: 0}
+  - speaker: "틱"
+    text: "그럼 아저씨는요?"
+    portrait: {fileID: 0}
+  - speaker: "떠돌이 시계공"
+    text: "나는 여기 남아 공방을 지킨다. 누군가는 마지막 불을 켜 둬야지."
+    portrait: {fileID: 0}
+  - speaker: "떠돌이 시계공"
+    text: "틱, 무릎은 이따 다시 들러라. 이번엔 제대로 갈아 끼워 주마."
+    portrait: {fileID: 0}
+  - speaker: "틱"
+    text: "...네! 꼭 올게요."
+    portrait: {fileID: 0}
+  rewardCards:
+  - {fileID: 11400000, guid: b8e4d38567bb6d0ebc3ad8ab6b154122, type: 2}
+  - {fileID: 11400000, guid: 3732bce0510c65cf58aee78e13f4a66b, type: 2}
+  routeFights:
+  - {fileID: 11400000, guid: 53d1e8c028eed34c6a456a8859e47462, type: 2}
+  - {fileID: 11400000, guid: 41b194b6c7eb999789297a1c822c4523, type: 2}
+  - {fileID: 11400000, guid: ce9e13f578c963a3d4113e7ec27fa0db, type: 2}
+  - {fileID: 11400000, guid: 7f8ab0ced301cdcfb8a6c52cdfb57dc4, type: 2}
+  routeElites:
+  - {fileID: 11400000, guid: fdcad4a3da9db616b12fde5ef8bc0420, type: 2}
+  - {fileID: 11400000, guid: 9f7845c0b37d364adb96590aef2f7cf9, type: 2}

@@ -222,7 +222,7 @@ namespace RuinaTest
 
                 if (ar == dr)
                 {
-                    Log("  팽팽하게 밀렸다 — 양쪽 주사위가 함께 무효화된다!");
+                    Log("  동점 — 양쪽 주사위가 함께 무효화된다!");
                 }
                 else if (ar > dr)
                 {

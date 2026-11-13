@@ -1,0 +1,93 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 551d2ebdc9dbf10479df475a9525e215, type: 3}
+  m_Name: "04 녹슨 종탑"
+  m_EditorClassIdentifier: Assembly-CSharp::ChapterData
+  chapterTitle: "4장. 녹슨 종탑"
+  introLines:
+  - speaker: "―"
+    text: "종탑은 물 위에 우뚝 솟아 있다. 계단마다 물때와 녹이 층층이 쌓여 있다."
+    portrait: {fileID: 0}
+  - speaker: "틱"
+    text: "여기가 종탑이야. ...소리가 하나도 안 나."
+    portrait: {fileID: 0}
+  - speaker: "이안"
+    text: "계단에 기름 자국이 있어. 누가 계속 오르내렸나 봐."
+    portrait: {fileID: 0}
+  - speaker: "틱"
+    text: "종지기 할아버지야. 매일 종에 기름칠을 했대. ...종이 멈춘 뒤에도."
+    portrait: {fileID: 0}
+  - speaker: "종지기"
+    text: "누구냐. 종을 다시 울리러 왔다면 돌아가라."
+    portrait: {fileID: 0}
+  - speaker: "이안"
+    text: "종이 멈춰서 마을이 가라앉고 있어. 수문장도 쓰러졌고."
+    portrait: {fileID: 0}
+  - speaker: "종지기"
+    text: "그 고집쟁이가... 끝까지 서 있었단 말이냐."
+    portrait: {fileID: 0}
+  - speaker: "종지기"
+    text: "너희는 모른다. 이 종이 무엇으로 울리는지."
+    portrait: {fileID: 0}
+  - speaker: "종지기"
+    text: "종이 한 번 울릴 때마다 누군가의 기억이 짜여 나와 기름이 되었다. 그 기름으로 마을의 시계가 돌았지."
+    portrait: {fileID: 0}
+  - speaker: "틱"
+    text: "그럼... 하멜 아저씨가 지키던 기름도..."
+    portrait: {fileID: 0}
+  - speaker: "종지기"
+    text: "그래. 누군가가 잊어버린 하루, 누군가가 잃어버린 얼굴이다."
+    portrait: {fileID: 0}
+  - speaker: "종지기"
+    text: "나는 그 소리를 더는 견딜 수 없었다. 그래서 종을 멈췄다. 기억 대신 물을 택한 거다."
+    portrait: {fileID: 0}
+  - speaker: "이안"
+    text: "그래서 지금은 물이 기억을 녹슬게 하고 있잖아. 어느 쪽이든 잊히는 건 똑같아."
+    portrait: {fileID: 0}
+  - speaker: "종지기"
+    text: "...그래도 내 손으로 지우는 것보다는 낫다. 멈춘 채로 가라앉는 편이 낫다."
+    portrait: {fileID: 0}
+  - speaker: "종지기"
+    text: "병정들아, 막아라."
+    portrait: {fileID: 0}
+  battle: {fileID: 11400000, guid: 33c3333e343b0afc00fc05edfa34c747, type: 2}
+  outroLines:
+  - speaker: "종지기"
+    text: "...네 손에서 내 기억 냄새가 나는군. 그걸로 무엇을 할 셈이냐."
+    portrait: {fileID: 0}
+  - speaker: "이안"
+    text: "지금까지 삼킨 기억이 전부 여기 있어. 쥐들의 굶주림도, 시계공의 고집도, 수문장의 명령도."
+    portrait: {fileID: 0}
+  - speaker: "이안"
+    text: "마을 사람들 기억 대신, 이걸로 종을 울려."
+    portrait: {fileID: 0}
+  - speaker: "종지기"
+    text: "그 기억들은 다시 돌아오지 않는다. 네가 짊어진 것까지 전부 기름이 될 거다."
+    portrait: {fileID: 0}
+  - speaker: "이안"
+    text: "잊지는 않을 거야. 지워지게 두지도 않을 거고. 내가 기억하고 있으면 돼."
+    portrait: {fileID: 0}
+  - speaker: "틱"
+    text: "이안... 처음 만났을 땐 이름밖에 기억 못 했으면서."
+    portrait: {fileID: 0}
+  - speaker: "이안"
+    text: "그래서 더 잘 알아. 잊는다는 게 어떤 건지."
+    portrait: {fileID: 0}
+  - speaker: "종지기"
+    text: "...종탑에 기름을 배달하던 꼬마가 있었지. 늘 젖은 계단에서 미끄러지던."
+    portrait: {fileID: 0}
+  - speaker: "종지기"
+    text: "그렇다면... 종을 울려라. 이번에는 지우는 소리가 아니길 바란다."
+    portrait: {fileID: 0}
+  rewardCards: []
+  routeFights: []
+  routeElites: []

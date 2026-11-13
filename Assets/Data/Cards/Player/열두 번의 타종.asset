@@ -23,8 +23,8 @@ MonoBehaviour:
   - diceName: 
     diceType: 0
     diceDetail: 2
-    minRoll: 2
-    maxRoll: 4
+    minRoll: 3
+    maxRoll: 5
     diceEffectDescription: 
     effects:
     - trigger: 0
@@ -38,8 +38,8 @@ MonoBehaviour:
   - diceName: 
     diceType: 0
     diceDetail: 2
-    minRoll: 2
-    maxRoll: 4
+    minRoll: 3
+    maxRoll: 5
     diceEffectDescription: 
     effects:
     - trigger: 0
@@ -53,8 +53,8 @@ MonoBehaviour:
   - diceName: 
     diceType: 0
     diceDetail: 2
-    minRoll: 2
-    maxRoll: 4
+    minRoll: 3
+    maxRoll: 5
     diceEffectDescription: 
     effects:
     - trigger: 0
@@ -68,8 +68,8 @@ MonoBehaviour:
   - diceName: 
     diceType: 0
     diceDetail: 2
-    minRoll: 2
-    maxRoll: 4
+    minRoll: 3
+    maxRoll: 5
     diceEffectDescription: 
     effects:
     - trigger: 0
