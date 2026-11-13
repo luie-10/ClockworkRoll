@@ -7,6 +7,7 @@ using UnityEngine.UI;
 /// <summary>
 /// 스토리 상태의 대사 재생을 담당.
 /// 좌클릭 / Space로 진행. 타이핑 중 클릭하면 문장 전체가 먼저 나온다.
+/// 건너뛰기 버튼 / Esc로 남은 대사를 통째로 넘긴다.
 /// 재생이 끝나면 GameManager가 넘겨준 콜백(전투 시작 등)이 실행된다.
 /// </summary>
 public class DialogueManager : MonoBehaviour
@@ -41,6 +42,8 @@ public class DialogueManager : MonoBehaviour
     private Action onComplete;
     private Coroutine typingRoutine;
     private bool isTyping;
+    private Button skipButton;
+    private bool deckWasOpen;
 
     public bool IsPlaying { get; private set; }
 
@@ -112,7 +115,45 @@ public class DialogueManager : MonoBehaviour
         if (dialoguePanel != null) dialoguePanel.SetActive(true);
         else Debug.LogWarning("DialoguePanel이 연결되지 않았습니다.");
 
+        EnsureSkipButton();
         ShowCurrentLine();
+    }
+
+    /// <summary>대사창 오른쪽 위 모서리에 걸친 '건너뛰기' 버튼 (씬에 없으면 처음 재생할 때 만든다).</summary>
+    private void EnsureSkipButton()
+    {
+        if (skipButton != null || dialoguePanel == null) return;
+
+        Transform existing = dialoguePanel.transform.Find("SkipButton");
+        skipButton = existing != null ? existing.GetComponent<Button>() : null;
+        if (skipButton == null)
+        {
+            skipButton = UIBuilder.Button("SkipButton", dialoguePanel.transform, "건너뛰기 (Esc)", UITheme.InkSolid, 18);
+            UIBuilder.Place((RectTransform)skipButton.transform, Vector2.one, Vector2.one, new Vector2(1f, 0.5f),
+                new Vector2(-36f, 0f), new Vector2(170f, 44f));
+            UITheme.StyleButton(skipButton, false, 18);
+        }
+        skipButton.onClick.AddListener(Skip);
+    }
+
+    /// <summary>마우스가 건너뛰기 버튼 위에 있는가 (그 클릭은 '다음 줄'로 치지 않는다).</summary>
+    private bool PointerOverSkipButton()
+    {
+        if (skipButton == null || !skipButton.gameObject.activeInHierarchy) return false;
+        Canvas canvas = skipButton.GetComponentInParent<Canvas>();
+        Camera cam = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay ? canvas.worldCamera : null;
+        return RectTransformUtility.RectangleContainsScreenPoint((RectTransform)skipButton.transform, Input.mousePosition, cam);
+    }
+
+    /// <summary>남은 대사를 모두 건너뛰고 바로 다음 단계(전투 · 다음 챕터)로 넘어간다.</summary>
+    public void Skip()
+    {
+        if (!IsPlaying) return;
+
+        if (typingRoutine != null) StopCoroutine(typingRoutine);
+        typingRoutine = null;
+        isTyping = false;
+        FinishDialogue();
     }
 
     private void ShowCurrentLine()
@@ -164,8 +205,21 @@ public class DialogueManager : MonoBehaviour
     {
         if (!IsPlaying) return;
 
-        if (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space))
+        // Esc = 건너뛰기. 덱 보기가 열려 있으면 Esc는 그 창을 닫는 데 쓰인다.
+        if (Input.GetKeyDown(KeyCode.Escape) && !DeckViewer.IsOpen && !deckWasOpen)
+        {
+            Skip();
+            return;
+        }
+
+        if (Input.GetKeyDown(KeyCode.Space) || (Input.GetMouseButtonDown(0) && !PointerOverSkipButton()))
             Advance();
+    }
+
+    void LateUpdate()
+    {
+        // 같은 프레임에 덱 보기가 Esc로 먼저 닫혀도 스킵까지 되지 않게, 직전 프레임의 상태를 기억한다
+        deckWasOpen = DeckViewer.IsOpen;
     }
 
     /// <summary>대사를 한 단계 진행 (클릭 입력 또는 자동 진행용).</summary>
