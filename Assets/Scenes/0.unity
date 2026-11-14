@@ -1245,6 +1245,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BattleCamera
   focusOffset: {x: 0, y: 1.6, z: -4.5}
   lookHeight: 1.8
+  clashOffset: {x: 0, y: 1.5, z: -5.8}
+  clashLookHeight: 1.55
   moveSpeed: 3
   orbitPivot: {x: 0.8, y: 1, z: 0.5}
   maxYaw: 28
@@ -1256,6 +1258,10 @@ MonoBehaviour:
   orbitSpeed: 0.15
   panSpeed: 0.01
   zoomSpeed: 0.1
+  parallaxAngle: {x: 2.2, y: 1.1}
+  swayAngle: 0.8
+  punchFov: 3.5
+  punchRecover: 9
 --- !u!1 &566726832
 GameObject:
   m_ObjectHideFlags: 0
@@ -1508,8 +1514,16 @@ MonoBehaviour:
     portrait: {fileID: 21300000, guid: cedf574b66dc89a44b15c69b3a00cb6a, type: 3}
   - speaker: "\uC774\uC548"
     portrait: {fileID: 21300000, guid: 93bf1241087a3a24cbd06156c97d4b8e, type: 3}
+  - speaker: "\uB5A0\uB3CC\uC774 \uC2DC\uACC4\uACF5"
+    portrait: {fileID: 21300000, guid: 19a0bf73d80397744ab21ccd55b55cb5, type: 3}
+  - speaker: "\uAC15\uCCA0 \uC218\uBB38\uC7A5"
+    portrait: {fileID: 21300000, guid: fadd1b1e23ed6b046bcbb66661269d36, type: 3}
   - speaker: "\uC885\uC9C0\uAE30"
     portrait: {fileID: 21300000, guid: b4a588d918d353d4bb11de6ffb4460e0, type: 3}
+  - speaker: "\uD070 \uD0DC\uC5FD\uC758 \uB9DD\uB839"
+    portrait: {fileID: 21300000, guid: 7ab27fa4628b5fa4dac86ec95d320c8f, type: 3}
+  - speaker: "\uAC00\uB77C\uC549\uC740 \uC774\uC548"
+    portrait: {fileID: 21300000, guid: f99545e7bf9092b41857fcd3de7a9b6f, type: 3}
 --- !u!4 &657761272
 Transform:
   m_ObjectHideFlags: 0
@@ -1565,6 +1579,13 @@ MonoBehaviour:
   - {fileID: 0}
   startingMaxKi: 3
   routeRows: 6
+  chapterClearHealRatio: 0.35
+  showTitleScreen: 1
+  showLoadingScreen: 1
+  gameTitle: CLOCKWORK ROLL
+  titleTagline: "\uBA48\uCD98 \uC885\uD0D1 \uB54C\uBB38\uC5D0 \uBB3C\uC5D0 \uC7A0\uAE34
+    \uC2DC\uACC4 \uB9C8\uC744 \u2014 \uB5A0\uB2E4\uB2C8\uB294 \uAE30\uC5B5\uC744
+    \uC0BC\uD0A4\uBA70 \uC885\uD0D1\uC73C\uB85C"
   corruptionBaseChance: 0.2
   corruptionChancePerPoint: 0.05
 --- !u!4 &750986601
@@ -2992,6 +3013,9 @@ MonoBehaviour:
     blunt: 0
   personalDeck: []
   actionsPerRound: 1
+  behavior: 0
+  trait: 0
+  traitAmount: 1
 --- !u!114 &1443161043
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3018,6 +3042,10 @@ MonoBehaviour:
     down: {fileID: 0}
   poseHoldTime: 0.55
   poseSpeed: 14
+  stageLighting: 1
+  breathAmount: 0.012
+  breathRate: 0.38
+  hitFlashTime: 0.16
   showShadow: 1
   shadowSize: 1.1
 --- !u!65 &1443161044

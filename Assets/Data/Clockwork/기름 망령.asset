@@ -10,27 +10,27 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c432b655cc2ee62408eb86f1bf1d0dbc, type: 3}
-  m_Name: "기름 망령"
+  m_Name: "\uAE30\uB984 \uB9DD\uB839"
   m_EditorClassIdentifier: Assembly-CSharp::EnemyData
-  enemyName: "기름 망령"
+  enemyName: "\uAE30\uB984 \uB9DD\uB839"
   nicknames:
-  - "검은 웅덩이"
-  - "그을음"
-  - "미끄러운 것"
+  - "\uAC80\uC740 \uC6C5\uB369\uC774"
+  - "\uADF8\uC744\uC74C"
+  - "\uBBF8\uB044\uB7EC\uC6B4 \uAC83"
   maxHp: 36
   resistance:
     slash: 0
     thrust: 0
     blunt: 1
-  sprite: {fileID: 0}
+  sprite: {fileID: 21300000, guid: 31473228e15f702448f87b3f846efe82, type: 3}
   spriteHeight: 2
   poses:
-    slash: {fileID: 0}
-    thrust: {fileID: 0}
-    blunt: {fileID: 0}
-    guard: {fileID: 0}
-    evade: {fileID: 0}
-    hit: {fileID: 0}
+    slash: {fileID: 21300000, guid: cba65da6488a5a64aa8df2678b2f3336, type: 3}
+    thrust: {fileID: 21300000, guid: 2781b773742a841458b4e7c6347ac28d, type: 3}
+    blunt: {fileID: 21300000, guid: 46801dff608d0f344a5e9a20d2caad0b, type: 3}
+    guard: {fileID: 21300000, guid: 3ff8219de4de3464088241c2669be108, type: 3}
+    evade: {fileID: 21300000, guid: dd4ec33b15403bd438e754fa60ef5e15, type: 3}
+    hit: {fileID: 21300000, guid: 1597d90ded8b33e488c26fac35019876, type: 3}
     down: {fileID: 0}
   modelPrefab: {fileID: 0}
   tintColor: {r: 0.3, g: 0.28, b: 0.38, a: 1}

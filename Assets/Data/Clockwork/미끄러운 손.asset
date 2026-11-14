@@ -10,14 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 64319ab3dd94be547b66c1346fc27ddd, type: 3}
-  m_Name: "미끄러운 손"
+  m_Name: "\uBBF8\uB044\uB7EC\uC6B4 \uC190"
   m_EditorClassIdentifier: Assembly-CSharp::CardData
-  cardName: "미끄러운 손"
-  cardArt: {fileID: 0}
+  cardName: "\uBBF8\uB044\uB7EC\uC6B4 \uC190"
+  cardArt: {fileID: 21300000, guid: 8f58e74c758c56143b0a743f1e3faf04, type: 3}
   rarity: 2
   cost: 2
   requireTension: 0
-  cardDescription: "잡았다고 생각한 순간 빠져나가 태엽을 비튼다."
+  cardDescription: "\uC7A1\uC558\uB2E4\uACE0 \uC0DD\uAC01\uD55C \uC21C\uAC04 \uBE60\uC838\uB098\uAC00
+    \uD0DC\uC5FD\uC744 \uBE44\uD2BC\uB2E4."
   diceList:
   - diceName: 
     diceType: 1

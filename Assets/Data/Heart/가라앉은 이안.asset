@@ -10,24 +10,24 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c432b655cc2ee62408eb86f1bf1d0dbc, type: 3}
-  m_Name: "가라앉은 이안"
+  m_Name: "\uAC00\uB77C\uC549\uC740 \uC774\uC548"
   m_EditorClassIdentifier: Assembly-CSharp::EnemyData
-  enemyName: "가라앉은 이안"
+  enemyName: "\uAC00\uB77C\uC549\uC740 \uC774\uC548"
   nicknames: []
   maxHp: 32
   resistance:
     slash: 0
     thrust: 0
     blunt: 1
-  sprite: {fileID: 0}
+  sprite: {fileID: 21300000, guid: f96431c57e0a10041b59533d9d0b5450, type: 3}
   spriteHeight: 1.7
   poses:
-    slash: {fileID: 0}
-    thrust: {fileID: 0}
-    blunt: {fileID: 0}
-    guard: {fileID: 0}
-    evade: {fileID: 0}
-    hit: {fileID: 0}
+    slash: {fileID: 21300000, guid: fd3beff4906c14e41b85885c97ba539c, type: 3}
+    thrust: {fileID: 21300000, guid: 366bed4ad2909f44c836fc017a23d2e2, type: 3}
+    blunt: {fileID: 21300000, guid: e5db088b9b42d8b49a6dc651524558ba, type: 3}
+    guard: {fileID: 21300000, guid: ac345cdb8a0309e44b71c08e09b4c4cd, type: 3}
+    evade: {fileID: 21300000, guid: a62bc2e4d0ffc12438ace4b699859dfe, type: 3}
+    hit: {fileID: 21300000, guid: 5ac617f2c990f50419d32f0d6db1c2db, type: 3}
     down: {fileID: 0}
   modelPrefab: {fileID: 0}
   tintColor: {r: 0.45, g: 0.6, b: 0.75, a: 1}

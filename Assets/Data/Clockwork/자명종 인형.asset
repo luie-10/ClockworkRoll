@@ -10,28 +10,28 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c432b655cc2ee62408eb86f1bf1d0dbc, type: 3}
-  m_Name: "자명종 인형"
+  m_Name: "\uC790\uBA85\uC885 \uC778\uD615"
   m_EditorClassIdentifier: Assembly-CSharp::EnemyData
-  enemyName: "자명종 인형"
+  enemyName: "\uC790\uBA85\uC885 \uC778\uD615"
   nicknames:
-  - "새벽 여섯 시"
-  - "깨진 종"
-  - "시끄러운 놈"
-  - "늦잠"
+  - "\uC0C8\uBCBD \uC5EC\uC12F \uC2DC"
+  - "\uAE68\uC9C4 \uC885"
+  - "\uC2DC\uB044\uB7EC\uC6B4 \uB188"
+  - "\uB2A6\uC7A0"
   maxHp: 30
   resistance:
     slash: 0
     thrust: 1
     blunt: 1
-  sprite: {fileID: 0}
+  sprite: {fileID: 21300000, guid: bd48333855394b9419b77263568d6b41, type: 3}
   spriteHeight: 2
   poses:
-    slash: {fileID: 0}
-    thrust: {fileID: 0}
-    blunt: {fileID: 0}
-    guard: {fileID: 0}
-    evade: {fileID: 0}
-    hit: {fileID: 0}
+    slash: {fileID: 21300000, guid: f194a6e6f5f13e5428aaef3edd07e4fb, type: 3}
+    thrust: {fileID: 21300000, guid: 6cbbbf02ade146f4f84e3e2ce36c30db, type: 3}
+    blunt: {fileID: 21300000, guid: bc5c398a796fa594abc6bbbd9690af69, type: 3}
+    guard: {fileID: 21300000, guid: 82f9a52d3e541de4c82c6c9b9ca34750, type: 3}
+    evade: {fileID: 21300000, guid: 81860e66df58b8f478945632f7103479, type: 3}
+    hit: {fileID: 21300000, guid: d81df14d74b4b4941bc783c24964df30, type: 3}
     down: {fileID: 0}
   modelPrefab: {fileID: 0}
   tintColor: {r: 0.85, g: 0.7, b: 0.3, a: 1}

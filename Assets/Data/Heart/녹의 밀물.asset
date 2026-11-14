@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 64319ab3dd94be547b66c1346fc27ddd, type: 3}
-  m_Name: "녹의 밀물"
+  m_Name: "\uB179\uC758 \uBC00\uBB3C"
   m_EditorClassIdentifier: Assembly-CSharp::CardData
-  cardName: "녹의 밀물"
-  cardArt: {fileID: 0}
+  cardName: "\uB179\uC758 \uBC00\uBB3C"
+  cardArt: {fileID: 21300000, guid: c2d04ec250333734aad0e5c8aeeeed7d, type: 3}
   rarity: 2
   cost: 3
   requireTension: 0
-  cardDescription: "붉은 물이 발목부터 차오른다."
+  cardDescription: "\uBD89\uC740 \uBB3C\uC774 \uBC1C\uBAA9\uBD80\uD130 \uCC28\uC624\uB978\uB2E4."
   diceList:
   - diceName: 
     diceType: 0

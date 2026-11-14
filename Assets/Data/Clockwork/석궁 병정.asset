@@ -10,28 +10,28 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c432b655cc2ee62408eb86f1bf1d0dbc, type: 3}
-  m_Name: "석궁 병정"
+  m_Name: "\uC11D\uAD81 \uBCD1\uC815"
   m_EditorClassIdentifier: Assembly-CSharp::EnemyData
-  enemyName: "석궁 병정"
+  enemyName: "\uC11D\uAD81 \uBCD1\uC815"
   nicknames:
-  - "외눈 4호"
-  - "녹슨 시위"
-  - "망루지기"
-  - "15호"
+  - "\uC678\uB208 4\uD638"
+  - "\uB179\uC2A8 \uC2DC\uC704"
+  - "\uB9DD\uB8E8\uC9C0\uAE30"
+  - "15\uD638"
   maxHp: 28
   resistance:
     slash: 2
     thrust: 0
     blunt: 0
-  sprite: {fileID: 0}
+  sprite: {fileID: 21300000, guid: 80afb8f2d29c7f1419246d7a78b3f568, type: 3}
   spriteHeight: 2
   poses:
-    slash: {fileID: 0}
-    thrust: {fileID: 0}
-    blunt: {fileID: 0}
-    guard: {fileID: 0}
-    evade: {fileID: 0}
-    hit: {fileID: 0}
+    slash: {fileID: 21300000, guid: a70068a5bd1a5d4409a27fd7222dd2e4, type: 3}
+    thrust: {fileID: 21300000, guid: 186ec02a4c979d949b71cfd408140564, type: 3}
+    blunt: {fileID: 21300000, guid: 609e9383f6d455d43a0e164da944e115, type: 3}
+    guard: {fileID: 21300000, guid: 92ce369e38f4d12409fa33ffc3e57a8c, type: 3}
+    evade: {fileID: 21300000, guid: d964f437cde9d8a46a7f4152afea2909, type: 3}
+    hit: {fileID: 21300000, guid: e9cc233eecdce3348b189dc8c6a1b6fd, type: 3}
     down: {fileID: 0}
   modelPrefab: {fileID: 0}
   tintColor: {r: 0.5, g: 0.55, b: 0.35, a: 1}

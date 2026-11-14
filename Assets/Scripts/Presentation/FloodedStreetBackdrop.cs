@@ -16,6 +16,7 @@ public class FloodedStreetBackdrop : StageBackdrop
 {
     public override BackdropType Type { get { return BackdropType.FloodedStreet; } }
     public override int VariantCount { get { return 3; } }
+    public override Color GroundPuffColor { get { return new Color(0.8f, 0.9f, 1f, 0.3f); } }   // 물보라
     public override string VariantName { get { return Variant == 1 ? "새벽 안개" : Variant == 2 ? "붉은 노을" : "달밤의 비"; } }
 
     private struct Mood

@@ -273,11 +273,17 @@ public class CardView : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
         this.selected = selected;
         if (backgroundImage != null)
             backgroundImage.color = selected ? selectedInk : normalColor;
-        if (edge != null)
-        {
-            edge.effectColor = selected ? selectedColor : edgeColor;
-            edge.effectDistance = selected ? new Vector2(3f, -3f) : new Vector2(2f, -2f);
-        }
+        ApplyEdge();
+    }
+
+    /// <summary>테두리: 선택 = 금색 굵게 / 마우스 올림 = 등급 색이 밝고 굵게 / 평소 = 등급 색</summary>
+    private void ApplyEdge()
+    {
+        if (edge == null) return;
+        Color lit = Color.Lerp(edgeColor, Color.white, 0.35f);
+        lit.a = 1f;
+        edge.effectColor = selected ? selectedColor : hovered ? lit : edgeColor;
+        edge.effectDistance = selected || hovered ? new Vector2(3f, -3f) : new Vector2(2f, -2f);
     }
 
     void Update()
@@ -288,7 +294,8 @@ public class CardView : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
 
         // 크기: 마우스 올림 > 선택 > 기본, 부드럽게 따라감 (히트스톱 중에도 움직이도록 unscaled)
         float target = hovered ? hoverScale : selected ? selectedScale : 1f;
-        float s = Mathf.MoveTowards(transform.localScale.x, target, Time.unscaledDeltaTime * 2.5f);
+        float s = Mathf.Lerp(transform.localScale.x, target, 1f - Mathf.Exp(-16f * Time.unscaledDeltaTime));   // 빠르게 다가가 부드럽게 멈춘다
+        if (Mathf.Abs(s - target) < 0.001f) s = target;
         transform.localScale = new Vector3(s, s, 1f);
 
         UpdateUsable();
@@ -316,6 +323,7 @@ public class CardView : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
         // 들린 카드 아래쪽 빈자리까지 판정을 늘린다 (카드가 올라가며 마우스가 벗어나 떨리지 않게)
         if (backgroundImage != null) backgroundImage.raycastPadding = new Vector4(0f, -80f, 0f, 0f);
         SetOnTop(true);
+        ApplyEdge();
         CardTooltip.Show(this);
     }
 
@@ -324,6 +332,7 @@ public class CardView : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
         hovered = false;
         if (backgroundImage != null) backgroundImage.raycastPadding = Vector4.zero;
         SetOnTop(false);
+        ApplyEdge();
         CardTooltip.Hide(this);
     }
 

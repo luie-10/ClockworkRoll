@@ -10,14 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 64319ab3dd94be547b66c1346fc27ddd, type: 3}
-  m_Name: "기름 끼얹기"
+  m_Name: "\uAE30\uB984 \uB07C\uC5B9\uAE30"
   m_EditorClassIdentifier: Assembly-CSharp::CardData
-  cardName: "기름 끼얹기"
-  cardArt: {fileID: 0}
+  cardName: "\uAE30\uB984 \uB07C\uC5B9\uAE30"
+  cardArt: {fileID: 21300000, guid: 8af32036b9f1098428de5d4268b0e6d6, type: 3}
   rarity: 1
   cost: 1
   requireTension: 0
-  cardDescription: "검은 기름이 손잡이를 미끄럽게 만든다."
+  cardDescription: "\uAC80\uC740 \uAE30\uB984\uC774 \uC190\uC7A1\uC774\uB97C \uBBF8\uB044\uB7FD\uAC8C
+    \uB9CC\uB4E0\uB2E4."
   diceList:
   - diceName: 
     diceType: 0

@@ -10,14 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 64319ab3dd94be547b66c1346fc27ddd, type: 3}
-  m_Name: "이끼 집게"
+  m_Name: "\uC774\uB07C \uC9D1\uAC8C"
   m_EditorClassIdentifier: Assembly-CSharp::CardData
-  cardName: "이끼 집게"
-  cardArt: {fileID: 0}
+  cardName: "\uC774\uB07C \uC9D1\uAC8C"
+  cardArt: {fileID: 21300000, guid: 82ce03febcf49584d85b3df9ad456de0, type: 3}
   rarity: 1
   cost: 1
   requireTension: 0
-  cardDescription: "물때 낀 집게가 느리게, 그러나 깊게 문다."
+  cardDescription: "\uBB3C\uB54C \uB080 \uC9D1\uAC8C\uAC00 \uB290\uB9AC\uAC8C, \uADF8\uB7EC\uB098
+    \uAE4A\uAC8C \uBB38\uB2E4."
   diceList:
   - diceName: 
     diceType: 0

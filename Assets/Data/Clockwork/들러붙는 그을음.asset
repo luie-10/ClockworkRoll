@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 64319ab3dd94be547b66c1346fc27ddd, type: 3}
-  m_Name: "들러붙는 그을음"
+  m_Name: "\uB4E4\uB7EC\uBD99\uB294 \uADF8\uC744\uC74C"
   m_EditorClassIdentifier: Assembly-CSharp::CardData
-  cardName: "들러붙는 그을음"
-  cardArt: {fileID: 0}
+  cardName: "\uB4E4\uB7EC\uBD99\uB294 \uADF8\uC744\uC74C"
+  cardArt: {fileID: 21300000, guid: aae587d982d70b84a8b9a7f6177b7fde, type: 3}
   rarity: 1
   cost: 1
   requireTension: 0
-  cardDescription: "그을음이 틈새마다 스며든다."
+  cardDescription: "\uADF8\uC744\uC74C\uC774 \uD2C8\uC0C8\uB9C8\uB2E4 \uC2A4\uBA70\uB4E0\uB2E4."
   diceList:
   - diceName: 
     diceType: 0

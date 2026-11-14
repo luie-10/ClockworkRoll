@@ -13,11 +13,12 @@ MonoBehaviour:
   m_Name: "\uB9DE\uBB3C\uB9B0 \uD1B1\uB2C8"
   m_EditorClassIdentifier: Assembly-CSharp::CardData
   cardName: "\uB9DE\uBB3C\uB9B0 \uD1B1\uB2C8"
-  cardArt: {fileID: 0}
+  cardArt: {fileID: 21300000, guid: 0840613c591a9a445b075661005a9e24, type: 3}
   rarity: 1
   cost: 1
   requireTension: 1
-  cardDescription: "\uC11C\uB85C \uBB3C\uACE0 \uBB3C\uB9B0 \uD1B1\uB2C8\uAC00 \uBE44\uB85C\uC18C \uC81C \uD798\uC744 \uB0B8\uB2E4."
+  cardDescription: "\uC11C\uB85C \uBB3C\uACE0 \uBB3C\uB9B0 \uD1B1\uB2C8\uAC00 \uBE44\uB85C\uC18C
+    \uC81C \uD798\uC744 \uB0B8\uB2E4."
   diceList:
   - diceName: 
     diceType: 0

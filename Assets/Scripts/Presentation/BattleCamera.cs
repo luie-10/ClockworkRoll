@@ -47,6 +47,15 @@ public class BattleCamera : MonoBehaviour
     [Tooltip("가만히 있어도 천천히 흔들리는 각도 (도). 0이면 끔")]
     public float swayAngle = 0.8f;
 
+    [Header("타격 줌")]
+    [Tooltip("가장 센 타격에서 순간적으로 좁아지는 시야각(도) — 화면이 훅 당겨졌다 돌아온다. 0이면 끔")]
+    public float punchFov = 3.5f;
+    [Tooltip("당겨진 시야가 돌아오는 빠르기")]
+    public float punchRecover = 9f;
+
+    private Camera cam;
+    private float baseFov, fovKick;
+
     private Vector3 homePos;
     private Quaternion homeRot;
     private Transform focusTarget, focusPartner;
@@ -74,6 +83,9 @@ public class BattleCamera : MonoBehaviour
         homePos = transform.position;
         homeRot = transform.rotation;
         smoothPos = homePos;
+
+        cam = GetComponent<Camera>();
+        if (cam != null) baseFov = cam.fieldOfView;
     }
 
     void OnDestroy()
@@ -118,6 +130,12 @@ public class BattleCamera : MonoBehaviour
         shakeStrength = strength;
         shakeDuration = Mathf.Max(0.01f, duration);
         shakeTimeLeft = shakeDuration;
+    }
+
+    /// <summary>타격 순간 화면을 훅 당긴다 (0~1). 금방 원래 시야로 돌아온다.</summary>
+    public void Punch(float strength)
+    {
+        fovKick = Mathf.Max(fovKick, Mathf.Clamp01(strength) * punchFov);
     }
 
     void Update()
@@ -212,6 +230,12 @@ public class BattleCamera : MonoBehaviour
         }
 
         transform.position = smoothPos + shakeOffset;
+
+        if (cam != null && !cam.orthographic && (fovKick > 0f || cam.fieldOfView != baseFov))
+        {
+            fovKick = fovKick < 0.01f ? 0f : fovKick * Mathf.Exp(-punchRecover * Time.unscaledDeltaTime);
+            cam.fieldOfView = baseFov - fovKick;
+        }
     }
 
     /// <summary>덱 보기 버튼 위에 조작 안내 한 줄 (전투 HUD 안 — 스토리 중엔 같이 숨겨짐)</summary>

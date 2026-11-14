@@ -9,6 +9,9 @@ public class PixelCanvas
     public readonly int width, height;
     private readonly Color[] px;
 
+    /// <summary>켜면 이미 칠해진 칸 위에만 그려진다 (몸 안쪽의 무늬 · 명암을 테두리 밖으로 넘치지 않게 얹을 때)</summary>
+    public bool Clip;
+
     public PixelCanvas(int width, int height)
     {
         this.width = width;
@@ -26,6 +29,7 @@ public class PixelCanvas
     {
         if (x < 0 || y < 0 || x >= width || y >= height || c.a <= 0f) return;
         int i = y * width + x;
+        if (Clip && px[i].a < 0.5f) return;
         px[i] = c.a >= 1f ? c : Color.Lerp(px[i], new Color(c.r, c.g, c.b, Mathf.Max(px[i].a, c.a)), c.a);
     }
 
@@ -120,6 +124,92 @@ public class PixelCanvas
                 else if (rightOpen) px[y * width + x] = new Color(c.r * (1f - dark), c.g * (1f - dark), c.b * (1f - dark), c.a);
             }
         }
+    }
+
+    /// <summary>
+    /// 덩어리감: 위쪽 가장자리 두 줄은 따뜻하게 밝히고, 아래쪽 가장자리 두 줄은 차갑게 어둡힌다 (빛이 위에서).
+    /// 가장자리에 바로 붙은 줄은 세게, 그 안쪽 줄은 약하게 — 납작한 색 면이 둥글게 말려 보인다.
+    /// </summary>
+    public void Volume(float light = 0.3f, float dark = 0.36f)
+    {
+        Color[] src = (Color[])px.Clone();
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                Color c = src[y * width + x];
+                if (c.a < 0.5f) continue;
+
+                float up = !Opaque(src, x, y + 1) ? 1f : (!Opaque(src, x, y + 2) || !Opaque(src, x - 1, y + 1)) ? 0.45f : 0f;
+                float down = !Opaque(src, x, y - 1) ? 1f : (!Opaque(src, x, y - 2) || !Opaque(src, x + 1, y - 1)) ? 0.45f : 0f;
+                if (up > 0f && down > 0f) continue;   // 가는 선(수염 · 칼날)은 그대로
+
+                if (up > 0f)
+                {
+                    Color lit = Color.Lerp(c, new Color(1f, 0.96f, 0.84f), light * up);
+                    lit.a = c.a;
+                    px[y * width + x] = lit;
+                }
+                else if (down > 0f)
+                {
+                    float k = dark * down;
+                    px[y * width + x] = new Color(c.r * (1f - k), c.g * (1f - k * 0.95f), c.b * (1f - k * 0.7f), c.a);
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// 색 있는 테두리 한 줄: 검정 한 색이 아니라 맞닿은 면의 색을 짙게 한 색으로 두른다 (윤곽이 그림에 녹아든다).
+    /// ink = 섞이는 먹색, tint = 맞닿은 색이 남는 정도 (0 = 먹색만)
+    /// </summary>
+    public void SoftOutline(Color ink, float tint = 0.3f)
+    {
+        Color[] src = (Color[])px.Clone();
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                if (src[y * width + x].a >= 0.5f) continue;
+                float r = 0f, g = 0f, b = 0f;
+                int n = 0;
+                for (int k = 0; k < 4; k++)
+                {
+                    int nx = x + (k == 0 ? -1 : k == 1 ? 1 : 0), ny = y + (k == 2 ? -1 : k == 3 ? 1 : 0);
+                    if (!Opaque(src, nx, ny)) continue;
+                    Color c = src[ny * width + nx];
+                    r += c.r; g += c.g; b += c.b; n++;
+                }
+                if (n == 0) continue;
+                px[y * width + x] = new Color(Mathf.Lerp(ink.r, r / n * 0.38f, tint), Mathf.Lerp(ink.g, g / n * 0.34f, tint), Mathf.Lerp(ink.b, b / n * 0.42f, tint), 1f);
+            }
+        }
+    }
+
+    /// <summary>
+    /// 두 배로 키운다 (Scale2x): 계단진 대각선 모서리를 메워 넣어 그냥 늘린 것보다 윤곽이 매끈하다.
+    /// 작은 도화지에 그린 그림을 큰 도화지 그림들과 같은 픽셀 크기로 맞출 때 쓴다.
+    /// </summary>
+    public PixelCanvas Upscale2x()
+    {
+        PixelCanvas big = new PixelCanvas(width * 2, height * 2);
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                Color p = px[y * width + x];
+                Color a = Get(x, y + 1), b = Get(x + 1, y), c = Get(x - 1, y), d = Get(x, y - 1);   // 위 · 오른쪽 · 왼쪽 · 아래
+                Color tl = p, tr = p, bl = p, br = p;
+                if (c == a && c != d && a != b) tl = a;
+                if (a == b && a != c && b != d) tr = b;
+                if (d == c && d != b && c != a) bl = c;
+                if (b == d && b != a && d != c) br = d;
+                int i = (y * 2) * big.width + x * 2;
+                big.px[i] = bl; big.px[i + 1] = br;
+                big.px[i + big.width] = tl; big.px[i + big.width + 1] = tr;
+            }
+        }
+        return big;
     }
 
     /// <summary>바깥 테두리 한 줄 (투명한 칸 중 그림에 붙은 칸을 칠한다)</summary>

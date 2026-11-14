@@ -46,6 +46,9 @@ public abstract class StageBackdrop : MonoBehaviour
     /// <summary>이 배경의 변형 가짓수</summary>
     public virtual int VariantCount { get { return 1; } }
 
+    /// <summary>발밑에서 이는 것의 색 (기본 = 흙먼지, 물에 잠긴 무대 = 물보라) — ImpactFX.Dust가 쓴다</summary>
+    public virtual Color GroundPuffColor { get { return new Color(0.62f, 0.58f, 0.52f, 0.34f); } }
+
     /// <summary>지금 지어져 있는 변형 번호 (0 ~ VariantCount-1)</summary>
     public int Variant { get; private set; }
 

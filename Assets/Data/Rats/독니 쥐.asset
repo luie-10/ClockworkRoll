@@ -10,28 +10,28 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c432b655cc2ee62408eb86f1bf1d0dbc, type: 3}
-  m_Name: "독니 쥐"
+  m_Name: "\uB3C5\uB2C8 \uC950"
   m_EditorClassIdentifier: Assembly-CSharp::EnemyData
-  enemyName: "독니 쥐"
+  enemyName: "\uB3C5\uB2C8 \uC950"
   nicknames:
-  - "초록 이빨"
-  - "침 흘리는 놈"
-  - "곪은 꼬리"
-  - "하수구 독"
+  - "\uCD08\uB85D \uC774\uBE68"
+  - "\uCE68 \uD758\uB9AC\uB294 \uB188"
+  - "\uACEA\uC740 \uAF2C\uB9AC"
+  - "\uD558\uC218\uAD6C \uB3C5"
   maxHp: 28
   resistance:
     slash: 1
     thrust: 0
     blunt: 1
-  sprite: {fileID: 0}
+  sprite: {fileID: 21300000, guid: 95983b103d8f4d34aa2306d87990d50e, type: 3}
   spriteHeight: 2
   poses:
-    slash: {fileID: 0}
-    thrust: {fileID: 0}
-    blunt: {fileID: 0}
-    guard: {fileID: 0}
-    evade: {fileID: 0}
-    hit: {fileID: 0}
+    slash: {fileID: 21300000, guid: d1581a9f9c3acd44eb6f21c6577badf9, type: 3}
+    thrust: {fileID: 21300000, guid: 86f1d6e15efcde4489e9cbf284f716c9, type: 3}
+    blunt: {fileID: 21300000, guid: aa02ab2adc9d3a143bf7ae6ec886b721, type: 3}
+    guard: {fileID: 21300000, guid: d0fc38645a12dc9498bb0120b8215059, type: 3}
+    evade: {fileID: 21300000, guid: e47723963dc9ca540bdc58c5aea9439c, type: 3}
+    hit: {fileID: 21300000, guid: 76efa01843657d24b91a27442db25c02, type: 3}
     down: {fileID: 0}
   modelPrefab: {fileID: 0}
   tintColor: {r: 0.45, g: 0.7, b: 0.35, a: 1}

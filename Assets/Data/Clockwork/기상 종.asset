@@ -10,14 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 64319ab3dd94be547b66c1346fc27ddd, type: 3}
-  m_Name: "기상 종"
+  m_Name: "\uAE30\uC0C1 \uC885"
   m_EditorClassIdentifier: Assembly-CSharp::CardData
-  cardName: "기상 종"
-  cardArt: {fileID: 0}
+  cardName: "\uAE30\uC0C1 \uC885"
+  cardArt: {fileID: 21300000, guid: b4c571aa87319ec498e6ef6bf20ea7bb, type: 3}
   rarity: 1
   cost: 1
   requireTension: 0
-  cardDescription: "정각이 되면 머리의 종이 미친 듯이 울린다."
+  cardDescription: "\uC815\uAC01\uC774 \uB418\uBA74 \uBA38\uB9AC\uC758 \uC885\uC774
+    \uBBF8\uCE5C \uB4EF\uC774 \uC6B8\uB9B0\uB2E4."
   diceList:
   - diceName: 
     diceType: 0

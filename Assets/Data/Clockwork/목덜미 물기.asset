@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 64319ab3dd94be547b66c1346fc27ddd, type: 3}
-  m_Name: "목덜미 물기"
+  m_Name: "\uBAA9\uB35C\uBBF8 \uBB3C\uAE30"
   m_EditorClassIdentifier: Assembly-CSharp::CardData
-  cardName: "목덜미 물기"
-  cardArt: {fileID: 0}
+  cardName: "\uBAA9\uB35C\uBBF8 \uBB3C\uAE30"
+  cardArt: {fileID: 21300000, guid: 0b679481c3a316e4fac9044e0f4069a3, type: 3}
   rarity: 1
   cost: 1
   requireTension: 0
-  cardDescription: "송곳니가 목덜미를 찾는다."
+  cardDescription: "\uC1A1\uACF3\uB2C8\uAC00 \uBAA9\uB35C\uBBF8\uB97C \uCC3E\uB294\uB2E4."
   diceList:
   - diceName: 
     diceType: 0

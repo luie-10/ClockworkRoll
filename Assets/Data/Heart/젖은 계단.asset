@@ -10,14 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 64319ab3dd94be547b66c1346fc27ddd, type: 3}
-  m_Name: "젖은 계단"
+  m_Name: "\uC816\uC740 \uACC4\uB2E8"
   m_EditorClassIdentifier: Assembly-CSharp::CardData
-  cardName: "젖은 계단"
-  cardArt: {fileID: 0}
+  cardName: "\uC816\uC740 \uACC4\uB2E8"
+  cardArt: {fileID: 21300000, guid: b84bdec014772ff48b583dacfb4c7448, type: 3}
   rarity: 1
   cost: 1
   requireTension: 0
-  cardDescription: "기름통을 멘 아이가 미끄러지던 그 계단."
+  cardDescription: "\uAE30\uB984\uD1B5\uC744 \uBA58 \uC544\uC774\uAC00 \uBBF8\uB044\uB7EC\uC9C0\uB358
+    \uADF8 \uACC4\uB2E8."
   diceList:
   - diceName: 
     diceType: 0

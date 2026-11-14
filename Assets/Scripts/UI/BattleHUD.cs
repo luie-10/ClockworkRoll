@@ -26,6 +26,7 @@ public class BattleHUD : MonoBehaviour
         group.alpha = 0f;   // 게임은 스토리부터 시작하므로 숨긴 채로 시작
         UITheme.ApplyToScene(transform.parent != null ? transform.parent : transform);
         Apply(false);
+        PhaseBanner.Ensure();   // 계획 ↔ 시계 진행 전환 띠
     }
 
     void Update()

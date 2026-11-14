@@ -209,6 +209,8 @@ public class DeckViewer : MonoBehaviour
         UIBuilder.Place((RectTransform)close.transform, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-24f, 14f), new Vector2(240f, 46f));
         close.onClick.AddListener(() => panelRoot.SetActive(false));
 
+        UIPop.Ensure(panelRoot, 1f, 0.2f);                 // 어두운 바탕은 서서히
+        UIPop.Ensure(window.gameObject, 0.96f, 0.22f);     // 창은 살짝 커지며
         panelRoot.SetActive(false);
     }
 

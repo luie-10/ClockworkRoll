@@ -80,6 +80,12 @@ public static class UITheme
         if (b == null) return;
         Image img = b.targetGraphic as Image;
         StylePanel(img, primary ? BrassFill : InkSolid, primary ? (Color?)new Color(1f, 0.85f, 0.55f, 0.6f) : BrassLine);
+        if (primary && img != null)
+        {
+            img.sprite = ProceduralSprites.Bevel();   // 주 버튼은 살짝 도톰하게 (위가 밝고 아래가 그늘진 판)
+            img.color = new Color(0.86f, 0.66f, 0.33f);
+        }
+        UIButtonFeel.Ensure(b);
 
         ColorBlock cb = b.colors;
         cb.normalColor = Color.white;
@@ -134,6 +140,7 @@ public static class UITheme
 
             Text ki = FindText(res.transform, "KiText");
             StyleText(ki, 38, Ki, FontStyle.Bold);
+            UITextPunch.Ensure(ki);   // 기력이 바뀌는 순간 숫자가 한 번 튄다
             if (ki != null)
             {
                 UIBuilder.Stretch(ki.rectTransform, 6f);

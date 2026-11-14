@@ -36,6 +36,14 @@ public class SpriteCharacter : MonoBehaviour
     [Tooltip("무대 조명(가로등 · 불 · 네온)을 받고 그림 모양대로 그림자를 드리운다. 끄면 예전처럼 조명과 무관한 스프라이트")]
     public bool stageLighting = true;
 
+    [Header("생동감")]
+    [Tooltip("가만히 서 있을 때 숨 쉬듯 늘었다 줄어드는 정도 (0 = 끔)")]
+    [Range(0f, 0.04f)] public float breathAmount = 0.012f;
+    [Tooltip("숨 쉬는 빠르기 (초당 횟수)")]
+    public float breathRate = 0.38f;
+    [Tooltip("맞는 순간 하얗게 번쩍이는 시간(초)")]
+    public float hitFlashTime = 0.16f;
+
     [Header("그림자")]
     public bool showShadow = true;
     public float shadowSize = 1.1f;
@@ -55,6 +63,11 @@ public class SpriteCharacter : MonoBehaviour
     private Vector4 poseNow = PoseIdle;
 
     private static readonly Vector4 PoseIdle = new Vector4(0f, 1f, 1f, 0f);
+    private static readonly int FlashId = Shader.PropertyToID("_Flash");
+
+    private Material bodyMaterial;         // 무대 조명 셰이더 (없으면 null — 번쩍임 없이 색 깜빡임만)
+    private float flash;                   // 1 = 온통 하양 → 0
+    private float breathPhase;
 
     public string CurrentPose { get { return currentPose; } }
 
@@ -134,8 +147,43 @@ public class SpriteCharacter : MonoBehaviour
         }
     }
 
+    // ─────────────────────────── 타격감 ───────────────────────────
+
+    /// <summary>맞는 순간: 그림 전체가 하얗게 번쩍였다가 금방 돌아온다 (Unit.TakeDamage가 부름)</summary>
+    public void HitFlash()
+    {
+        if (bodyMaterial != null) flash = 1f;
+    }
+
+    /// <summary>지금 모습 그대로 옅은 잔상을 남긴다 (돌진할 때 Unit이 부름)</summary>
+    public void SpawnAfterimage(float life = 0.22f, float alpha = 0.38f)
+    {
+        if (body == null || BodyRenderer == null || BodyRenderer.sprite == null) return;
+
+        GameObject go = new GameObject("Afterimage");
+        go.transform.SetPositionAndRotation(body.position, body.rotation);
+        go.transform.localScale = body.lossyScale;
+
+        SpriteRenderer sr = go.AddComponent<SpriteRenderer>();
+        sr.sprite = BodyRenderer.sprite;
+        sr.flipX = BodyRenderer.flipX;
+        sr.sortingOrder = BodyRenderer.sortingOrder - 1;
+        Color c = BodyRenderer.color;
+        c.a *= alpha;
+        sr.color = c;
+
+        go.AddComponent<Afterimage>().life = life;
+    }
+
     void Update()
     {
+        if (flash > 0f)
+        {
+            // 히트스톱(시간 정지) 중에도 번쩍임은 흘러간다
+            flash = Mathf.Max(0f, flash - Time.unscaledDeltaTime / Mathf.Max(0.01f, hitFlashTime));
+            if (bodyMaterial != null) bodyMaterial.SetFloat(FlashId, flash * flash);
+        }
+
         if (currentPose == "Idle") return;
         poseTimer -= Time.deltaTime;
         if (poseTimer <= 0f) ResetPose();
@@ -155,11 +203,17 @@ public class SpriteCharacter : MonoBehaviour
         float forward = facingRight ? 1f : -1f;
         body.rotation = Quaternion.Euler(0f, yaw, 0f) * Quaternion.Euler(0f, 0f, -poseNow.x * forward);
 
-        body.localScale = new Vector3(bodyScale * poseNow.y, bodyScale * poseNow.z, bodyScale);
+        // 숨쉬기: 기본 자세일 때만 아주 조금 늘었다 줄어든다 (발은 바닥에 붙은 채)
+        float breath = 0f;
+        if (currentPose == "Idle" && breathAmount > 0f)
+            breath = Mathf.Sin((Time.time * breathRate + breathPhase) * Mathf.PI * 2f) * breathAmount;
+        float stretchX = poseNow.y * (1f - breath * 0.5f), stretchY = poseNow.z * (1f + breath);
+
+        body.localScale = new Vector3(bodyScale * stretchX, bodyScale * stretchY, bodyScale);
 
         Vector3 right = cam != null ? cam.transform.right : Vector3.right;
         Vector3 shift = transform.InverseTransformDirection(right) * (poseNow.w * forward);
-        body.localPosition = new Vector3(0f, footOffset * poseNow.z, 0f) + shift;
+        body.localPosition = new Vector3(0f, footOffset * stretchY, 0f) + shift;
     }
 
     private Sprite IdleSprite()
@@ -190,9 +244,11 @@ public class SpriteCharacter : MonoBehaviour
 
             // 무대 조명을 받고 진짜 그림자를 드리우는 셰이더 (없거나 지원 안 되면 기본 스프라이트 그대로)
             Shader lit = stageLighting ? Resources.Load<Shader>("StageSprite") : null;
+            breathPhase = Random.value;   // 여럿이 서 있어도 숨이 똑같이 맞지 않게
             if (lit != null && lit.isSupported)
             {
-                BodyRenderer.sharedMaterial = new Material(lit);
+                bodyMaterial = new Material(lit);
+                BodyRenderer.sharedMaterial = bodyMaterial;
                 BodyRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
             }
         }
@@ -291,5 +347,30 @@ public class SpriteCharacter : MonoBehaviour
         shadowSprite = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), size);
         shadowSprite.name = "BlobShadow";
         return shadowSprite;
+    }
+}
+
+/// <summary>잔상 한 장 — 제자리에서 옅어지다 사라진다 (SpriteCharacter.SpawnAfterimage가 만든다)</summary>
+public class Afterimage : MonoBehaviour
+{
+    public float life = 0.22f;
+
+    private SpriteRenderer sr;
+    private float startAlpha, age;
+
+    void Start()
+    {
+        sr = GetComponent<SpriteRenderer>();
+        startAlpha = sr != null ? sr.color.a : 0f;
+    }
+
+    void Update()
+    {
+        age += Time.deltaTime;
+        if (sr == null || age >= life) { Destroy(gameObject); return; }
+
+        Color c = sr.color;
+        c.a = startAlpha * (1f - age / life);
+        sr.color = c;
     }
 }

@@ -10,14 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 64319ab3dd94be547b66c1346fc27ddd, type: 3}
-  m_Name: "석궁 사격"
+  m_Name: "\uC11D\uAD81 \uC0AC\uACA9"
   m_EditorClassIdentifier: Assembly-CSharp::CardData
-  cardName: "석궁 사격"
-  cardArt: {fileID: 0}
+  cardName: "\uC11D\uAD81 \uC0AC\uACA9"
+  cardArt: {fileID: 21300000, guid: d890c2db7d84681438a24f48ba31dcea, type: 3}
   rarity: 1
   cost: 2
   requireTension: 0
-  cardDescription: "녹슨 시위가 튕기며 볼트가 날아든다."
+  cardDescription: "\uB179\uC2A8 \uC2DC\uC704\uAC00 \uD295\uAE30\uBA70 \uBCFC\uD2B8\uAC00
+    \uB0A0\uC544\uB4E0\uB2E4."
   diceList:
   - diceName: 
     diceType: 0

@@ -115,6 +115,7 @@ public static class UIBuilder
 
         Text t = Label("Label", img.transform, label, fontSize, UITheme.TextMain, TextAnchor.MiddleCenter);
         Stretch(t.rectTransform);
+        UIButtonFeel.Ensure(button);   // 올리면 커지고 누르면 눌린다 (실행 중에만 붙는다)
         return button;
     }
 

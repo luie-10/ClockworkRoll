@@ -10,14 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 64319ab3dd94be547b66c1346fc27ddd, type: 3}
-  m_Name: "조준"
+  m_Name: "\uC870\uC900"
   m_EditorClassIdentifier: Assembly-CSharp::CardData
-  cardName: "조준"
-  cardArt: {fileID: 0}
+  cardName: "\uC870\uC900"
+  cardArt: {fileID: 21300000, guid: 6354c5be086419d44bfc68341f2f924d, type: 3}
   rarity: 1
   cost: 1
   requireTension: 0
-  cardDescription: "숨을 멈추고 태엽이 다 감기기를 기다린다."
+  cardDescription: "\uC228\uC744 \uBA48\uCD94\uACE0 \uD0DC\uC5FD\uC774 \uB2E4 \uAC10\uAE30\uAE30\uB97C
+    \uAE30\uB2E4\uB9B0\uB2E4."
   diceList:
   - diceName: 
     diceType: 1

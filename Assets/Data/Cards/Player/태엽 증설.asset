@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 64319ab3dd94be547b66c1346fc27ddd, type: 3}
-  m_Name: "태엽 증설"
+  m_Name: "\uD0DC\uC5FD \uC99D\uC124"
   m_EditorClassIdentifier: Assembly-CSharp::CardData
-  cardName: "태엽 증설"
-  cardArt: {fileID: 0}
+  cardName: "\uD0DC\uC5FD \uC99D\uC124"
+  cardArt: {fileID: 21300000, guid: 3576cccc085409344bd8982a94b4e008, type: 3}
   rarity: 1
   cost: 2
-  requireEmotionLevel: 0
-  cardDescription: "태엽통을 하나 더 끼워 넣는다."
+  requireTension: 0
+  cardDescription: "\uD0DC\uC5FD\uD1B5\uC744 \uD558\uB098 \uB354 \uB07C\uC6CC \uB123\uB294\uB2E4."
   diceList:
   - diceName: 
     diceType: 1

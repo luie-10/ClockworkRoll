@@ -10,14 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 64319ab3dd94be547b66c1346fc27ddd, type: 3}
-  m_Name: "웅크리기"
+  m_Name: "\uC6C5\uD06C\uB9AC\uAE30"
   m_EditorClassIdentifier: Assembly-CSharp::CardData
-  cardName: "웅크리기"
-  cardArt: {fileID: 0}
+  cardName: "\uC6C5\uD06C\uB9AC\uAE30"
+  cardArt: {fileID: 21300000, guid: 05134fa50f7764b4280e0a302d7e9bdc, type: 3}
   rarity: 1
   cost: 1
   requireTension: 0
-  cardDescription: "등딱지 아래로 몸을 말고 상처를 핥는다."
+  cardDescription: "\uB4F1\uB531\uC9C0 \uC544\uB798\uB85C \uBAB8\uC744 \uB9D0\uACE0
+    \uC0C1\uCC98\uB97C \uD565\uB294\uB2E4."
   diceList:
   - diceName: 
     diceType: 1

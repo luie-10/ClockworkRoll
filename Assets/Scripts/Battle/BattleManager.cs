@@ -1435,6 +1435,7 @@ public class BattleManager : MonoBehaviour
         yield return new WaitForSeconds(lungeDuration * 0.4f);
         Vector3 mid = (a.transform.position + b.transform.position) * 0.5f + Vector3.up * 0.8f;
         ClashSpark.Burst(mid, new Color(1f, 0.9f, 0.6f), 14, 3.5f);
+        if (aDie != null && bDie != null) ImpactFX.Clash(mid, new Color(1f, 0.85f, 0.55f));   // 맞부딪힐 때만 (일방 공격은 맞는 쪽에서 터진다)
 
         // 돌진이 완전히 끝나 제자리로 돌아올 때까지 기다린다 (다음 움직임과 겹치면 위치가 어긋남)
         if (aLunge != null) yield return aLunge;
@@ -1456,10 +1457,14 @@ public class BattleManager : MonoBehaviour
                 DamagePopup.Spawn(HeadPosition(loser) + Vector3.up * 0.4f,
                     $"{ResistanceSet.Label(lastResistance)}! x{ResistanceSet.Multiplier(lastResistance):0.0}", resColor, 1f);
             }
-            ClashSpark.Burst(loser.transform.position + Vector3.up * 0.8f, damagePopupColor, 24, 5f);
+            bool bigHit = damage >= bigHitThreshold;
+            Vector3 hitPoint = loser.transform.position + Vector3.up * 0.8f;
+            ClashSpark.Burst(hitPoint, damagePopupColor, bigHit ? 36 : 24, bigHit ? 6.5f : 5f);
+            ImpactFX.Hit(hitPoint, winner.transform.position, die.diceDetail, HitMarkColor(die.diceDetail), bigHit);
+            StagePostFX.Punch(bigHit ? 1f : 0.3f);
+            if (BattleCamera.Instance != null) BattleCamera.Instance.Punch(bigHit ? 1f : 0.35f);
             Coroutine knockback = StartCoroutine(loser.KnockbackRoutine(winner.transform.position, knockbackDistance, 0.4f));
 
-            bool bigHit = damage >= bigHitThreshold;
             StageBackdrop.Impact(bigHit ? 1f : 0.45f);   // 타격 임팩트로 배경이 반응 (태엽 감김 / 가로등 깜빡임)
             if (BattleCamera.Instance != null)
                 BattleCamera.Instance.Shake(bigHit ? 0.35f : 0.12f, bigHit ? 0.35f : 0.2f);
@@ -1473,6 +1478,7 @@ public class BattleManager : MonoBehaviour
             string label = die.diceDetail == DiceDetail.Evade ? "회피!" : "막음!";
             DamagePopup.Spawn(HeadPosition(winner) + Vector3.up * 0.4f, label, defensePopupColor, 1.2f);
             ClashSpark.Burst(winner.transform.position + Vector3.up * 0.8f, defensePopupColor, 10, 2.5f);
+            ImpactFX.Guard(Vector3.Lerp(winner.transform.position, loser.transform.position, 0.25f) + Vector3.up * 0.9f, defensePopupColor);
             yield return StartCoroutine(loser.KnockbackRoutine(winner.transform.position, knockbackDistance * 0.4f, 0.3f));
         }
     }
@@ -1482,6 +1488,8 @@ public class BattleManager : MonoBehaviour
     {
         Vector3 mid = (a.transform.position + b.transform.position) * 0.5f + Vector3.up * 1.2f;
         ClashSpark.Burst(mid, Color.white, 20, 4f);
+        ImpactFX.Clash(mid, Color.white);
+        StagePostFX.Punch(0.25f);
 
         Coroutine aBack = StartCoroutine(a.KnockbackRoutine(b.transform.position, knockbackDistance * 0.6f, 0.35f));
         Coroutine bBack = StartCoroutine(b.KnockbackRoutine(a.transform.position, knockbackDistance * 0.6f, 0.35f));
@@ -1490,6 +1498,17 @@ public class BattleManager : MonoBehaviour
 
         yield return aBack;
         yield return bBack;
+    }
+
+    /// <summary>타격 자국의 색 — 참격은 붉게, 관통은 차갑게, 타격은 뜨겁게</summary>
+    private static Color HitMarkColor(DiceDetail detail)
+    {
+        switch (detail)
+        {
+            case DiceDetail.Slash:  return new Color(1f, 0.35f, 0.3f);
+            case DiceDetail.Thrust: return new Color(0.55f, 0.85f, 1f);
+            default:                return new Color(1f, 0.7f, 0.3f);
+        }
     }
 
     /// <summary>큰 피해 순간 시간을 거의 멈춰서 타격감을 준다.</summary>
@@ -1715,7 +1734,11 @@ public class BattleManager : MonoBehaviour
         {
             int blast = DealExtraDamage(playerUnit, unit.traitAmount, "폭발", overwindColor);
             Log($"  [폭발] {unit.unitName}이(가) 터졌다 → {playerUnit.unitName}에게 피해 {blast}");
-            if (clashFx) ClashSpark.Burst(unit.transform.position + Vector3.up * 0.8f, overwindColor, 30, 6f);
+            if (clashFx)
+            {
+                ClashSpark.Burst(unit.transform.position + Vector3.up * 0.8f, overwindColor, 30, 6f);
+                ImpactFX.Clash(unit.transform.position + Vector3.up * 0.8f, overwindColor);
+            }
             StageBackdrop.Impact(0.8f);
         }
     }

@@ -262,8 +262,26 @@ public class Unit : MonoBehaviour
         Vector3 start = transform.position;
         Vector3 peak = start + dir.normalized * distance;
 
+        // 튀어나가는 동안 잔상을 남기고, 박차는 발밑에 먼지가 인다
+        SpriteCharacter sc = GetComponent<SpriteCharacter>();
+        if (sc != null)
+        {
+            StartCoroutine(AfterimageRoutine(sc, duration * 0.4f, 3));
+            ImpactFX.Dust(new Vector3(start.x, 0f, start.z), 0f, 4);
+        }
+
         yield return MoveToRoutine(peak, duration * 0.4f);   // 빠르게 나가고
         yield return MoveToRoutine(start, duration * 0.6f);  // 조금 천천히 복귀
+    }
+
+    private IEnumerator AfterimageRoutine(SpriteCharacter sc, float duration, int count)
+    {
+        for (int i = 0; i < count; i++)
+        {
+            if (sc == null) yield break;
+            sc.SpawnAfterimage();
+            yield return new WaitForSeconds(duration / count);
+        }
     }
 
     /// <summary>from 반대쪽으로 밀려났다가 제자리로 돌아온다 (합에서 졌을 때).</summary>
@@ -328,6 +346,10 @@ public class Unit : MonoBehaviour
     private IEnumerator HitFlashRoutine()
     {
         if (bodyRenderer == null) yield break;
+
+        // 스프라이트: 먼저 하얗게 번쩍이고, 그 밑에서 붉은 기가 잠깐 남는다
+        SpriteCharacter sc = GetComponent<SpriteCharacter>();
+        if (sc != null) sc.HitFlash();
 
         SetBodyColor(hitColor);
         yield return new WaitForSeconds(0.12f);

@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 64319ab3dd94be547b66c1346fc27ddd, type: 3}
-  m_Name: "독 바른 이빨"
+  m_Name: "\uB3C5 \uBC14\uB978 \uC774\uBE68"
   m_EditorClassIdentifier: Assembly-CSharp::CardData
-  cardName: "독 바른 이빨"
-  cardArt: {fileID: 0}
+  cardName: "\uB3C5 \uBC14\uB978 \uC774\uBE68"
+  cardArt: {fileID: 21300000, guid: 61415eb3e53a73e4b8426097dcdd3d21, type: 3}
   rarity: 0
   cost: 1
   requireTension: 0
-  cardDescription: "곪은 이빨이 살을 파고든다."
+  cardDescription: "\uACEA\uC740 \uC774\uBE68\uC774 \uC0B4\uC744 \uD30C\uACE0\uB4E0\uB2E4."
   diceList:
   - diceName: 
     diceType: 0

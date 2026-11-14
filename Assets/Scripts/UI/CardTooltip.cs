@@ -86,6 +86,7 @@ public class CardTooltip : MonoBehaviour
         tip.text.horizontalOverflow = HorizontalWrapMode.Wrap;
         tip.text.lineSpacing = 1.1f;
 
+        UIPop.Ensure(bg.gameObject, 0.95f, 0.14f);
         bg.gameObject.SetActive(false);
         return tip;
     }

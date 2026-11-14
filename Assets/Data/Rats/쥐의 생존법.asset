@@ -16,7 +16,7 @@ MonoBehaviour:
   cardArt: {fileID: 21300000, guid: ae3ef71eb9129e64cacb12557091e0a1, type: 3}
   rarity: 0
   cost: 2
-  requireEmotionLevel: 0
+  requireTension: 0
   cardDescription: 
   diceList:
   - diceName: 

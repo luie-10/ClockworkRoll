@@ -14,6 +14,7 @@ public class DamagePopup : MonoBehaviour
     private TextMesh shadowMesh;
     private Color baseColor;
     private float age;
+    private float drift;   // 옆으로 살짝 흘러가는 속도 (같은 자리에 겹쳐도 덜 뭉치게)
 
     private static Font builtinFont;
 
@@ -81,6 +82,8 @@ public class DamagePopup : MonoBehaviour
         popup.textMesh = tm;
         popup.shadowMesh = shadow;
         popup.baseColor = color;
+        popup.drift = Random.Range(-0.25f, 0.25f);
+        go.transform.localScale = Vector3.one * PopScale(0f);
         active.Add(popup);
         return popup;
     }
@@ -92,14 +95,29 @@ public class DamagePopup : MonoBehaviour
         active.Remove(this);
     }
 
+    /// <summary>크게 찍혔다가 제 크기로 줄어든다 (쾅 하고 박히는 느낌)</summary>
+    private static float PopScale(float age)
+    {
+        float k = Mathf.Clamp01(age / 0.14f);
+        return Mathf.Lerp(1.75f, 1f, 1f - (1f - k) * (1f - k));
+    }
+
     void LateUpdate()
     {
         age += Time.deltaTime;
-        transform.position += Vector3.up * riseSpeed * Time.deltaTime;
+
+        // 처음엔 빠르게 솟고 갈수록 느려진다
+        float rise = riseSpeed * Mathf.Lerp(1.8f, 0.5f, Mathf.Clamp01(age / lifetime));
+        transform.position += Vector3.up * rise * Time.deltaTime;
 
         // 카메라를 정면으로 바라보게 (빌보드)
         Camera cam = Camera.main;
-        if (cam != null) transform.rotation = cam.transform.rotation;
+        if (cam != null)
+        {
+            transform.rotation = cam.transform.rotation;
+            transform.position += cam.transform.right * drift * Time.deltaTime;
+        }
+        transform.localScale = Vector3.one * PopScale(age);
 
         // 후반부에 서서히 투명해진다
         float k = Mathf.Clamp01(age / lifetime);

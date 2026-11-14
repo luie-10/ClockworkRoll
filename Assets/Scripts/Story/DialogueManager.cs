@@ -112,7 +112,11 @@ public class DialogueManager : MonoBehaviour
         index = 0;
         IsPlaying = true;
 
-        if (dialoguePanel != null) dialoguePanel.SetActive(true);
+        if (dialoguePanel != null)
+        {
+            if (!dialoguePanel.activeSelf) UIPop.Ensure(dialoguePanel, 0.97f, 0.24f);   // 대사창이 떠오르듯 나타난다
+            dialoguePanel.SetActive(true);
+        }
         else Debug.LogWarning("DialoguePanel이 연결되지 않았습니다.");
 
         EnsureSkipButton();

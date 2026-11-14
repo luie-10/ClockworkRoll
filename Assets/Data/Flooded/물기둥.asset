@@ -16,7 +16,7 @@ MonoBehaviour:
   cardArt: {fileID: 21300000, guid: dc4a7289c157d2e4abd5dcee43a6f014, type: 3}
   rarity: 2
   cost: 3
-  requireEmotionLevel: 0
+  requireTension: 0
   cardDescription: "\uC885\uC774 \uD754\uB4E4\uB9B4 \uB54C\uB9C8\uB2E4 \uBB3C\uAE30\uB465\uC774
     \uC19F\uB294\uB2E4."
   diceList:

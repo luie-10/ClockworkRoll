@@ -25,7 +25,8 @@ public class ClockDial : MonoBehaviour
 {
     private const int Hours = BattleManager.ClockHours;
     private const float Radius = 148f;
-    private const float CellSize = 64f;
+    private const float CellSize = 64f;      // 칸 한 자리의 폭 (원판 크기 계산용)
+    private const float SocketSize = 58f;    // 칸 그림의 지름 (안쪽 황동 테에 닿지 않게 조금 작다)
 
     private static ClockDial instance;
 
@@ -33,7 +34,7 @@ public class ClockDial : MonoBehaviour
     public static int HoveredHour { get { return instance != null ? instance.hoveredHour : 0; } }
 
     private readonly Cell[] cells = new Cell[Hours + 1];   // 1~12 사용
-    private RectTransform hand;
+    private RectTransform hand, handShadow;
     private Text centerText, infoText;
     private int hoveredHour;
     private int drawnVersion = -1, drawnHover = -1, drawnHour = -1;
@@ -177,7 +178,10 @@ public class ClockDial : MonoBehaviour
         infoText.gameObject.SetActive(false);
     }
 
-    private static readonly Color cellColor = new Color(0.07f, 0.07f, 0.09f, 0.95f);
+    private static readonly Color cellColor = new Color(0.115f, 0.115f, 0.145f, 0.98f);
+    private static readonly Color ringIdle = new Color(0.78f, 0.62f, 0.36f, 0.55f);     // 칸 둘레의 얇은 황동 테
+    private static readonly Color hourInk = new Color(0.95f, 0.88f, 0.72f);
+    private static readonly Color spentColor = new Color(0.45f, 0.45f, 0.45f, 0.6f);
     private static readonly Color enemyColor = new Color(1f, 0.42f, 0.33f);
     private static readonly Color playerColor = new Color(0.4f, 0.75f, 1f);
     private static readonly Color clashColor = new Color(1f, 0.82f, 0.35f);
@@ -187,7 +191,7 @@ public class ClockDial : MonoBehaviour
     private class Cell
     {
         public Image bg, enemyDot, playerDot;
-        public Outline edge;
+        public Image ring, glow, enemyRing, playerRing;   // 칸 테두리 / 빛무리 / 주사위 패의 편 가름 테
         public Text hourText, enemyTag, playerTag;
     }
 
@@ -236,24 +240,30 @@ public class ClockDial : MonoBehaviour
         RectTransform face = UIBuilder.Rect("Face", root);
         UIBuilder.Place(face, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 0.5f), new Vector2(0f, -200f), new Vector2(400f, 400f));
 
-        Image disc = NewImage("Disc", face, ProceduralSprites.Circle(), new Color(0.09f, 0.08f, 0.07f, 0.9f));
-        disc.rectTransform.sizeDelta = new Vector2(Radius * 2f + CellSize, Radius * 2f + CellSize);
+        // 문자판: 황동 테가 둘린 검은 법랑판 + 눈금 (그림자까지 한 장에 그려져 있다 — ClockArt)
+        float discSize = (Radius * 2f + CellSize) * ClockArt.FacePad;
+        Image disc = NewImage("Disc", face, ClockArt.Face, Color.white);
+        disc.rectTransform.sizeDelta = new Vector2(discSize, discSize);
         disc.raycastTarget = true;   // 카드 뒤에 있을 때 누르는 곳
         disc.gameObject.AddComponent<ClockDialBody>().dial = this;
-        Image rim = NewImage("Rim", face, ProceduralSprites.Circle(), new Color(0.75f, 0.6f, 0.35f, 0.5f));
-        rim.rectTransform.sizeDelta = new Vector2(Radius * 2f - CellSize + 8f, Radius * 2f - CellSize + 8f);
-        Image inner = NewImage("Inner", face, ProceduralSprites.Circle(), new Color(0.05f, 0.05f, 0.06f, 0.92f));
-        inner.rectTransform.sizeDelta = new Vector2(Radius * 2f - CellSize, Radius * 2f - CellSize);
 
-        // 바늘 (가운데에서 위로 뻗은 막대, Z 회전으로 시각을 가리킴)
-        Image handImg = NewImage("Hand", face, null, new Color(0.95f, 0.85f, 0.6f, 0.95f));
+        // 바늘 (속이 뚫린 창 모양, Z 회전으로 시각을 가리킴) + 문자판에 지는 그림자 + 축 뚜껑
+        float reach = Radius - CellSize * 0.5f - 4f;                 // 축에서 바늘 끝까지
+        float handH = reach / (1f - ClockArt.HandPivot);
+        Vector2 handSize = new Vector2(handH * ClockArt.HandW / ClockArt.HandH, handH);
+        Image shadowImg = NewImage("HandShadow", face, ClockArt.Hand, new Color(0f, 0f, 0f, 0.45f));
+        handShadow = shadowImg.rectTransform;
+        handShadow.pivot = new Vector2(0.5f, ClockArt.HandPivot);
+        handShadow.sizeDelta = handSize;
+        handShadow.anchoredPosition = new Vector2(3f, -4f);
+        Image handImg = NewImage("Hand", face, ClockArt.Hand, Color.white);
         hand = handImg.rectTransform;
-        hand.pivot = new Vector2(0.5f, 0f);
-        hand.sizeDelta = new Vector2(6f, Radius - CellSize * 0.5f - 6f);
-        Image hub = NewImage("Hub", face, ProceduralSprites.Circle(), new Color(0.95f, 0.85f, 0.6f, 1f));
-        hub.rectTransform.sizeDelta = new Vector2(18f, 18f);
+        hand.pivot = new Vector2(0.5f, ClockArt.HandPivot);
+        hand.sizeDelta = handSize;
+        Image hub = NewImage("Hub", face, ClockArt.Hub, Color.white);
+        hub.rectTransform.sizeDelta = new Vector2(24f, 24f);
 
-        centerText = UIBuilder.Label("Center", face, "", 20, Color.white, TextAnchor.MiddleCenter);
+        centerText = UIBuilder.Label("Center", face, "", 20, hourInk, TextAnchor.MiddleCenter);
         centerText.rectTransform.sizeDelta = new Vector2(170f, 90f);
         centerText.rectTransform.anchoredPosition = new Vector2(0f, -48f);
         centerText.raycastTarget = false;
@@ -282,46 +292,51 @@ public class ClockDial : MonoBehaviour
         Vector2 pos = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * Radius;
 
         Cell c = new Cell();
-        c.bg = NewImage("Hour" + hour, face, ProceduralSprites.Circle(), cellColor);
+        // 칸 = 움푹 들어간 소켓 + 얇은 황동 테. 합이 일어나는 칸 / 지금 시각은 테가 밝아지고 둘레에 빛무리가 돈다
+        c.bg = NewImage("Hour" + hour, face, ClockArt.Socket, cellColor);
         c.bg.raycastTarget = true;
-        c.bg.rectTransform.sizeDelta = new Vector2(CellSize, CellSize);
+        c.bg.rectTransform.sizeDelta = new Vector2(SocketSize, SocketSize);
         c.bg.rectTransform.anchoredPosition = pos;
-        c.edge = c.bg.gameObject.AddComponent<Outline>();
-        c.edge.effectDistance = new Vector2(3f, -3f);
-        c.edge.enabled = false;
+        c.glow = NewImage("Glow", c.bg.transform, ClockArt.Glow, Color.clear);
+        c.glow.rectTransform.sizeDelta = Vector2.one * SocketSize * 1.75f;
+        c.glow.enabled = false;
+        c.ring = NewImage("Ring", c.bg.transform, ClockArt.Ring, ringIdle);
+        c.ring.rectTransform.sizeDelta = Vector2.one * (SocketSize + 3f);
 
         ClockDialCell hit = c.bg.gameObject.AddComponent<ClockDialCell>();
         hit.dial = this;
         hit.hour = hour;
 
         Transform t = c.bg.transform;
-        c.hourText = UIBuilder.Label("Num", t, hour.ToString(), 24, new Color(0.9f, 0.85f, 0.75f), TextAnchor.MiddleCenter);
+        c.hourText = UIBuilder.Label("Num", t, hour.ToString(), 24, hourInk, TextAnchor.MiddleCenter);
+        c.hourText.fontStyle = FontStyle.Bold;
         UIBuilder.Stretch(c.hourText.rectTransform);
         c.hourText.raycastTarget = false;
 
-        c.enemyDot = NewImage("Enemy", t, ProceduralSprites.Circle(), enemyColor);
-        c.enemyDot.rectTransform.sizeDelta = new Vector2(24f, 24f);
-        c.enemyDot.rectTransform.anchoredPosition = new Vector2(0f, 22f);
-        AddSideRing(c.enemyDot, enemyColor);   // 테두리 색 = 누구의 주사위인가 (빨강 = 적)
-        c.enemyTag = UIBuilder.Label("Tag", c.enemyDot.transform, "", 15, Color.black, TextAnchor.MiddleCenter, false);
-        UIBuilder.Stretch(c.enemyTag.rectTransform);
-        c.enemyTag.raycastTarget = false;
-
-        c.playerDot = NewImage("Player", t, ProceduralSprites.Circle(), playerColor);
-        c.playerDot.rectTransform.sizeDelta = new Vector2(24f, 24f);
-        c.playerDot.rectTransform.anchoredPosition = new Vector2(0f, -22f);
-        AddSideRing(c.playerDot, playerColor);   // 파랑 = 나
-        c.playerTag = UIBuilder.Label("Tag", c.playerDot.transform, "", 15, Color.black, TextAnchor.MiddleCenter, false);
-        UIBuilder.Stretch(c.playerTag.rectTransform);
-        c.playerTag.raycastTarget = false;
+        // 주사위 패: 둘레 색 = 누구의 주사위인가 (빨강 = 적, 파랑 = 나), 안쪽 색 = 주사위 종류
+        c.enemyDot = BuildToken(t, "Enemy", 22f, enemyColor, out c.enemyRing, out c.enemyTag);
+        c.playerDot = BuildToken(t, "Player", -22f, playerColor, out c.playerRing, out c.playerTag);
         return c;
     }
 
-    private static void AddSideRing(Image dot, Color color)
+    private static Image BuildToken(Transform cell, string name, float y, Color side, out Image ring, out Text tag)
     {
-        Outline ring = dot.gameObject.AddComponent<Outline>();
-        ring.effectColor = color;
-        ring.effectDistance = new Vector2(2.5f, -2.5f);
+        ring = NewImage(name + "Ring", cell, ProceduralSprites.Circle(), side);
+        ring.rectTransform.anchoredPosition = new Vector2(0f, y);
+        Image dark = NewImage("Gap", ring.transform, ProceduralSprites.Circle(), new Color(0.04f, 0.04f, 0.05f, 1f));   // 테와 패 사이의 가는 틈
+        dark.rectTransform.anchorMin = Vector2.zero;
+        dark.rectTransform.anchorMax = Vector2.one;
+        dark.rectTransform.offsetMin = new Vector2(2.5f, 2.5f);
+        dark.rectTransform.offsetMax = new Vector2(-2.5f, -2.5f);
+
+        Image dot = NewImage(name, cell, ClockArt.Token, side);
+        dot.rectTransform.sizeDelta = new Vector2(24f, 24f);
+        dot.rectTransform.anchoredPosition = new Vector2(0f, y);
+        tag = UIBuilder.Label("Tag", dot.transform, "", 15, new Color(0.07f, 0.05f, 0.05f), TextAnchor.MiddleCenter, false);
+        tag.fontStyle = FontStyle.Bold;
+        UIBuilder.Stretch(tag.rectTransform);
+        tag.raycastTarget = false;
+        return dot;
     }
 
     private static Image NewImage(string name, Transform parent, Sprite sprite, Color color)
@@ -358,6 +373,7 @@ public class ClockDial : MonoBehaviour
         float targetAngle = -(bm.CurrentHour % Hours) * 30f;
         float z = Mathf.MoveTowardsAngle(hand.localEulerAngles.z, targetAngle, Time.unscaledDeltaTime * 110f);   // 바늘이 칸을 천천히 훑는다
         hand.localEulerAngles = new Vector3(0f, 0f, z);
+        handShadow.localEulerAngles = hand.localEulerAngles;
 
         // 바뀐 게 있을 때만 다시 칠한다
         if (bm.TimelineVersion == drawnVersion && hoveredHour == drawnHover &&
@@ -385,30 +401,36 @@ public class ClockDial : MonoBehaviour
             bool past = bm.CurrentHour > 0 && h < bm.CurrentHour;   // 이미 지나간 칸
 
             // 칸마다 그 칸에 배정된 주사위 하나: 색 = 주사위 종류, 글자 = 참/관/타/가/회
-            DrawDie(c.enemyDot, c.enemyTag, enemy != null ? enemy.DieAt(h) : null, enemy != null && (past || !enemy.owner.IsAlive), enemy != null && enemy.hour == h);
+            DrawDie(c.enemyDot, c.enemyRing, enemyColor, c.enemyTag, enemy != null ? enemy.DieAt(h) : null, enemy != null && (past || !enemy.owner.IsAlive), enemy != null && enemy.hour == h);
 
             bool inPreview = pending != null && hoveredHour > 0 && h >= hoveredHour && h < hoveredHour + previewLength;
             if (inPreview && mine == null)
             {
                 // 미리보기: 고른 태엽판의 주사위가 이 칸에 어떻게 놓이는지 반투명하게
                 DiceData ghost = pending.diceList != null && h - hoveredHour < pending.diceList.Count ? pending.diceList[h - hoveredHour] : null;
-                DrawDie(c.playerDot, c.playerTag, ghost, false, h == hoveredHour);
-                if (ghost != null) c.playerDot.color = new Color(c.playerDot.color.r, c.playerDot.color.g, c.playerDot.color.b, 0.55f);
+                DrawDie(c.playerDot, c.playerRing, playerColor, c.playerTag, ghost, false, h == hoveredHour);
+                if (ghost != null)
+                {
+                    c.playerDot.color = new Color(c.playerDot.color.r, c.playerDot.color.g, c.playerDot.color.b, 0.55f);
+                    c.playerRing.color = new Color(playerColor.r, playerColor.g, playerColor.b, 0.55f);
+                }
             }
             else
             {
-                DrawDie(c.playerDot, c.playerTag, mine != null ? mine.DieAt(h) : null, mine != null && past, mine != null && mine.hour == h);
+                DrawDie(c.playerDot, c.playerRing, playerColor, c.playerTag, mine != null ? mine.DieAt(h) : null, mine != null && past, mine != null && mine.hour == h);
             }
 
             bool clash = enemy != null && mine != null;
-            c.edge.enabled = clash || h == bm.CurrentHour;
-            c.edge.effectColor = h == bm.CurrentHour ? Color.white : clashColor;
+            bool now = h == bm.CurrentHour;
+            c.glow.enabled = clash || now;
+            c.glow.color = now ? new Color(1f, 0.97f, 0.88f, 0.9f) : new Color(clashColor.r, clashColor.g, clashColor.b, 0.8f);
+            c.ring.color = now ? Color.white : clash ? clashColor : ringIdle;
 
             c.bg.color = inPreview ? (previewOk ? validColor : invalidColor)
                        : h == bm.CurrentHour ? new Color(0.3f, 0.26f, 0.16f, 0.98f)
                        : cellColor;
             c.bg.rectTransform.localScale = Vector3.one * (h == bm.CurrentHour ? 1.18f : 1f);
-            c.hourText.color = (enemy != null || mine != null || inPreview) ? new Color(1f, 1f, 1f, 0.3f) : new Color(0.9f, 0.85f, 0.75f);
+            c.hourText.color = (enemy != null || mine != null || inPreview) ? new Color(1f, 1f, 1f, 0.3f) : hourInk;
         }
 
         centerText.text = bm.Phase == BattleManager.BattlePhase.EnemyTurn
@@ -423,16 +445,19 @@ public class ClockDial : MonoBehaviour
     /// 칸의 주사위 점. 색 = 주사위 종류(참격 빨강 · 관통 주황 · 타격 노랑 · 가드 파랑 · 회피 초록), 글자 = 종류 한 글자.
     /// 행동의 첫 칸은 조금 크게, 지나간 칸은 회색.
     /// </summary>
-    private static void DrawDie(Image dot, Text tag, DiceData die, bool spent, bool first)
+    private static void DrawDie(Image dot, Image ring, Color side, Text tag, DiceData die, bool spent, bool first)
     {
         dot.enabled = die != null;
+        ring.gameObject.SetActive(die != null);
         tag.text = "";
         if (die == null) return;
 
         Color typeColor;
         ColorUtility.TryParseHtmlString(DiceInfo.ColorHex(die.diceDetail), out typeColor);
-        dot.color = spent ? new Color(0.45f, 0.45f, 0.45f, 0.6f) : typeColor;
+        dot.color = spent ? spentColor : typeColor;
+        ring.color = spent ? spentColor : side;
         dot.rectTransform.sizeDelta = Vector2.one * (first ? 28f : 24f);
+        ring.rectTransform.sizeDelta = dot.rectTransform.sizeDelta + Vector2.one * 8f;
         tag.text = DiceInfo.Glyph(die.diceDetail);
     }
 

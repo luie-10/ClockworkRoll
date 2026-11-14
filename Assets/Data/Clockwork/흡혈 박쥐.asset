@@ -10,27 +10,27 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c432b655cc2ee62408eb86f1bf1d0dbc, type: 3}
-  m_Name: "흡혈 박쥐"
+  m_Name: "\uD761\uD608 \uBC15\uC950"
   m_EditorClassIdentifier: Assembly-CSharp::EnemyData
-  enemyName: "흡혈 박쥐"
+  enemyName: "\uD761\uD608 \uBC15\uC950"
   nicknames:
-  - "붉은 송곳니"
-  - "목마른 놈"
-  - "밤 손님"
+  - "\uBD89\uC740 \uC1A1\uACF3\uB2C8"
+  - "\uBAA9\uB9C8\uB978 \uB188"
+  - "\uBC24 \uC190\uB2D8"
   maxHp: 24
   resistance:
     slash: 1
     thrust: 0
     blunt: 1
-  sprite: {fileID: 0}
+  sprite: {fileID: 21300000, guid: f30933b9316e38b4b89ae98f126ce8b7, type: 3}
   spriteHeight: 2
   poses:
-    slash: {fileID: 0}
-    thrust: {fileID: 0}
-    blunt: {fileID: 0}
-    guard: {fileID: 0}
-    evade: {fileID: 0}
-    hit: {fileID: 0}
+    slash: {fileID: 21300000, guid: d827b8e1ef1ed7140a6649805d95e855, type: 3}
+    thrust: {fileID: 21300000, guid: e3273d5c30d2a1648b6f06ff04d2d5ca, type: 3}
+    blunt: {fileID: 21300000, guid: 4adfd586d8bd05048849a8ed667e7cbd, type: 3}
+    guard: {fileID: 21300000, guid: 77cd3906087145745a1775f76895ccf9, type: 3}
+    evade: {fileID: 21300000, guid: d38133033b5119640ac46eb1cb8ce01c, type: 3}
+    hit: {fileID: 21300000, guid: 6ed0a3a8a19f2d641a34aeac52091f1b, type: 3}
     down: {fileID: 0}
   modelPrefab: {fileID: 0}
   tintColor: {r: 0.55, g: 0.2, b: 0.25, a: 1}

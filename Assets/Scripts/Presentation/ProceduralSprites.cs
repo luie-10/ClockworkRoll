@@ -9,7 +9,7 @@ using UnityEngine;
 /// </summary>
 public static class ProceduralSprites
 {
-    private static Sprite roundedBox, square, circle, verticalFade;
+    private static Sprite roundedBox, square, circle, verticalFade, horizontalFade, bevel;
 
     public const int BoxSize = 64;
     public const int BoxCorner = 14;   // 모서리 반지름(px) = 9-slice 테두리
@@ -70,6 +70,61 @@ public static class ProceduralSprites
             verticalFade.name = "VerticalFade";
         }
         return verticalFade;
+    }
+
+    /// <summary>가운데는 불투명, 양 끝으로 갈수록 투명해지는 가로 그러데이션 (단계 전환 띠 등)</summary>
+    public static Sprite HorizontalFade()
+    {
+        if (horizontalFade == null)
+        {
+            const int w = 128;
+            Texture2D tex = new Texture2D(w, 1, TextureFormat.RGBA32, false);
+            tex.wrapMode = TextureWrapMode.Clamp;
+            for (int x = 0; x < w; x++)
+            {
+                float a = Mathf.Sin((x + 0.5f) / w * Mathf.PI);
+                tex.SetPixel(x, 0, new Color(1f, 1f, 1f, a * a));
+            }
+            tex.Apply();
+            horizontalFade = Sprite.Create(tex, new Rect(0, 0, w, 1), new Vector2(0.5f, 0.5f), 100f);
+            horizontalFade.name = "HorizontalFade";
+        }
+        return horizontalFade;
+    }
+
+    /// <summary>
+    /// 입체감 있는 둥근 판 (주 버튼용) — 위는 밝고 아래로 갈수록 어두워지며, 윗변 안쪽에 밝은 줄 · 아랫변에 그늘이 있다.
+    /// 흰색 바탕이라 Image.color로 색을 입힌다. RoundedBox와 같은 9-slice.
+    /// </summary>
+    public static Sprite Bevel()
+    {
+        if (bevel == null)
+        {
+            Texture2D tex = new Texture2D(BoxSize, BoxSize, TextureFormat.RGBA32, false);
+            tex.wrapMode = TextureWrapMode.Clamp;
+            float r = BoxCorner;
+            for (int y = 0; y < BoxSize; y++)
+            {
+                for (int x = 0; x < BoxSize; x++)
+                {
+                    float cx = Mathf.Clamp(x + 0.5f, r, BoxSize - r);
+                    float cy = Mathf.Clamp(y + 0.5f, r, BoxSize - r);
+                    float d = Vector2.Distance(new Vector2(x + 0.5f, y + 0.5f), new Vector2(cx, cy));
+                    float a = Mathf.Clamp01(r - d + 0.5f);
+
+                    float v = Mathf.Lerp(0.72f, 0.95f, y / (BoxSize - 1f));      // 아래 어둡게 → 위 밝게
+                    float inset = Mathf.Min(Mathf.Min(x, BoxSize - 1 - x), Mathf.Min(y, BoxSize - 1 - y));
+                    inset = Mathf.Min(inset, r - d);                             // 둥근 모서리에서도 테두리를 따라가게
+                    if (inset < 2.5f) v += y > BoxSize / 2 ? 0.12f : -0.14f;     // 윗변 밝은 줄 / 아랫변 그늘
+                    tex.SetPixel(x, y, new Color(Mathf.Clamp01(v), Mathf.Clamp01(v), Mathf.Clamp01(v), a));
+                }
+            }
+            tex.Apply();
+            bevel = Sprite.Create(tex, new Rect(0, 0, BoxSize, BoxSize), new Vector2(0.5f, 0.5f), 100f, 0,
+                SpriteMeshType.FullRect, new Vector4(BoxCorner + 2, BoxCorner + 2, BoxCorner + 2, BoxCorner + 2));
+            bevel.name = "Bevel";
+        }
+        return bevel;
     }
 
     public static Sprite Square()

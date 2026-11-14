@@ -2,6 +2,8 @@
 //   - 무대 조명(가로등 · 불 · 네온)의 색과 거리 감쇠를 받는다 → 캐릭터가 배경에 '붙여 넣은' 느낌이 사라진다
 //   - 종이 인형이라 빛의 방향은 약하게만 반영한다 (뒤/위에서 오는 빛도 물든다)
 //   - _SelfLight 만큼은 빛이 없어도 항상 보인다 (어두운 무대에서도 캐릭터를 읽을 수 있게)
+//   - 윗가장자리 한 줄을 밝게 (테두리 빛) → 어두운 배경에서도 윤곽이 또렷하게 떠오른다
+//   - _Flash : 맞는 순간 그림 전체가 하얗게 번쩍인다 (SpriteCharacter.HitFlash)
 //   - ShadowCaster 패스: 그림 모양 그대로 바닥/벽에 진짜 그림자를 드리운다
 // SpriteCharacter가 Resources.Load로 불러 쓴다. (없거나 지원되지 않으면 기본 스프라이트 셰이더 그대로)
 Shader "ClockworkRoll/StageSprite"
@@ -14,6 +16,10 @@ Shader "ClockworkRoll/StageSprite"
         _LightGain ("Light Gain (무대 조명을 받는 정도)", Range(0, 2)) = 0.55
         _Wrap ("Light Wrap (0 = 방향 그대로, 1 = 방향 무시)", Range(0, 1)) = 0.75
         _ShadowCutoff ("Shadow Alpha Cutoff", Range(0, 1)) = 0.4
+        _Rim ("Rim Light (윗가장자리 밝기)", Range(0, 2)) = 0.45
+        _RimColor ("Rim Light Color", Color) = (1, 0.95, 0.85, 1)
+        _Flash ("Hit Flash", Range(0, 1)) = 0
+        _FlashColor ("Hit Flash Color", Color) = (1, 1, 1, 1)
         [MaterialToggle] PixelSnap ("Pixel snap", Float) = 0
         [HideInInspector] _RendererColor ("RendererColor", Color) = (1,1,1,1)
         [HideInInspector] _Flip ("Flip", Vector) = (1,1,1,1)
@@ -46,6 +52,11 @@ Shader "ClockworkRoll/StageSprite"
         fixed _SelfLight;
         fixed _LightGain;
         fixed _Wrap;
+        fixed _Rim;
+        fixed4 _RimColor;
+        fixed _Flash;
+        fixed4 _FlashColor;
+        float4 _MainTex_TexelSize;
 
         struct Input
         {
@@ -83,8 +94,14 @@ Shader "ClockworkRoll/StageSprite"
         {
             fixed4 c = SampleSpriteTexture(IN.uv_MainTex) * IN.color;
             fixed3 rgb = c.rgb * c.a;   // 미리 곱한 알파
-            o.Albedo = rgb * _LightGain;
-            o.Emission = rgb * _SelfLight;
+
+            // 테두리 빛: 바로 위 픽셀이 비어 있으면 그림의 윗가장자리 — 제 색을 밝히고 빛 색을 살짝 얹는다
+            fixed above = SampleSpriteTexture(IN.uv_MainTex + float2(0, _MainTex_TexelSize.y)).a;
+            fixed edge = saturate(1.0 - above * 2.0) * c.a * _Rim;
+            fixed3 rim = (rgb * 0.7 + _RimColor.rgb * IN.color.rgb * 0.3) * edge;
+
+            o.Albedo = rgb * _LightGain * (1.0 - _Flash);
+            o.Emission = lerp(rgb * _SelfLight + rim, _FlashColor.rgb * c.a, _Flash);
             o.Alpha = c.a;
         }
         ENDCG

@@ -10,14 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 64319ab3dd94be547b66c1346fc27ddd, type: 3}
-  m_Name: "기억 짜내기"
+  m_Name: "\uAE30\uC5B5 \uC9DC\uB0B4\uAE30"
   m_EditorClassIdentifier: Assembly-CSharp::CardData
-  cardName: "기억 짜내기"
-  cardArt: {fileID: 0}
+  cardName: "\uAE30\uC5B5 \uC9DC\uB0B4\uAE30"
+  cardArt: {fileID: 21300000, guid: 5705dffb118f5e5469f237bfd4a7703f, type: 3}
   rarity: 2
   cost: 2
   requireTension: 0
-  cardDescription: "남의 하루를 비틀어 기름 한 방울을 짜낸다."
+  cardDescription: "\uB0A8\uC758 \uD558\uB8E8\uB97C \uBE44\uD2C0\uC5B4 \uAE30\uB984
+    \uD55C \uBC29\uC6B8\uC744 \uC9DC\uB0B8\uB2E4."
   diceList:
   - diceName: 
     diceType: 0

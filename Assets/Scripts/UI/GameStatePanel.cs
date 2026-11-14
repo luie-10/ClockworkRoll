@@ -18,7 +18,11 @@ public class GameStatePanel : MonoBehaviour
 
     void Start()
     {
-        if (panel != null) panel.SetActive(false);
+        if (panel != null)
+        {
+            UIPop.Ensure(panel, 1.04f, 0.45f);   // 결과 화면은 화면 전체가 천천히 가라앉듯 나타난다
+            panel.SetActive(false);
+        }
     }
 
     void Update()
