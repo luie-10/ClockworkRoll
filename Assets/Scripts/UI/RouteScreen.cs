@@ -61,6 +61,9 @@ public class RouteScreen : MonoBehaviour
     /// <summary>열려 있는 동안 true (테스트 자동 진행이 확인용으로 사용)</summary>
     public static bool IsOpen { get; private set; }
 
+    /// <summary>씬을 다시 불렀을 때 (시작 화면으로 나갔다 올 때) 지난 씬의 '열려 있음'을 잊는다</summary>
+    public static void ForgetScene() { IsOpen = false; }
+
     private RectTransform root, choiceRow, gridArea, gridContent, buttonRow, mapLayer, mapArea;
     private Text titleText, subText, statusText, bodyText;
     private Action autoAction;   // 테스트 자동 진행용: 지금 화면의 기본 선택
@@ -88,15 +91,19 @@ public class RouteScreen : MonoBehaviour
     /// rows층짜리 지도를 만들어 걷게 하고, 꼭대기(bossName)에 닿으면 onDone을 부른다.
     /// fights / elites = '전' / '강' 칸에서 고를 적 무리. 비어 있으면 fightStage(방금 이긴 무대)의 적을 다시 쓴다.
     /// </summary>
+    /// resumeSeed / resumePath = 이어하기: 저장해 둔 씨앗으로 같은 지도를 다시 만들고, 지나온 칸까지 걸어 둔다.
     public static void Play(int rows, BattleStageData fightStage, List<BattleStageData> fights, List<BattleStageData> elites,
-                            string bossName, Action onDone)
+                            string bossName, Action onDone, int resumeSeed = 0, List<int> resumePath = null)
     {
         if (instance == null) instance = Create();
         instance.fightGroups = fights ?? new List<BattleStageData>();
         instance.eliteGroups = elites ?? new List<BattleStageData>();
         instance.lastGroup = null;
-        instance.StartCoroutine(instance.Walk(rows, fightStage, bossName, onDone));
+        instance.StartCoroutine(instance.Walk(rows, fightStage, bossName, onDone, resumeSeed, resumePath));
     }
+
+    private int mapSeed;                                     // 이 지도를 만든 씨앗 (저장용)
+    private readonly List<int> walked = new List<int>();     // 지나온 칸 (층 * 100 + 열)
 
     /// <summary>테스트 자동 진행용: 지금 화면에서 기본 선택(갈 수 있는 첫 칸 / 첫 선택지 / 계속)을 고른다</summary>
     public static void AutoPick()
@@ -107,18 +114,42 @@ public class RouteScreen : MonoBehaviour
         a();
     }
 
-    private IEnumerator Walk(int rowCount, BattleStageData stage, string bossName, Action onDone)
+    private IEnumerator Walk(int rowCount, BattleStageData stage, string bossName, Action onDone, int resumeSeed, List<int> resumePath)
     {
         IsOpen = true;
         fightStage = stage;
         current = null;
         root.gameObject.SetActive(true);
 
+        // 지도는 씨앗 하나로 정해진다 — 씨앗을 저장해 두면 이어할 때 똑같은 지도가 나온다 (다른 무작위에는 영향 없게 되돌린다)
+        mapSeed = resumeSeed != 0 ? resumeSeed : UnityEngine.Random.Range(1, int.MaxValue);
+        UnityEngine.Random.State before = UnityEngine.Random.state;
+        UnityEngine.Random.InitState(mapSeed);
         Generate(rowCount);
         DrawMap(bossName);
+        UnityEngine.Random.state = before;
+
+        // 이어하기: 지나온 칸을 다시 밟아 둔다 (저장과 지도가 어긋나면 거기서 멈춘다)
+        walked.Clear();
+        if (resumePath != null)
+        {
+            foreach (int code in resumePath)
+            {
+                int r = code / 100, col = code % 100;
+                MapNode node = r >= 0 && r < rows.Length ? rows[r].Find(n => n.col == col) : null;
+                bool connected = node != null && (current == null ? r == 0 : current.next.Contains(node));
+                if (!connected) break;
+                node.visited = true;
+                current = node;
+                walked.Add(code);
+            }
+        }
 
         while (true)
         {
+            // 여기가 이어하기 지점: 지금까지 마친 칸과 그 결과(덱 · 체력 · 부품)를 저장한다
+            if (GameManager.Instance != null) GameManager.Instance.SaveRouteCheckpoint(mapSeed, walked);
+
             // 지도에서 다음 칸 고르기
             MapNode chosen = null;
             SetMapMode(true);
@@ -138,6 +169,7 @@ public class RouteScreen : MonoBehaviour
 
             chosen.visited = true;
             current = chosen;
+            walked.Add(chosen.row * 100 + chosen.col);
             RefreshMap();
             yield return new WaitForSecondsRealtime(0.25f);   // 고른 칸에 불이 들어오는 걸 잠깐 보여준다
 

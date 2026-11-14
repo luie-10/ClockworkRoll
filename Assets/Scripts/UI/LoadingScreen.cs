@@ -49,6 +49,9 @@ public class LoadingScreen : MonoBehaviour
     /// <summary>화면에 떠 있는 동안 true</summary>
     public static bool IsOpen { get; private set; }
 
+    /// <summary>씬을 다시 불렀을 때 (시작 화면으로 나갔다 올 때) 지난 씬의 '열려 있음'을 잊는다</summary>
+    public static void ForgetScene() { IsOpen = false; }
+
     /// <summary>화면을 완전히 덮었는가 (뒤에서 무엇을 바꿔도 보이지 않는다)</summary>
     public static bool Covered { get { return instance != null && IsOpen && instance.group.alpha >= 0.999f; } }
 

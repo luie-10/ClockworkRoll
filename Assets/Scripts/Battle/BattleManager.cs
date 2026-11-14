@@ -270,6 +270,7 @@ public class BattleManager : MonoBehaviour
         StageBackdrop.Show(stage.backdrop, stage.backdropVariant);   // 무대에 맞는 배경으로 전환 (변형은 보통 무작위)
         StageBackdrop.SetTempo(0);
         UpdateHUD();
+        EnemyChatter.BattleStarted();   // 적들의 말풍선 (계획 단계에 이따금 한마디)
 
         StartCoroutine(BattleStartRoutine());
     }
@@ -1420,6 +1421,10 @@ public class BattleManager : MonoBehaviour
 
         // 주사위가 있는 쪽만 상대를 향해 튀어나간다 (캐릭터 모델이면 주사위 종류 애니메이션도 재생)
         Coroutine aLunge = null, bLunge = null;
+        // 공격하는 적은 가끔 한마디 외친다
+        if (aDie != null && aDie.diceType == DiceType.Attack) EnemyBarks.Say(a, BarkKind.Attack, 0.3f);
+        if (bDie != null && bDie.diceType == DiceType.Attack) EnemyBarks.Say(b, BarkKind.Attack, 0.3f);
+
         if (aDie != null)
         {
             a.PlayAnim(aDie.diceDetail.ToString());
@@ -1448,6 +1453,7 @@ public class BattleManager : MonoBehaviour
         if (die.diceType == DiceType.Attack)
         {
             loser.PlayAnim("Hit");
+            if (loser.IsAlive) EnemyBarks.Say(loser, BarkKind.Hurt, 0.35f);
             int damage = lastDamage;   // ApplyDie에서 내성까지 적용된 실제 피해
             DamagePopup.Spawn(HeadPosition(loser) + Vector3.up * 0.4f, $"-{damage}", damagePopupColor, 1.5f);
             if (lastResistance != Resistance.Normal)
@@ -1669,6 +1675,7 @@ public class BattleManager : MonoBehaviour
 
             unit.Init(PickNickname(info.enemy, usedNames), info.enemy.maxHp, info.enemy.deck, info.enemy.resistance);
             unit.kindName = info.enemy.enemyName;
+            unit.enemyData = info.enemy;
             unit.slotNumber = enemies.Count + 1;   // 머리 위 [번호] — 숫자 키로 대상 지정
             unit.actionsPerRound = info.enemy.actionsPerRound;
             unit.behavior = info.enemy.behavior;
@@ -1727,6 +1734,7 @@ public class BattleManager : MonoBehaviour
     private void HandleUnitDead(Unit unit)
     {
         Log($"{unit.unitName} 이(가) 쓰러졌다!");
+        EnemyBarks.Say(unit, BarkKind.Death, 0.85f);   // 쓰러지며 남기는 한마디
 
         // 적 특성 [폭발]: 쓰러지면서 상대를 휩쓴다
         if (!unit.isPlayer && unit.trait == EnemyTrait.Volatile && unit.traitAmount > 0 &&

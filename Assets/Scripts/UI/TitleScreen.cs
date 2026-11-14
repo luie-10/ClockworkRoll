@@ -19,21 +19,26 @@ public class TitleScreen : MonoBehaviour
     /// <summary>떠 있는 동안 true</summary>
     public static bool IsOpen { get; private set; }
 
+    /// <summary>씬을 다시 불렀을 때 (시작 화면으로 나갔다 올 때) 지난 씬의 '열려 있음'을 잊는다</summary>
+    public static void ForgetScene() { IsOpen = false; }
+
     private CanvasGroup group;
     private RectTransform gearA, gearB, gearC, hourHand, minuteHand, secondHand;
     private Text hintText;
     private Button startButton;
-    private Action onStart;
+    private Action onStart, onContinue;
     private bool closing;
     private float shownAt;
 
     // ─────────────────────────── 진입 ───────────────────────────
 
     /// <summary>title = 큰 제목, subtitle = 그 아래 이야기 이름, tagline = 한 줄 소개</summary>
-    public static void Show(string title, string subtitle, string tagline, Action onStart)
+    /// continueInfo / onContinue = 저장이 있을 때: '이어하기' 버튼과 그 아래 한 줄 (어디까지 왔는가)
+    public static void Show(string title, string subtitle, string tagline, Action onStart, string continueInfo = null, Action onContinue = null)
     {
-        if (instance == null) instance = Create(title, subtitle, tagline);
+        if (instance == null) instance = Create(title, subtitle, tagline, onContinue != null ? continueInfo ?? "" : null);
         instance.onStart = onStart;
+        instance.onContinue = onContinue;
         instance.closing = false;
         instance.shownAt = Time.unscaledTime;
         instance.group.alpha = 0f;
@@ -49,6 +54,14 @@ public class TitleScreen : MonoBehaviour
         instance.closing = true;
         instance.group.interactable = false;
         instance.StartCoroutine(instance.Close());
+    }
+
+    /// <summary>이어하기 (버튼 · 저장이 있을 때의 Enter · Space)</summary>
+    public static void Continue()
+    {
+        if (instance == null || !IsOpen || instance.closing || instance.onContinue == null) return;
+        instance.onStart = instance.onContinue;
+        Begin();
     }
 
     private IEnumerator Close()
@@ -77,7 +90,10 @@ public class TitleScreen : MonoBehaviour
             // 뜨자마자 눌린 키로 넘어가지 않게 잠깐 기다린 뒤부터 받는다
             if (Time.unscaledTime - shownAt > 0.4f &&
                 (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter) || Input.GetKeyDown(KeyCode.Space)))
-                Begin();
+            {
+                if (onContinue != null) Continue();
+                else Begin();
+            }
         }
 
         // 톱니는 맞물린 듯 서로 반대로, 시곗바늘은 초침만 똑딱거리며 돈다
@@ -101,7 +117,7 @@ public class TitleScreen : MonoBehaviour
 
     // ─────────────────────────── 생성 ───────────────────────────
 
-    private static TitleScreen Create(string title, string subtitle, string tagline)
+    private static TitleScreen Create(string title, string subtitle, string tagline, string continueInfo)
     {
         GameObject go = new GameObject("TitleScreenCanvas");
         Canvas canvas = go.AddComponent<Canvas>();
@@ -174,18 +190,33 @@ public class TitleScreen : MonoBehaviour
         Text line = UIBuilder.Label("Tagline", bg.transform, tagline, 24, UITheme.TextMuted, TextAnchor.MiddleCenter);
         UIBuilder.Place(line.rectTransform, center, center, center, new Vector2(0f, -28f), new Vector2(1400f, 36f));
 
-        // 버튼
-        screen.startButton = UIBuilder.Button("StartButton", bg.transform, "시작하기", UITheme.BrassFill, 30);
-        UITheme.StyleButton(screen.startButton, true, 30);
-        UIBuilder.Place((RectTransform)screen.startButton.transform, center, center, center, new Vector2(0f, -170f), new Vector2(340f, 80f));
+        // 버튼: 저장이 있으면 [이어하기]가 주 버튼이 되고 [새로 시작]은 그 아래로 내려간다
+        bool hasSave = continueInfo != null;
+        float y = -170f;
+        if (hasSave)
+        {
+            Button resume = UIBuilder.Button("ContinueButton", bg.transform, "이어하기", UITheme.BrassFill, 30);
+            UITheme.StyleButton(resume, true, 30);
+            UIBuilder.Place((RectTransform)resume.transform, center, center, center, new Vector2(0f, y), new Vector2(340f, 80f));
+            resume.onClick.AddListener(Continue);
+
+            Text info = UIBuilder.Label("ContinueInfo", bg.transform, continueInfo, 19, UITheme.TextMuted, TextAnchor.MiddleCenter);
+            UIBuilder.Place(info.rectTransform, center, center, center, new Vector2(0f, y - 58f), new Vector2(900f, 28f));
+            y -= 126f;
+        }
+
+        screen.startButton = UIBuilder.Button("StartButton", bg.transform, hasSave ? "새로 시작" : "시작하기", UITheme.BrassFill, hasSave ? 24 : 30);
+        UITheme.StyleButton(screen.startButton, !hasSave, hasSave ? 24 : 30);
+        UIBuilder.Place((RectTransform)screen.startButton.transform, center, center, center, new Vector2(0f, y), new Vector2(340f, hasSave ? 62f : 80f));
         screen.startButton.onClick.AddListener(Begin);
+        y -= hasSave ? 74f : 92f;
 
         Button quit = UIBuilder.Button("QuitButton", bg.transform, "끝내기", UITheme.InkSolid, 24);
         UITheme.StyleButton(quit, false, 24);
-        UIBuilder.Place((RectTransform)quit.transform, center, center, center, new Vector2(0f, -262f), new Vector2(340f, 62f));
+        UIBuilder.Place((RectTransform)quit.transform, center, center, center, new Vector2(0f, y), new Vector2(340f, 62f));
         quit.onClick.AddListener(Quit);
 
-        screen.hintText = UIBuilder.Label("Hint", bg.transform, "Enter · Space 로 시작", 20, UITheme.TextMuted, TextAnchor.MiddleCenter);
+        screen.hintText = UIBuilder.Label("Hint", bg.transform, hasSave ? "Enter · Space 로 이어하기  ·  새로 시작하면 저장해 둔 판은 지워진다" : "Enter · Space 로 시작", 20, UITheme.TextMuted, TextAnchor.MiddleCenter);
         UIBuilder.Place(screen.hintText.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 56f), new Vector2(800f, 30f));
 
         Text version = UIBuilder.Label("Version", bg.transform, "v" + Application.version, 18, new Color(0.5f, 0.48f, 0.45f), TextAnchor.LowerRight);

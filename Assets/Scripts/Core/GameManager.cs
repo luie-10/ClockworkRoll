@@ -89,6 +89,12 @@ public class GameManager : MonoBehaviour
             return;
         }
         Instance = this;
+
+        // 시작 화면으로 나갔다 돌아오면(씬을 다시 부르면) 화면들이 '열려 있다'고 기억한 값이 남는다 — 새 씬에 맞게 지운다
+        RouteScreen.ForgetScene();
+        VictoryScreen.ForgetScene();
+        TitleScreen.ForgetScene();
+        LoadingScreen.ForgetScene();
     }
 
     void Start()
@@ -112,12 +118,19 @@ public class GameManager : MonoBehaviour
         }
 
         BattleManager.DressUnit(playerUnit);   // 그림이 비어 있으면 자동 일러스트 (스토리 장면부터 보이게)
+        PauseMenu.Ensure();                    // 오른쪽 위 [메뉴] — 저장하고 나가기
 
         // 시작 화면 → 로딩 → 첫 챕터. '다시 시작'으로 씬을 다시 불렀으면 시작 화면 없이 바로 덮고 들어간다
         bool restarted = skipTitleOnce;
         skipTitleOnce = false;
         if (showTitleScreen && !restarted)
-            TitleScreen.Show(gameTitle, story != null ? story.storyTitle : "", titleTagline, () => BeginGame(false));
+        {
+            // 저장이 있으면 시작 화면에 '이어하기'가 생긴다
+            SaveData save = SaveSystem.Load(StoryKey);
+            TitleScreen.Show(gameTitle, story != null ? story.storyTitle : "", titleTagline, () => BeginGame(false),
+                             save != null ? DescribeSave(save) : null,
+                             save != null ? (Action)(() => { resume = save; BeginGame(false); }) : null);
+        }
         else
             BeginGame(restarted);
     }
@@ -128,8 +141,19 @@ public class GameManager : MonoBehaviour
 
     private void BeginGame(bool coverInstantly)
     {
-        if (!showLoadingScreen) { NextChapter(); return; }
-        LoadingScreen.Play(story != null ? story.storyTitle : gameTitle, "태엽을 감는 중…", Prewarm(), NextChapter, 1.6f, coverInstantly);
+        Action start = StartRun;
+        if (!showLoadingScreen) { start(); return; }
+        LoadingScreen.Play(story != null ? story.storyTitle : gameTitle, resume != null ? "멈춰 둔 태엽을 다시 감는 중…" : "태엽을 감는 중…",
+                           Prewarm(), start, 1.6f, coverInstantly);
+    }
+
+    /// <summary>새 판이면 첫 챕터부터, 이어하기면 저장해 둔 지점부터</summary>
+    private void StartRun()
+    {
+        SaveData save = resume;
+        resume = null;
+        if (save != null && Restore(save)) return;
+        NextChapter();
     }
 
     /// <summary>
@@ -186,11 +210,13 @@ public class GameManager : MonoBehaviour
         if (ChapterIndex >= chapters.Count)
         {
             SetState(GameState.Clear);
+            SaveSystem.Delete();   // 끝까지 갔다 — 이어할 것이 없다
             Debug.Log("── 모든 챕터 클리어! 게임 클리어 ──");
             return;
         }
 
         Debug.Log($"── [{ChapterIndex + 1}] {chapters[ChapterIndex].chapterTitle} ──");
+        SaveCheckpoint(false, 0, null);   // 챕터의 첫 장면 = 이어하기 지점
         PlayChapterIntro();
     }
 
@@ -400,6 +426,7 @@ public class GameManager : MonoBehaviour
     public void OnBattleLost()
     {
         SetState(GameState.GameOver);
+        SaveSystem.Delete();   // 쓰러진 판은 이어할 수 없다 (처음부터 다시)
         Debug.Log("패배했습니다. 재시작 버튼 등으로 RestartScene()을 호출하세요.");
     }
 
@@ -453,6 +480,156 @@ public class GameManager : MonoBehaviour
     public float CorruptionChance(int corruption)
     {
         return Mathf.Min(0.8f, corruptionBaseChance + corruptionChancePerPoint * Mathf.Max(0, corruption - 1));
+    }
+
+    // ─────────────────────────── 저장 · 이어하기 ───────────────────────────
+
+    private SaveData resume;   // 시작 화면에서 '이어하기'를 고르면 채워진다
+
+    /// <summary>어느 이야기의 저장인지 가리는 이름</summary>
+    private string StoryKey { get { return story != null ? story.storyTitle : gameTitle; } }
+
+    /// <summary>시작 화면의 '이어하기' 아래에 보여 줄 한 줄</summary>
+    private static string DescribeSave(SaveData s)
+    {
+        string where = string.IsNullOrEmpty(s.chapterTitle) ? $"{s.chapterIndex + 1}번째 장" : s.chapterTitle;
+        if (s.onRoute) where += " 뒤 갈래길";
+        return $"{where} · 체력 {s.hp}/{s.maxHp} · 태엽판 {s.deck.Count}장";
+    }
+
+    /// <summary>갈래길 지도에서 칸 하나를 마칠 때마다 RouteScreen이 부른다 (seed = 지도의 씨앗, path = 지나온 칸)</summary>
+    public void SaveRouteCheckpoint(int seed, List<int> path)
+    {
+        SaveCheckpoint(true, seed, path);
+    }
+
+    private void SaveCheckpoint(bool onRoute, int routeSeed, List<int> routePath)
+    {
+        if (playerUnit == null || OwnedDeck == null || ChapterIndex < 0 || ChapterIndex >= chapters.Count) return;
+
+        SaveData s = new SaveData
+        {
+            story = StoryKey,
+            chapterIndex = ChapterIndex,
+            chapterTitle = chapters[ChapterIndex] != null ? chapters[ChapterIndex].chapterTitle : "",
+            onRoute = onRoute,
+            routeSeed = routeSeed,
+            hp = playerUnit.Hp,
+            maxHp = playerUnit.MaxHp,
+            maxKi = MaxKi,
+        };
+        if (routePath != null) s.routePath.AddRange(routePath);
+        foreach (RunItem item in OwnedItems) if (item != null) s.items.Add(item.name);
+        foreach (DeckEntry e in OwnedDeck)
+        {
+            if (e == null || e.data == null) continue;
+            // 흡수한 태엽판은 실행 중에 만든 복제본이라 원본의 카드 이름으로 적어 둔다
+            s.deck.Add(new SavedCard { card = e.absorbed ? e.sourceName : e.data.name, absorbed = e.absorbed, corruption = e.corruption, sourceName = e.sourceName });
+        }
+        SaveSystem.Write(s);
+    }
+
+    /// <summary>저장해 둔 지점으로 돌아간다. 저장 내용이 지금 게임과 맞지 않으면 false (새 판으로 시작)</summary>
+    private bool Restore(SaveData s)
+    {
+        if (s.chapterIndex < 0 || s.chapterIndex >= chapters.Count || playerUnit == null) return false;
+
+        // 덱: 이름으로 태엽판 에셋을 다시 찾는다
+        Dictionary<string, CardData> byAsset = new Dictionary<string, CardData>(), byName = new Dictionary<string, CardData>();
+        foreach (CardData card in AllCards())
+        {
+            if (!byAsset.ContainsKey(card.name)) byAsset[card.name] = card;
+            if (!string.IsNullOrEmpty(card.cardName) && !byName.ContainsKey(card.cardName)) byName[card.cardName] = card;
+        }
+        List<DeckEntry> deck = new List<DeckEntry>();
+        foreach (SavedCard sc in s.deck)
+        {
+            if (sc == null || string.IsNullOrEmpty(sc.card)) continue;
+            CardData card;
+            if (sc.absorbed ? !byName.TryGetValue(sc.card, out card) && !byAsset.TryGetValue(sc.card, out card)
+                            : !byAsset.TryGetValue(sc.card, out card) && !byName.TryGetValue(sc.card, out card))
+            {
+                Debug.LogWarning($"이어하기: 태엽판 [{sc.card}]을(를) 찾지 못해 덱에서 뺐습니다.");
+                continue;
+            }
+            if (sc.absorbed)
+            {
+                CardData clone = Instantiate(card);
+                clone.name = card.cardName + " ◈";
+                deck.Add(new DeckEntry(clone, true, Mathf.Max(1, sc.corruption), sc.sourceName));
+            }
+            else deck.Add(new DeckEntry(card, false, 0));
+        }
+        if (deck.Count == 0) return false;
+
+        OwnedDeck = deck;
+        MaxKi = Mathf.Max(1, s.maxKi);
+        playerUnit.RestoreVitals(s.maxHp, s.hp);
+
+        // 부품: 얻을 때의 효과(최대 체력 · 기력)는 위의 숫자에 이미 들어 있으니 목록에만 되돌린다
+        OwnedItems.Clear();
+        foreach (string itemName in s.items)
+        {
+            RunItem item = RunItems.All.Find(i => i.name == itemName);
+            if (item != null && !OwnedItems.Contains(item)) OwnedItems.Add(item);
+        }
+
+        Debug.Log($"── 이어하기: {DescribeSave(s)} ──");
+
+        if (s.onRoute)
+        {
+            ChapterIndex = s.chapterIndex;
+            ChapterData here = chapters[ChapterIndex], next = NextBattleChapter();
+            if (here != null && here.battle != null && next != null && routeRows > 0)
+            {
+                SetState(GameState.Route);
+                RouteScreen.Play(routeRows, here.battle, here.routeFights, here.routeElites, next.battle.stageName, NextChapter, s.routeSeed, s.routePath);
+                return true;
+            }
+        }
+
+        ChapterIndex = s.chapterIndex - 1;   // NextChapter가 하나 올린다
+        NextChapter();
+        return true;
+    }
+
+    /// <summary>이 이야기에 나오는 모든 태엽판 (시작 덱 · 보상 · 적의 덱)</summary>
+    private List<CardData> AllCards()
+    {
+        List<CardData> all = new List<CardData>();
+        Action<IEnumerable<CardData>> add = cards =>
+        {
+            if (cards == null) return;
+            foreach (CardData c in cards) if (c != null && !all.Contains(c)) all.Add(c);
+        };
+
+        add(startingDeck);
+        add(RouteCardPool());
+        foreach (ChapterData chapter in chapters)
+        {
+            if (chapter == null) continue;
+            add(chapter.rewardCards);
+            List<BattleStageData> stages = new List<BattleStageData> { chapter.battle };
+            if (chapter.routeFights != null) stages.AddRange(chapter.routeFights);
+            if (chapter.routeElites != null) stages.AddRange(chapter.routeElites);
+            foreach (BattleStageData stage in stages)
+            {
+                if (stage == null) continue;
+                add(stage.deckOverride);
+                if (stage.enemies == null) continue;
+                foreach (EnemySpawnInfo info in stage.enemies) if (info != null && info.enemy != null) add(info.enemy.deck);
+            }
+        }
+        return all;
+    }
+
+    /// <summary>[저장하고 나가기] — 시작 화면으로 돌아간다. 진행은 이미 저장돼 있다 (챕터 시작 · 갈래길 칸마다)</summary>
+    public void QuitToTitle()
+    {
+        Time.timeScale = 1f;
+        skipTitleOnce = false;
+        UnityEngine.SceneManagement.SceneManager.LoadScene(
+            UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex);
     }
 
     // ─────────────────────────── 기타 ───────────────────────────

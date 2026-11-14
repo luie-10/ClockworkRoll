@@ -20,6 +20,9 @@ public class VictoryScreen : MonoBehaviour
     /// <summary>열려 있는 동안 true (테스트 자동 진행이 확인용으로 사용)</summary>
     public static bool IsOpen { get; private set; }
 
+    /// <summary>씬을 다시 불렀을 때 (시작 화면으로 나갔다 올 때) 지난 씬의 '열려 있음'을 잊는다</summary>
+    public static void ForgetScene() { IsOpen = false; }
+
     private RectTransform root;
     private Text bannerText, subText, hintText;
     private RectTransform cardRow, cardScroll;   // cardRow = 격자 (스크롤되는 내용), cardScroll = 보이는 창

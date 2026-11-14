@@ -46,6 +46,16 @@ public class EnemyData : ScriptableObject
 
     [Header("이 적이 사용하는 태엽판(카드) 목록")]
     public List<CardData> deck = new List<CardData>();
+
+    [Header("말풍선 대사 (머리 위에 무작위로 한 줄씩. 비워둔 칸은 종류에 맞는 기본 대사 — EnemyBarks)")]
+    [Tooltip("평소 (계획 단계에 이따금 · 전투 시작 때)")]
+    public List<string> barks = new List<string>();
+    [Tooltip("공격할 때")]
+    public List<string> attackBarks = new List<string>();
+    [Tooltip("맞았을 때")]
+    public List<string> hurtBarks = new List<string>();
+    [Tooltip("쓰러질 때")]
+    public List<string> deathBarks = new List<string>();
 }
 
 /// <summary>

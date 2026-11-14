@@ -207,7 +207,7 @@ public class DialogueManager : MonoBehaviour
 
     void Update()
     {
-        if (!IsPlaying) return;
+        if (!IsPlaying || PauseMenu.IsOpen) return;   // 멈춤 메뉴의 버튼을 누른 것이 대사까지 넘기지 않게
 
         // Esc = 건너뛰기. 덱 보기가 열려 있으면 Esc는 그 창을 닫는 데 쓰인다.
         if (Input.GetKeyDown(KeyCode.Escape) && !DeckViewer.IsOpen && !deckWasOpen)

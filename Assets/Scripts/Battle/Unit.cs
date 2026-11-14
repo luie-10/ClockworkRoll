@@ -55,6 +55,9 @@ public class Unit : MonoBehaviour
     public EnemyTrait trait = EnemyTrait.None;
     public int traitAmount = 1;
 
+    /// <summary>적: 이 유닛을 만든 데이터 (말풍선 대사 등). 플레이어는 null</summary>
+    [System.NonSerialized] public EnemyData enemyData;
+
     /// <summary>순서형: 다음에 쓸 덱 위치</summary>
     [System.NonSerialized] public int patternStep;
 
@@ -107,6 +110,13 @@ public class Unit : MonoBehaviour
     public void RestoreFullHp()
     {
         Hp = maxHp;
+    }
+
+    /// <summary>이어하기: 저장해 둔 최대 체력 · 체력으로 되돌린다</summary>
+    public void RestoreVitals(int newMaxHp, int newHp)
+    {
+        maxHp = Mathf.Max(1, newMaxHp);
+        Hp = Mathf.Clamp(newHp, 1, maxHp);
     }
 
     /// <summary>공격 주사위 피해에 내성 배율을 적용한 최종 피해 (반올림).</summary>
