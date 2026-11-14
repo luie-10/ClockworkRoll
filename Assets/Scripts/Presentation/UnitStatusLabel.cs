@@ -28,7 +28,7 @@ public class UnitStatusLabel : MonoBehaviour
     private string lastStatus;
     private int lastHp = -1;
     private bool hasIntent, hasStatus, lastTargeted;
-    private static readonly Color boxColor = new Color(0.03f, 0.03f, 0.04f, 0.82f);
+    private static readonly Color boxColor = UITheme.Alpha(UITheme.Window, 0.84f);
 
     private static readonly Dictionary<Unit, UnitStatusLabel> labels = new Dictionary<Unit, UnitStatusLabel>();
     private static bool allVisible = true;
@@ -41,7 +41,7 @@ public class UnitStatusLabel : MonoBehaviour
     {
         if (card == null) { ClearIntent(); return; }
         hasIntent = true;
-        intentTitle.text = $"<color=#e8c27a>{title} ▶</color> {card.cardName}";
+        intentTitle.text = $"<color={UITheme.HexBrass}>{title} ▶</color> {card.cardName}";
         intentDice.text = DiceInfo.Summary(card);
         intentTitle.gameObject.SetActive(true);
         intentDice.gameObject.SetActive(true);
@@ -81,19 +81,19 @@ public class UnitStatusLabel : MonoBehaviour
 
     private void Build()
     {
-        Color nameColor = target.isPlayer ? new Color(0.55f, 0.85f, 1f) : new Color(1f, 0.62f, 0.45f);
+        Color nameColor = target.isPlayer ? UITheme.Ki : Color.Lerp(UITheme.Enemy, UITheme.TextMain, 0.3f);
 
         box = ProceduralSprites.WorldBox(transform, "Box", new Vector2(Width, 0.5f), boxColor, 20);
         // 별명 + 종류 (예: "찍찍이 골목 쥐" — 종류는 작고 흐리게)
-        string number = target.slotNumber > 0 ? $"<color=#ffd159>[{target.slotNumber}]</color> " : "";   // 숫자 키로 대상 지정
+        string number = target.slotNumber > 0 ? $"<color={UITheme.HexGold}>[{target.slotNumber}]</color> " : "";   // 숫자 키로 대상 지정
         string display = !string.IsNullOrEmpty(target.kindName) && target.kindName != target.unitName
-            ? $"{number}{target.unitName} <size=44><color=#c8c8c8>{target.kindName}</color></size>"
+            ? $"{number}{target.unitName} <size=44><color={UITheme.HexMuted}>{target.kindName}</color></size>"
             : number + target.unitName;
         nameText = NewText("Name", display, new Vector3(0f, 0.11f, -0.01f), 0.024f, nameColor, 24);
 
         barBg = NewBar("BarBg", new Color(0.12f, 0.02f, 0.02f, 1f), 21);
         barTrail = NewBar("BarTrail", new Color(1f, 1f, 1f, 0.85f), 22);
-        barFill = NewBar("BarFill", new Color(0.3f, 0.85f, 0.35f), 23);
+        barFill = NewBar("BarFill", UITheme.Good, 23);
         hpText = NewText("Hp", "", new Vector3(0f, -0.1f, -0.02f), 0.017f, Color.white, 25);
 
         statusText = NewText("Status", "", new Vector3(0f, -0.3f, -0.01f), 0.018f, Color.white, 24);
@@ -154,7 +154,7 @@ public class UnitStatusLabel : MonoBehaviour
         bool targeted = bm != null && !target.isPlayer && bm.FocusTarget == target && target.IsAlive;
         if (targeted == lastTargeted) return;
         lastTargeted = targeted;
-        box.color = targeted ? new Color(0.32f, 0.22f, 0.05f, 0.92f) : boxColor;
+        box.color = targeted ? UITheme.Alpha(UITheme.BrassDeep, 0.92f) : boxColor;
     }
 
     private void UpdateBar()
@@ -169,8 +169,8 @@ public class UnitStatusLabel : MonoBehaviour
 
         // 체력 비율에 따라 초록 → 노랑 → 빨강
         barFill.color = ratio > 0.5f
-            ? Color.Lerp(new Color(1f, 0.85f, 0.2f), new Color(0.3f, 0.85f, 0.35f), (ratio - 0.5f) * 2f)
-            : Color.Lerp(new Color(0.95f, 0.2f, 0.15f), new Color(1f, 0.85f, 0.2f), ratio * 2f);
+            ? Color.Lerp(UITheme.Gold, UITheme.Good, (ratio - 0.5f) * 2f)
+            : Color.Lerp(UITheme.Bad, UITheme.Gold, ratio * 2f);
 
         if (target.Hp != lastHp)
         {

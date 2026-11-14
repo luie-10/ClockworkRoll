@@ -134,33 +134,33 @@ public class TitleScreen : MonoBehaviour
         Vector2 center = new Vector2(0.5f, 0.5f);
 
         // 바탕: 깊은 먹색 + 아래쪽이 더 어두운 그늘 (물에 잠긴 마을의 밤)
-        Image bg = UIBuilder.Panel("Background", go.transform, new Color(0.035f, 0.045f, 0.065f, 1f), false);
+        Image bg = UIBuilder.Panel("Background", go.transform, UITheme.Backdrop, false);
         bg.sprite = null;
         UIBuilder.Stretch(bg.rectTransform);
         bg.raycastTarget = true;   // 뒤의 게임 화면을 누르지 못하게
 
         // 구석의 큰 톱니들 (화면 밖으로 반쯤 걸친다)
-        Color dim = new Color(UITheme.Brass.r, UITheme.Brass.g, UITheme.Brass.b, 0.09f);
+        Color dim = UITheme.Alpha(UITheme.Brass, 0.09f);
         screen.gearA = Emblem(bg.transform, IconPainter.Gear, new Vector2(0f, 0f), new Vector2(120f, 90f), 760f, dim, 256);
         screen.gearB = Emblem(bg.transform, IconPainter.GearSmall, new Vector2(0f, 0f), new Vector2(610f, 300f), 420f, dim, 256);
         screen.gearC = Emblem(bg.transform, IconPainter.GearSmall, new Vector2(1f, 1f), new Vector2(-150f, -110f), 520f,
-                              new Color(UITheme.Brass.r, UITheme.Brass.g, UITheme.Brass.b, 0.07f), 256);
+                              UITheme.Alpha(UITheme.Brass, 0.07f), 256);
 
         // 가운데 뒤의 큰 시계판 + 바늘 (위아래는 화면 밖으로 넘친다 — 제목과 버튼이 시계 안에 들어앉는다)
-        Color faint = new Color(UITheme.Brass.r, UITheme.Brass.g, UITheme.Brass.b, 0.16f);
+        Color faint = UITheme.Alpha(UITheme.Brass, 0.16f);
         RectTransform clock = Emblem(bg.transform, IconPainter.ClockFace, center, Vector2.zero, 1320f, faint, 512);
         screen.hourHand = Hand(clock, 270f, 14f, faint);
         screen.minuteHand = Hand(clock, 420f, 9f, faint);
-        screen.secondHand = Hand(clock, 500f, 3f, new Color(0.9f, 0.45f, 0.35f, 0.35f));
+        screen.secondHand = Hand(clock, 500f, 3f, UITheme.Alpha(UITheme.Enemy, 0.35f));
         RectTransform pin = UIBuilder.Rect("Pin", clock);
         pin.anchorMin = pin.anchorMax = pin.pivot = center;
         pin.sizeDelta = new Vector2(26f, 26f);
         Image pinImg = pin.gameObject.AddComponent<Image>();
         pinImg.sprite = ProceduralSprites.Circle();
-        pinImg.color = new Color(UITheme.Brass.r, UITheme.Brass.g, UITheme.Brass.b, 0.45f);
+        pinImg.color = UITheme.Alpha(UITheme.Brass, 0.45f);
         pinImg.raycastTarget = false;
 
-        Image shade = UIBuilder.Panel("Shade", bg.transform, new Color(0f, 0f, 0f, 0.75f), false);
+        Image shade = UIBuilder.Panel("Shade", bg.transform, UITheme.Alpha(Color.black, 0.75f), false);
         shade.sprite = ProceduralSprites.VerticalFade();
         shade.type = Image.Type.Simple;
         shade.raycastTarget = false;
@@ -172,12 +172,12 @@ public class TitleScreen : MonoBehaviour
         big.horizontalOverflow = HorizontalWrapMode.Overflow;
         UIBuilder.Place(big.rectTransform, center, center, center, new Vector2(0f, 190f), new Vector2(1700f, 150f));
 
-        Image rule = UIBuilder.Panel("Rule", bg.transform, new Color(UITheme.Brass.r, UITheme.Brass.g, UITheme.Brass.b, 0.7f), false);
+        Image rule = UIBuilder.Panel("Rule", bg.transform, UITheme.Alpha(UITheme.Brass, 0.7f), false);
         rule.sprite = null;
         rule.raycastTarget = false;
         UIBuilder.Place(rule.rectTransform, center, center, center, new Vector2(0f, 104f), new Vector2(520f, 2f));
         RectTransform bell = Emblem(bg.transform, IconPainter.Boss, center, new Vector2(0f, 104f), 46f, UITheme.Brass, 128);
-        Image bellBack = UIBuilder.Panel("BellBack", bg.transform, new Color(0.035f, 0.045f, 0.065f, 1f), false);   // 줄이 종 뒤로 지나가지 않게
+        Image bellBack = UIBuilder.Panel("BellBack", bg.transform, UITheme.Backdrop, false);   // 줄이 종 뒤로 지나가지 않게
         bellBack.sprite = ProceduralSprites.Circle();
         bellBack.type = Image.Type.Simple;
         bellBack.raycastTarget = false;
@@ -219,7 +219,7 @@ public class TitleScreen : MonoBehaviour
         screen.hintText = UIBuilder.Label("Hint", bg.transform, hasSave ? "Enter · Space 로 이어하기  ·  새로 시작하면 저장해 둔 판은 지워진다" : "Enter · Space 로 시작", 20, UITheme.TextMuted, TextAnchor.MiddleCenter);
         UIBuilder.Place(screen.hintText.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 56f), new Vector2(800f, 30f));
 
-        Text version = UIBuilder.Label("Version", bg.transform, "v" + Application.version, 18, new Color(0.5f, 0.48f, 0.45f), TextAnchor.LowerRight);
+        Text version = UIBuilder.Label("Version", bg.transform, "v" + Application.version, 18, UITheme.TextDim, TextAnchor.LowerRight);
         UIBuilder.Place(version.rectTransform, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-28f, 20f), new Vector2(300f, 26f));
 
         go.SetActive(false);

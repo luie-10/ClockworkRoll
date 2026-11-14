@@ -15,10 +15,10 @@ public class TensionGauge : MonoBehaviour
     private float[] shown;       // 화면에 보이는 채움 (부드럽게 따라간다)
     private float pulse;         // 단계가 오를 때 번쩍
 
-    private static readonly Color fillColor = new Color(1f, 0.55f, 0.3f);
-    private static readonly Color fullColor = new Color(1f, 0.78f, 0.35f);
-    private static readonly Color frameIdle = new Color(1f, 1f, 1f, 0.12f);
-    private static readonly Color frameFull = new Color(1f, 0.8f, 0.4f, 0.9f);
+    private static readonly Color fillColor = UITheme.Tension;
+    private static readonly Color fullColor = UITheme.Gold;
+    private static readonly Color frameIdle = UITheme.Alpha(UITheme.TextMain, 0.12f);
+    private static readonly Color frameFull = UITheme.Alpha(UITheme.Gold, 0.9f);
 
     /// <summary>기력 표시(kiText) 위에 장력 게이지를 만든다. 이미 있으면 그대로.</summary>
     public static TensionGauge Ensure(Text kiText)
@@ -54,7 +54,7 @@ public class TensionGauge : MonoBehaviour
 
     private void Build(RectTransform root)
     {
-        label = UIBuilder.Label("Label", root, "장력 0단계", 20, new Color(1f, 0.72f, 0.45f), TextAnchor.UpperCenter);
+        label = UIBuilder.Label("Label", root, "장력 0단계", 20, UITheme.Tension, TextAnchor.UpperCenter);
         UIBuilder.Place(label.rectTransform, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0.5f, 1f),
                         new Vector2(0f, -3f), new Vector2(-12f, 26f));
         label.raycastTarget = false;
@@ -103,7 +103,7 @@ public class TensionGauge : MonoBehaviour
             if (frames[i] != null) frames[i].color = full ? frameFull : frameIdle;
         }
 
-        string bonus = stage > 0 ? $" <size=16><color=#ffd159>(전리품 +{stage})</color></size>" : "";
+        string bonus = stage > 0 ? $" <size=16><color={UITheme.HexGold}>(전리품 +{stage})</color></size>" : "";
         label.text = $"장력 {stage}단계{bonus}";
 
         // 단계가 오르면 글자가 잠깐 커진다

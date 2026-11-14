@@ -55,7 +55,7 @@ public class UnitTooltip : MonoBehaviour
         tip.canvasRect = (RectTransform)go.transform;
 
         // 내용 크기에 맞춰 늘어나는 패널
-        Image bg = UIBuilder.Panel("Tooltip", go.transform, new Color(0.03f, 0.03f, 0.04f, 0.92f));
+        Image bg = UIBuilder.Panel("Tooltip", go.transform, UITheme.Window);
         bg.raycastTarget = false;
         tip.panel = bg.rectTransform;
         tip.panel.pivot = new Vector2(0f, 1f);
@@ -69,7 +69,7 @@ public class UnitTooltip : MonoBehaviour
         fitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
         fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
-        tip.text = UIBuilder.Label("Text", bg.transform, "", 22, Color.white, TextAnchor.UpperLeft);
+        tip.text = UIBuilder.Label("Text", bg.transform, "", 22, UITheme.TextMain, TextAnchor.UpperLeft);
         tip.text.horizontalOverflow = HorizontalWrapMode.Overflow;   // 줄바꿈 없이 가장 긴 줄에 맞춰 폭 결정
         tip.text.lineSpacing = 1.1f;
 
@@ -109,21 +109,21 @@ public class UnitTooltip : MonoBehaviour
     private static string BuildText(Unit u)
     {
         string nameColor = u.isPlayer ? "#8cd9ff" : "#ff9e73";
-        string kind = !string.IsNullOrEmpty(u.kindName) && u.kindName != u.unitName ? $" <color=#a8a8a8>{u.kindName}</color>" : "";
+        string kind = !string.IsNullOrEmpty(u.kindName) && u.kindName != u.unitName ? $" <color={UITheme.HexMuted}>{u.kindName}</color>" : "";
         string s = $"<size=26><b><color={nameColor}>{u.unitName}</color></b></size>{kind}    HP {u.Hp}/{u.MaxHp}";
         string status = DiceInfo.StatusLine(u);
-        if (status.Length > 0) s += "\n" + status + "  <color=#888888>(괄호 = 다음 턴)</color>";
+        if (status.Length > 0) s += "\n" + status + $"  <color={UITheme.HexDim}>(괄호 = 다음 턴)</color>";
 
         // 적 유형: 행동 유형 + 특성
         if (!u.isPlayer)
         {
             if (u.behavior != EnemyBehavior.Random)
-                s += $"\n<color=#ff9e73>{EnemyTypeInfo.Name(u.behavior)}</color>  <color=#c8c8c8>{EnemyTypeInfo.Describe(u.behavior)}</color>";
+                s += $"\n<color={UITheme.HexTension}>{EnemyTypeInfo.Name(u.behavior)}</color>  <color={UITheme.HexMuted}>{EnemyTypeInfo.Describe(u.behavior)}</color>";
             if (u.trait != EnemyTrait.None && u.traitAmount > 0)
-                s += $"\n<color=#ffd159>{EnemyTypeInfo.Name(u.trait)}</color>  <color=#c8c8c8>{EnemyTypeInfo.Describe(u.trait, u.traitAmount)}</color>";
+                s += $"\n<color={UITheme.HexGold}>{EnemyTypeInfo.Name(u.trait)}</color>  <color={UITheme.HexMuted}>{EnemyTypeInfo.Describe(u.trait, u.traitAmount)}</color>";
         }
 
-        s += "\n<color=#e8c27a>─ 내성 (받는 피해) ─</color>";
+        s += $"\n<color={UITheme.HexBrass}>─ 내성 (받는 피해) ─</color>";
         s += ResistLine(DiceDetail.Slash, u);
         s += ResistLine(DiceDetail.Thrust, u);
         s += ResistLine(DiceDetail.Blunt, u);
@@ -131,12 +131,12 @@ public class UnitTooltip : MonoBehaviour
         List<TimedAction> actions = BattleManager.Instance != null ? BattleManager.Instance.GetActionsOf(u) : new List<TimedAction>();
         if (actions.Count > 0)
         {
-            s += "\n<color=#e8c27a>─ 시계판 위의 행동 ─</color>";
+            s += $"\n<color={UITheme.HexBrass}>─ 시계판 위의 행동 ─</color>";
             HashSet<CardData> shown = new HashSet<CardData>();
             foreach (TimedAction a in actions)
             {
-                string done = a.resolved ? "  <color=#888888>(끝남)</color>" : "";
-                s += $"\n<color=#ffd159>{a.HourLabel()}</color>  {a.card.data.cardName}  <color=#8cd9ff>(기력 {a.card.data.cost})</color>{done}";
+                string done = a.resolved ? $"  <color={UITheme.HexDim}>(끝남)</color>" : "";
+                s += $"\n<color={UITheme.HexGold}>{a.HourLabel()}</color>  {a.card.data.cardName}  <color={UITheme.HexKi}>(기력 {a.card.data.cost})</color>{done}";
                 if (a.resolved || !shown.Add(a.card.data)) continue;
                 string detail = DiceInfo.Detail(a.card.data);
                 if (detail.Length > 0) s += "\n" + detail;
@@ -151,7 +151,7 @@ public class UnitTooltip : MonoBehaviour
         }
         else if (u.isPlayer)
         {
-            s += "\n<color=#888888>시계판에 올린 행동 없음 — 태엽판을 고르고 시계판의 시각을 클릭</color>";
+            s += $"\n<color={UITheme.HexDim}>시계판에 올린 행동 없음 — 태엽판을 고르고 시계판의 시각을 클릭</color>";
         }
         return s;
     }

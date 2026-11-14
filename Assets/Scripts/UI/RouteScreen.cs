@@ -76,14 +76,14 @@ public class RouteScreen : MonoBehaviour
     private BattleStageData lastGroup;
     private readonly List<MapNode> reachable = new List<MapNode>();
 
-    private static readonly Color fightColor = new Color(1f, 0.47f, 0.4f);
+    private static readonly Color fightColor = UITheme.Enemy;
     private static readonly Color eliteColor = new Color(1f, 0.32f, 0.6f);
-    private static readonly Color restColor = new Color(0.45f, 0.86f, 0.55f);
-    private static readonly Color eventColor = new Color(0.74f, 0.58f, 1f);
-    private static readonly Color removeColor = new Color(0.55f, 0.76f, 0.95f);
+    private static readonly Color restColor = UITheme.Good;
+    private static readonly Color eventColor = UITheme.Absorb;
+    private static readonly Color removeColor = UITheme.Ki;
     private static readonly Color treasureColor = UITheme.Brass;
-    private static readonly Color pathColor = new Color(0.86f, 0.69f, 0.42f, 0.28f);
-    private static readonly Color walkedColor = new Color(0.86f, 0.69f, 0.42f, 0.95f);
+    private static readonly Color pathColor = UITheme.Alpha(UITheme.Brass, 0.28f);
+    private static readonly Color walkedColor = UITheme.Alpha(UITheme.Brass, 0.95f);
 
     // ─────────────────────────── 진입 ───────────────────────────
 
@@ -370,7 +370,7 @@ public class RouteScreen : MonoBehaviour
 
     private Image BossView(string bossName)
     {
-        Image bg = Circle("Node Boss", mapArea, boss.pos, 96f, new Color(0.16f, 0.12f, 0.06f, 1f));
+        Image bg = Circle("Node Boss", mapArea, boss.pos, 96f, UITheme.Alpha(UITheme.BrassDeep, 1f));
         bg.raycastTarget = true;
         Outline ring = bg.gameObject.AddComponent<Outline>();
         ring.effectColor = UITheme.Brass;
@@ -598,9 +598,9 @@ public class RouteScreen : MonoBehaviour
             titleText.text = title;
             subText.text = "휴식 — 하나를 고른다";
             bodyText.text = "비를 피할 처마 밑, 가로등 하나가 아직 켜져 있다. 여기만은 물이 닿지 않아 바닥이 말라 있다.";
-            AddButton($"태엽을 쉬게 한다  →  <color=#7ddc8c>체력 +{amount}</color>", false, () => choice = 1, true, 560f);
+            AddButton($"태엽을 쉬게 한다  →  <color={UITheme.HexGood}>체력 +{amount}</color>", false, () => choice = 1, true, 560f);
             AddButton(canRemove ? "마른 자리에서 태엽판을 손본다  →  덱에서 1장 버리기"
-                                : $"<color=#a8a29a>태엽판 손보기 (덱이 {MinDeckSize}장 이하)</color>",
+                                : $"<color={UITheme.HexMuted}>태엽판 손보기 (덱이 {MinDeckSize}장 이하)</color>",
                       false, () => choice = 2, canRemove, 560f);
             autoAction = () => choice = 1;
             VerticalButtons();
@@ -610,7 +610,7 @@ public class RouteScreen : MonoBehaviour
             {
                 int healed = p != null ? p.Heal(amount) : 0;
                 yield return Message(title, "젖은 외투를 벗어 말리고, 가로등 불빛 아래서 잠시 눈을 붙인다.\n\n" +
-                                            $"<color=#7ddc8c>체력 +{healed}</color>");
+                                            $"<color={UITheme.HexGood}>체력 +{healed}</color>");
                 yield break;
             }
 
@@ -624,7 +624,7 @@ public class RouteScreen : MonoBehaviour
     {
         if (Deck.Count <= MinDeckSize)
         {
-            yield return Message(title, $"<color=#a8a29a>덱이 {MinDeckSize}장 이하라 더는 버릴 수 없다.</color>");
+            yield return Message(title, $"<color={UITheme.HexMuted}>덱이 {MinDeckSize}장 이하라 더는 버릴 수 없다.</color>");
             yield break;
         }
 
@@ -634,7 +634,7 @@ public class RouteScreen : MonoBehaviour
         if (picked == null) yield break;
 
         Deck.Remove(picked);
-        yield return Message(title, $"[{picked.data.cardName}]을(를) 덱에서 뺐다.\n\n<color=#a8a29a>덱 {Deck.Count}장</color>");
+        yield return Message(title, $"[{picked.data.cardName}]을(를) 덱에서 뺐다.\n\n<color={UITheme.HexMuted}>덱 {Deck.Count}장</color>");
     }
 
     private IEnumerator Treasure()
@@ -679,13 +679,13 @@ public class RouteScreen : MonoBehaviour
         };
         vending.options.Add(new EventOption
         {
-            label = "태엽을 내어 준다  <color=#ff8a7a>체력 -6</color>  →  무작위 태엽판 1장",
+            label = $"태엽을 내어 준다  <color={UITheme.HexBad}>체력 -6</color>  →  무작위 태엽판 1장",
             available = () => Player != null && Player.Hp > 6,
             run = () => GainRandomCard(6, "자판기가 덜컹거리더니 태엽판 한 장을 뱉어 낸다."),
         });
         vending.options.Add(new EventOption
         {
-            label = "걷어찬다  →  반반 확률로 <color=#7ddc8c>체력 +10</color> / <color=#ff8a7a>체력 -5</color>",
+            label = $"걷어찬다  →  반반 확률로 <color={UITheme.HexGood}>체력 +10</color> / <color={UITheme.HexBad}>체력 -5</color>",
             run = KickVending,
         });
         vending.options.Add(new EventOption { label = "지나간다", run = Nothing });
@@ -698,13 +698,13 @@ public class RouteScreen : MonoBehaviour
         };
         mirror.options.Add(new EventOption
         {
-            label = "손을 넣는다  <color=#ff8a7a>체력 -4</color>  →  덱의 태엽판 1장 복제",
+            label = $"손을 넣는다  <color={UITheme.HexBad}>체력 -4</color>  →  덱의 태엽판 1장 복제",
             available = () => Player != null && Player.Hp > 4,
             run = DuplicateCard,
         });
         mirror.options.Add(new EventOption
         {
-            label = "비친 얼굴을 보며 숨을 고른다  →  <color=#7ddc8c>체력 +8</color>",
+            label = $"비친 얼굴을 보며 숨을 고른다  →  <color={UITheme.HexGood}>체력 +8</color>",
             run = () => HealBy(8, "잔물결이 가라앉자 숨도 같이 가라앉는다."),
         });
         list.Add(mirror);
@@ -736,12 +736,12 @@ public class RouteScreen : MonoBehaviour
         };
         chapel.options.Add(new EventOption
         {
-            label = "기도한다  →  <color=#7ddc8c>체력 +15</color>",
+            label = $"기도한다  →  <color={UITheme.HexGood}>체력 +15</color>",
             run = () => HealBy(15, "작은 종이 한 번 울린다. 몸속 태엽이 조금 덜 삐걱거린다."),
         });
         chapel.options.Add(new EventOption
         {
-            label = "헌금함을 비튼다  <color=#ff8a7a>체력 -3</color>  →  태엽판 3장 중 1장",
+            label = $"헌금함을 비튼다  <color={UITheme.HexBad}>체력 -3</color>  →  태엽판 3장 중 1장",
             available = () => Player != null && Player.Hp > 3,
             run = RobOfferingBox,
         });
@@ -756,7 +756,7 @@ public class RouteScreen : MonoBehaviour
         };
         storehouse.options.Add(new EventOption
         {
-            label = "손을 넣는다  <color=#ff8a7a>체력 -8</color>  →  부품 3개 중 1개",
+            label = $"손을 넣는다  <color={UITheme.HexBad}>체력 -8</color>  →  부품 3개 중 1개",
             available = () => Player != null && Player.Hp > 8,
             run = RaidStorehouse,
         });
@@ -776,7 +776,7 @@ public class RouteScreen : MonoBehaviour
         });
         oilSlick.options.Add(new EventOption
         {
-            label = "관절마다 기름을 바른다  →  <color=#7ddc8c>체력 +10</color>",
+            label = $"관절마다 기름을 바른다  →  <color={UITheme.HexGood}>체력 +10</color>",
             run = () => HealBy(10, "기름이 물기를 밀어낸다. 녹이 슬려던 관절이 다시 부드럽게 돈다."),
         });
         oilSlick.options.Add(new EventOption { label = "지나간다", run = Nothing });
@@ -789,13 +789,13 @@ public class RouteScreen : MonoBehaviour
         };
         rustPool.options.Add(new EventOption
         {
-            label = "녹슨 태엽판을 건진다  <color=#ff8a7a>체력 -5</color>  →  녹 태엽판 1장",
+            label = $"녹슨 태엽판을 건진다  <color={UITheme.HexBad}>체력 -5</color>  →  녹 태엽판 1장",
             available = () => Player != null && Player.Hp > 5 && RustCards().Count > 0,
             run = FishRustCard,
         });
         rustPool.options.Add(new EventOption
         {
-            label = "빗물로 상처를 씻어 낸다  →  <color=#7ddc8c>체력 +6</color>",
+            label = $"빗물로 상처를 씻어 낸다  →  <color={UITheme.HexGood}>체력 +6</color>",
             run = () => HealBy(6, "맑은 빗물로 녹물을 씻어 낸다. 따끔하지만 상처가 덜 번진다."),
         });
         rustPool.options.Add(new EventOption { label = "지나간다", run = Nothing });
@@ -814,7 +814,7 @@ public class RouteScreen : MonoBehaviour
     private IEnumerator HealBy(int amount, string text)
     {
         int healed = Player != null ? Player.Heal(amount) : 0;
-        yield return Message(titleText.text, $"{text}\n\n<color=#7ddc8c>체력 +{healed}</color>");
+        yield return Message(titleText.text, $"{text}\n\n<color={UITheme.HexGood}>체력 +{healed}</color>");
     }
 
     private IEnumerator GainRandomCard(int hpCost, string text)
@@ -825,7 +825,7 @@ public class RouteScreen : MonoBehaviour
 
         CardData card = pool[UnityEngine.Random.Range(0, pool.Count)];
         GameManager.Instance.AddCard(card);
-        yield return Message(titleText.text, $"{text}\n\n<color=#ff8a7a>체력 -{hpCost}</color>   ·   <color=#ffd98a>[{card.cardName}] 획득</color>");
+        yield return Message(titleText.text, $"{text}\n\n<color={UITheme.HexBad}>체력 -{hpCost}</color>   ·   <color={UITheme.HexBrass}>[{card.cardName}] 획득</color>");
     }
 
     private IEnumerator KickVending()
@@ -837,7 +837,7 @@ public class RouteScreen : MonoBehaviour
         else
         {
             int lost = LoseHp(5);
-            yield return Message(titleText.text, $"쿵! 녹슨 문짝이 튀어나와 정강이를 때린다.\n\n<color=#ff8a7a>체력 -{lost}</color>");
+            yield return Message(titleText.text, $"쿵! 녹슨 문짝이 튀어나와 정강이를 때린다.\n\n<color={UITheme.HexBad}>체력 -{lost}</color>");
         }
     }
 
@@ -849,7 +849,7 @@ public class RouteScreen : MonoBehaviour
 
         int lost = LoseHp(4);
         Deck.Add(new DeckEntry(picked.data, picked.absorbed, picked.corruption, picked.sourceName));
-        yield return Message("물에 비친 시계", $"[{picked.data.cardName}]이(가) 한 장 더 생겼다.\n\n<color=#ff8a7a>체력 -{lost}</color>   ·   <color=#a8a29a>덱 {Deck.Count}장</color>");
+        yield return Message("물에 비친 시계", $"[{picked.data.cardName}]이(가) 한 장 더 생겼다.\n\n<color={UITheme.HexBad}>체력 -{lost}</color>   ·   <color={UITheme.HexMuted}>덱 {Deck.Count}장</color>");
     }
 
     private IEnumerator Purify()
@@ -878,13 +878,13 @@ public class RouteScreen : MonoBehaviour
         CardData card = pool[UnityEngine.Random.Range(0, pool.Count)];
         GameManager.Instance.AddCard(card);
         yield return Message(titleText.text, "손끝이 붉게 물든다. 웅덩이 바닥에서 녹이 잔뜩 슨 태엽판 한 장을 건져 낸다.\n\n" +
-                                             $"<color=#ff8a7a>체력 -{lost}</color>   ·   <color=#ffd98a>[{card.cardName}] 획득</color>");
+                                             $"<color={UITheme.HexBad}>체력 -{lost}</color>   ·   <color={UITheme.HexBrass}>[{card.cardName}] 획득</color>");
     }
 
     private IEnumerator RobOfferingBox()
     {
         LoseHp(3);
-        yield return PickNewCard("물에 잠긴 예배당", "자물쇠가 손가락을 긁으며 열린다. <color=#ff8a7a>체력 -3</color>\n안에 젖은 태엽판들이 들어 있다. 한 장을 챙긴다.");
+        yield return PickNewCard("물에 잠긴 예배당", $"자물쇠가 손가락을 긁으며 열린다. <color={UITheme.HexBad}>체력 -3</color>\n안에 젖은 태엽판들이 들어 있다. 한 장을 챙긴다.");
     }
 
     // ─────────────────────────── 고르기 화면 ───────────────────────────
@@ -927,7 +927,7 @@ public class RouteScreen : MonoBehaviour
             {
                 selected = entry;
                 foreach (Image t in tiles) t.color = UITheme.InkSolid;
-                tile.color = new Color(0.32f, 0.24f, 0.08f, 1f);
+                tile.color = UITheme.BrassDeep;
                 confirm.interactable = true;
             });
             tiles.Add(tile);
@@ -953,13 +953,13 @@ public class RouteScreen : MonoBehaviour
         List<RunItem> items = GameManager.Instance.OwnedItems;
         if (items.Count == 0) return "";
         List<string> names = items.ConvertAll(i => i.name);
-        return $"\n<size=18><color=#dcb06b>부품</color>  {string.Join(" · ", names)}</size>";
+        return $"\n<size=18><color={UITheme.HexBrass}>부품</color>  {string.Join(" · ", names)}</size>";
     }
 
     private IEnumerator RaidStorehouse()
     {
         LoseHp(8);
-        yield return PickItem("버려진 태엽 창고", "<color=#ff8a7a>체력 -8</color>\n상자 안의 부품 가운데 하나를 챙긴다.");
+        yield return PickItem("버려진 태엽 창고", $"<color={UITheme.HexBad}>체력 -8</color>\n상자 안의 부품 가운데 하나를 챙긴다.");
     }
 
     /// <summary>아직 없는 부품 3개 중 1개 고르기 (건너뛸 수 있음). 다 모았으면 태엽판으로 대신한다</summary>
@@ -997,8 +997,8 @@ public class RouteScreen : MonoBehaviour
         if (picked != null)
         {
             GameManager.Instance.GainItem(picked);
-            yield return Message(title, $"<color=#ffd98a>[{picked.name}]</color>을(를) 몸에 달았다.\n\n{picked.description}\n\n" +
-                                        $"<color=#a8a29a>체력 {Player.Hp}/{Player.MaxHp}</color>   ·   <color=#8cd9ff>최대 기력 {GameManager.Instance.MaxKi}</color>");
+            yield return Message(title, $"<color={UITheme.HexBrass}>[{picked.name}]</color>을(를) 몸에 달았다.\n\n{picked.description}\n\n" +
+                                        $"<color={UITheme.HexMuted}>체력 {Player.Hp}/{Player.MaxHp}</color>   ·   <color={UITheme.HexKi}>최대 기력 {GameManager.Instance.MaxKi}</color>");
         }
     }
 
@@ -1008,7 +1008,7 @@ public class RouteScreen : MonoBehaviour
         frame.rectTransform.sizeDelta = new Vector2(300f, 340f);
         frame.raycastTarget = true;
         Outline edge = frame.gameObject.AddComponent<Outline>();
-        edge.effectColor = new Color(UITheme.Ki.r, UITheme.Ki.g, UITheme.Ki.b, 0.75f);
+        edge.effectColor = UITheme.Alpha(UITheme.Ki, 0.75f);
 
         // 부품 그림 (IconPainter가 코드로 그린 문양에 황동색을 입힌다)
         if (!string.IsNullOrEmpty(item.icon))
@@ -1064,7 +1064,7 @@ public class RouteScreen : MonoBehaviour
         if (picked != null)
         {
             GameManager.Instance.AddCard(picked);
-            yield return Message(title, $"<color=#ffd98a>[{picked.cardName}]</color>을(를) 덱에 넣었다.\n\n<color=#a8a29a>덱 {Deck.Count}장</color>");
+            yield return Message(title, $"<color={UITheme.HexBrass}>[{picked.cardName}]</color>을(를) 덱에 넣었다.\n\n<color={UITheme.HexMuted}>덱 {Deck.Count}장</color>");
         }
     }
 
@@ -1090,14 +1090,14 @@ public class RouteScreen : MonoBehaviour
         Unit p = Player;
         int deck = GameManager.Instance != null && GameManager.Instance.OwnedDeck != null ? Deck.Count : 0;
         statusText.text = p != null
-            ? $"{p.unitName}   <color=#7ddc8c>체력 {p.Hp} / {p.MaxHp}</color>   ·   <color=#8cd9ff>최대 기력 {GameManager.Instance.MaxKi}</color>   ·   태엽판 {deck}장" + ItemLine()
+            ? $"{p.unitName}   <color={UITheme.HexGood}>체력 {p.Hp} / {p.MaxHp}</color>   ·   <color={UITheme.HexKi}>최대 기력 {GameManager.Instance.MaxKi}</color>   ·   태엽판 {deck}장" + ItemLine()
             : $"태엽판 {deck}장";
 
         if (!mapLayer.gameObject.activeSelf) return;
         mapSub.text = statusTitle;
         hoverText.text = hoverName != null
-            ? $"<b><color=#dcb06b>{hoverName}</color></b>   {hoverDesc}"
-            : "<color=#9a958d>밝게 빛나는 칸으로만 갈 수 있다 · 칸에 마우스를 올리면 설명</color>";
+            ? $"<b><color={UITheme.HexBrass}>{hoverName}</color></b>   {hoverDesc}"
+            : $"<color={UITheme.HexDim}>밝게 빛나는 칸으로만 갈 수 있다 · 칸에 마우스를 올리면 설명</color>";
 
         // 지금 갈 수 있는 칸은 숨 쉬듯 커졌다 작아진다
         float pulse = 1f + 0.08f * (0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 4f));
@@ -1149,7 +1149,7 @@ public class RouteScreen : MonoBehaviour
         frame.raycastTarget = true;
         Outline edge = frame.gameObject.AddComponent<Outline>();
         Color rarity = DiceInfo.RarityColor(card.rarity);
-        edge.effectColor = new Color(rarity.r, rarity.g, rarity.b, 0.8f);
+        edge.effectColor = UITheme.Alpha(rarity, 0.8f);
         edge.effectDistance = new Vector2(2f, -2f);
         Button b = frame.gameObject.AddComponent<Button>();
         b.targetGraphic = frame;
@@ -1159,7 +1159,7 @@ public class RouteScreen : MonoBehaviour
         string rarityHex = "#" + ColorUtility.ToHtmlStringRGB(rarity);
         string text =
             $"<size=26><b>{card.cardName}</b></size>\n" +
-            $"<color={rarityHex}>{DiceInfo.RarityName(card.rarity)}</color> · <color=#8cd9ff>기력 {card.cost}</color> · <color=#ffd159>{TimedAction.LengthOf(card)}칸</color>\n\n" +
+            $"<color={rarityHex}>{DiceInfo.RarityName(card.rarity)}</color> · <color={UITheme.HexKi}>기력 {card.cost}</color> · <color={UITheme.HexGold}>{TimedAction.LengthOf(card)}칸</color>\n\n" +
             DiceInfo.Detail(card);
         Text label = UIBuilder.Label("Text", frame.transform, text, 19, UITheme.TextMain, TextAnchor.UpperLeft);
         UIBuilder.Stretch(label.rectTransform, 16f);
@@ -1181,14 +1181,14 @@ public class RouteScreen : MonoBehaviour
         HoverColors(b);
         b.onClick.AddListener(() => onClick());
 
-        Color stripe = e.absorbed ? new Color(0.72f, 0.45f, 0.95f) : DiceInfo.RarityColor(e.data.rarity);
+        Color stripe = e.absorbed ? UITheme.Absorb : DiceInfo.RarityColor(e.data.rarity);
         Image band = UIBuilder.Panel("Stripe", tile.transform, stripe, false);
         band.raycastTarget = false;
         UIBuilder.Place(band.rectTransform, Vector2.zero, new Vector2(0f, 1f), new Vector2(0f, 0.5f), new Vector2(6f, 0f), new Vector2(5f, -14f));
 
-        string name = e.absorbed ? $"<color=#e0b0ff>◈ {e.data.cardName}</color>  <size=14><color=#c9a0ee>침식 {e.corruption}</color></size>" : e.data.cardName;
+        string name = e.absorbed ? $"<color={UITheme.HexAbsorb}>◈ {e.data.cardName}</color>  <size=14><color={UITheme.HexAbsorb}>침식 {e.corruption}</color></size>" : e.data.cardName;
         Text t = UIBuilder.Label("Text", tile.transform,
-            $"<b>{name}</b>\n<size=15><color=#8cd9ff>기력 {e.data.cost}</color>  {DiceInfo.Summary(e.data)}</size>",
+            $"<b>{name}</b>\n<size=15><color={UITheme.HexKi}>기력 {e.data.cost}</color>  {DiceInfo.Summary(e.data)}</size>",
             19, UITheme.TextMain, TextAnchor.MiddleLeft);
         UIBuilder.Stretch(t.rectTransform);
         t.rectTransform.offsetMin = new Vector2(20f, 6f);
@@ -1250,7 +1250,7 @@ public class RouteScreen : MonoBehaviour
         RouteScreen screen = go.AddComponent<RouteScreen>();
         Vector2 center = new Vector2(0.5f, 0.5f);
 
-        Image dim = UIBuilder.Panel("Dim", go.transform, new Color(0.02f, 0.025f, 0.035f, 0.93f), false);
+        Image dim = UIBuilder.Panel("Dim", go.transform, UITheme.Alpha(UITheme.InkDeep, 0.93f), false);
         dim.sprite = null;
         UIBuilder.Stretch(dim.rectTransform);
         dim.raycastTarget = true;   // 뒤의 화면 클릭 막기
@@ -1279,7 +1279,7 @@ public class RouteScreen : MonoBehaviour
         UIBuilder.Place(screen.gridArea, center, center, center, new Vector2(0f, -80f), new Vector2(1560f, 500f));   // 위 설명 글과 겹치지 않게
         screen.gridArea.gameObject.AddComponent<RectMask2D>();
         Image hit = screen.gridArea.gameObject.AddComponent<Image>();
-        hit.color = new Color(0f, 0f, 0f, 0f);   // 빈 곳에서도 휠 스크롤이 먹도록
+        hit.color = Color.clear;   // 빈 곳에서도 휠 스크롤이 먹도록
         screen.gridContent = UIBuilder.Rect("Content", screen.gridArea);
         screen.gridContent.anchorMin = new Vector2(0f, 1f);
         screen.gridContent.anchorMax = Vector2.one;
@@ -1324,7 +1324,7 @@ public class RouteScreen : MonoBehaviour
         UIBuilder.Place(screen.mapSub.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(62f, -96f), new Vector2(500f, 32f));
 
         // 지도판 (위아래로 긴 먹색 판, 테두리 황동)
-        Image board = UIBuilder.Panel("Board", screen.mapLayer, new Color(0.06f, 0.06f, 0.075f, 0.94f));
+        Image board = UIBuilder.Panel("Board", screen.mapLayer, UITheme.Alpha(UITheme.InkSolid, 0.94f));
         UIBuilder.Place(board.rectTransform, center, center, center, new Vector2(0f, 6f), new Vector2(900f, 960f));
         board.raycastTarget = false;
         screen.mapArea = UIBuilder.Rect("Map", board.transform);

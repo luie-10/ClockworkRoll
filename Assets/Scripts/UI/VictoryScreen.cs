@@ -36,8 +36,8 @@ public class VictoryScreen : MonoBehaviour
     private int pickCount;
     private bool confirmed;
 
-    private static readonly Color frameNormal = new Color(0.08f, 0.07f, 0.06f, 0.95f);
-    private static readonly Color framePicked = new Color(0.42f, 0.3f, 0.08f, 0.98f);
+    private static readonly Color frameNormal = UITheme.InkSolid;
+    private static readonly Color framePicked = UITheme.BrassDeep;
 
     /// <summary>
     /// 승리 연출 → 고르기. 끝나면 onDone(고른 태엽판 목록)을 부른다.
@@ -86,7 +86,7 @@ public class VictoryScreen : MonoBehaviour
         {
             float k = t / 0.5f;
             banner.localScale = Vector3.one * Mathf.Lerp(2.2f, 1f, 1f - Mathf.Pow(1f - k, 3f));
-            bannerText.color = new Color(1f, 0.85f, 0.4f, k);
+            bannerText.color = UITheme.Alpha(UITheme.BrassBright, k);
             yield return null;
         }
         banner.localScale = Vector3.one;
@@ -108,8 +108,8 @@ public class VictoryScreen : MonoBehaviour
         else
         {
             subText.text = pickCount > 1
-                ? $"쓰러뜨린 적의 기억을 삼킨다 — <color=#ffd159>최대 {pickCount}장</color> 고르기"
-                : $"쓰러뜨린 적의 기억을 삼킨다 — <color=#ffd159>{pickCount}장</color> 고르기";
+                ? $"쓰러뜨린 적의 기억을 삼킨다 — <color={UITheme.HexGold}>최대 {pickCount}장</color> 고르기"
+                : $"쓰러뜨린 적의 기억을 삼킨다 — <color={UITheme.HexGold}>{pickCount}장</color> 고르기";
             BuildCards(ownedSources);
             cardScroll.gameObject.SetActive(true);
             scroll.verticalNormalizedPosition = 1f;   // 맨 위부터
@@ -147,11 +147,11 @@ public class VictoryScreen : MonoBehaviour
             bool again = ownedSources != null && ownedSources.Contains(card.cardName);
             string text =
                 $"<size=26><b>{card.cardName}</b></size>\n" +
-                $"<color={rarityHex}>{DiceInfo.RarityName(card.rarity)}</color> · <color=#8cd9ff>기력 {card.cost}</color> · <color=#ffd159>{TimedAction.LengthOf(card)}칸</color>\n\n" +
+                $"<color={rarityHex}>{DiceInfo.RarityName(card.rarity)}</color> · <color={UITheme.HexKi}>기력 {card.cost}</color> · <color={UITheme.HexGold}>{TimedAction.LengthOf(card)}칸</color>\n\n" +
                 DiceInfo.Detail(card) +
-                (again ? "\n\n<color=#d9a6ff>이미 삼킨 기억 — 침식 +1</color>" : "\n\n<color=#d9a6ff>◈ 흡수 · 침식 1</color>");
+                (again ? $"\n\n<color={UITheme.HexAbsorb}>이미 삼킨 기억 — 침식 +1</color>" : $"\n\n<color={UITheme.HexAbsorb}>◈ 흡수 · 침식 1</color>");
 
-            Text label = UIBuilder.Label("Text", frame.transform, text, 19, Color.white, TextAnchor.UpperLeft);
+            Text label = UIBuilder.Label("Text", frame.transform, text, 19, UITheme.TextMain, TextAnchor.UpperLeft);
             UIBuilder.Stretch(label.rectTransform, 14f);
             label.rectTransform.offsetMax = new Vector2(-14f, -104f);   // 위쪽은 그림 칸
             AddCardArt(frame.rectTransform, card);
@@ -175,7 +175,7 @@ public class VictoryScreen : MonoBehaviour
         img.sprite = card.cardArt != null ? card.cardArt : Illustrator.CardArt(card);
         img.raycastTarget = false;
         Outline o = art.gameObject.AddComponent<Outline>();
-        o.effectColor = new Color(0f, 0f, 0f, 0.8f);
+        o.effectColor = UITheme.Alpha(Color.black, 0.8f);
         o.effectDistance = new Vector2(1f, -1f);
     }
 
@@ -202,7 +202,7 @@ public class VictoryScreen : MonoBehaviour
         confirmButton.interactable = ready;
         confirmLabel.text = ready ? $"흡수 ({picked.Count}/{pickCount}장)" : $"0 / {pickCount}장 선택";
         hintText.text = pool.Count > 6
-            ? "마우스를 올리면 자세히 · 클릭해서 고르기 · <color=#dcb06b>마우스 휠로 스크롤해서 더 보기</color>"
+            ? $"마우스를 올리면 자세히 · 클릭해서 고르기 · <color={UITheme.HexBrass}>마우스 휠로 스크롤해서 더 보기</color>"
             : "마우스를 올리면 자세히 · 클릭해서 고르기";
     }
 
@@ -222,23 +222,23 @@ public class VictoryScreen : MonoBehaviour
 
         VictoryScreen screen = go.AddComponent<VictoryScreen>();
 
-        Image dim = UIBuilder.Panel("Dim", go.transform, new Color(0f, 0f, 0f, 0.72f), false);
+        Image dim = UIBuilder.Panel("Dim", go.transform, UITheme.Alpha(UITheme.InkDeep, 0.8f), false);
         UIBuilder.Stretch(dim.rectTransform);
         dim.raycastTarget = true;   // 뒤의 전투 화면 클릭 막기
         screen.root = dim.rectTransform;
 
-        screen.bannerText = UIBuilder.Label("Banner", dim.transform, "승리!", 140, new Color(1f, 0.85f, 0.4f), TextAnchor.MiddleCenter);
+        screen.bannerText = UIBuilder.Label("Banner", dim.transform, "승리!", 140, UITheme.BrassBright, TextAnchor.MiddleCenter);
         UIBuilder.Place(screen.bannerText.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(1200f, 200f));
         screen.bannerText.fontStyle = FontStyle.Bold;
 
-        screen.subText = UIBuilder.Label("Sub", dim.transform, "", 30, Color.white, TextAnchor.MiddleCenter);
+        screen.subText = UIBuilder.Label("Sub", dim.transform, "", 30, UITheme.TextMain, TextAnchor.MiddleCenter);
         UIBuilder.Place(screen.subText.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 190f), new Vector2(1400f, 110f));
 
         // 카드 격자: 한 줄에 6장, 넘치면 마우스 휠 / 드래그 / 오른쪽 막대로 위아래 스크롤
         screen.cardScroll = UIBuilder.Rect("CardScroll", dim.transform);
         UIBuilder.Place(screen.cardScroll, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, -25f), new Vector2(1640f, 390f));
         Image hit = screen.cardScroll.gameObject.AddComponent<Image>();
-        hit.color = new Color(0f, 0f, 0f, 0f);   // 카드 사이 빈 곳에서도 휠이 먹도록
+        hit.color = Color.clear;   // 카드 사이 빈 곳에서도 휠이 먹도록
 
         RectTransform viewport = UIBuilder.Rect("Viewport", screen.cardScroll);
         UIBuilder.Stretch(viewport);
@@ -260,11 +260,11 @@ public class VictoryScreen : MonoBehaviour
         ContentSizeFitter fit = screen.cardRow.gameObject.AddComponent<ContentSizeFitter>();
         fit.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
-        Image barBg = UIBuilder.Panel("Scrollbar", screen.cardScroll, new Color(1f, 1f, 1f, 0.08f), false);
+        Image barBg = UIBuilder.Panel("Scrollbar", screen.cardScroll, UITheme.Hairline, false);
         UIBuilder.Place(barBg.rectTransform, new Vector2(1f, 0f), Vector2.one, new Vector2(1f, 0.5f), Vector2.zero, new Vector2(10f, -20f));
         RectTransform slide = UIBuilder.Rect("Sliding Area", barBg.transform);
         UIBuilder.Stretch(slide);
-        Image handle = UIBuilder.Panel("Handle", slide, new Color(UITheme.Brass.r, UITheme.Brass.g, UITheme.Brass.b, 0.85f), false);
+        Image handle = UIBuilder.Panel("Handle", slide, UITheme.Alpha(UITheme.Brass, 0.85f), false);
         UIBuilder.Stretch(handle.rectTransform);
         Scrollbar bar = barBg.gameObject.AddComponent<Scrollbar>();
         bar.direction = Scrollbar.Direction.BottomToTop;
@@ -280,10 +280,10 @@ public class VictoryScreen : MonoBehaviour
         screen.scroll.verticalScrollbar = bar;
         screen.scroll.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHide;
 
-        screen.hintText = UIBuilder.Label("Hint", dim.transform, "", 22, new Color(0.75f, 0.75f, 0.75f), TextAnchor.MiddleCenter);
+        screen.hintText = UIBuilder.Label("Hint", dim.transform, "", 22, UITheme.TextMuted, TextAnchor.MiddleCenter);
         UIBuilder.Place(screen.hintText.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, -240f), new Vector2(1100f, 40f));
 
-        screen.confirmButton = UIBuilder.Button("Confirm", dim.transform, "흡수", new Color(0.55f, 0.38f, 0.12f), 32);
+        screen.confirmButton = UIBuilder.Button("Confirm", dim.transform, "흡수", UITheme.BrassFill, 32);
         UITheme.StyleButton(screen.confirmButton, true, 28);
         UIBuilder.Place((RectTransform)screen.confirmButton.transform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, -300f), new Vector2(300f, 72f));
         screen.confirmLabel = screen.confirmButton.GetComponentInChildren<Text>();

@@ -48,14 +48,14 @@ public class PauseMenu : MonoBehaviour
         openButton = open.gameObject;
 
         // 어두운 바탕 + 가운데 창
-        Image dim = UIBuilder.Panel("Dim", canvas, new Color(0f, 0f, 0f, 0.66f), false);
+        Image dim = UIBuilder.Panel("Dim", canvas, UITheme.Scrim, false);
         dim.sprite = null;
         UIBuilder.Stretch(dim.rectTransform);
         dim.raycastTarget = true;   // 뒤의 게임 화면을 누르지 못하게
         panel = dim.gameObject;
 
         Vector2 center = new Vector2(0.5f, 0.5f);
-        Image window = UIBuilder.Panel("Window", dim.transform, new Color(0.05f, 0.05f, 0.065f, 0.98f));
+        Image window = UIBuilder.Panel("Window", dim.transform, UITheme.Window);
         UIBuilder.Place(window.rectTransform, center, center, center, Vector2.zero, new Vector2(560f, 430f));
 
         Text title = UIBuilder.Label("Title", window.transform, "잠시 멈춤", 40, UITheme.Brass, TextAnchor.MiddleCenter);
@@ -113,7 +113,7 @@ public class PauseMenu : MonoBehaviour
         if (open && GameManager.Instance != null)
         {
             noteText.text = GameManager.Instance.State == GameManager.GameState.Battle
-                ? "지금 나가면 <color=#e8c27a>이 전투를 시작하기 전</color>부터 이어진다.\n(전투 한복판은 저장되지 않는다)"
+                ? $"지금 나가면 <color={UITheme.HexBrass}>이 전투를 시작하기 전</color>부터 이어진다.\n(전투 한복판은 저장되지 않는다)"
                 : "여기까지의 진행은 저장되어 있다.";
         }
     }

@@ -95,7 +95,7 @@ public static class UIBuilder
         {
             // 두꺼운 외곽선은 한글을 뭉개 보이게 해서 옅은 그림자로 대신한다
             Shadow s = rt.gameObject.AddComponent<Shadow>();
-            s.effectColor = new Color(0f, 0f, 0f, 0.6f);
+            s.effectColor = UITheme.Shadow;
             s.effectDistance = new Vector2(1f, -1.5f);
         }
         return t;
@@ -110,7 +110,7 @@ public static class UIBuilder
         ColorBlock cb = button.colors;
         cb.highlightedColor = new Color(1.15f, 1.15f, 1.15f);
         cb.pressedColor = new Color(0.8f, 0.8f, 0.8f);
-        cb.disabledColor = new Color(0.45f, 0.45f, 0.45f, 0.6f);
+        cb.disabledColor = UITheme.Spent;
         button.colors = cb;
 
         Text t = Label("Label", img.transform, label, fontSize, UITheme.TextMain, TextAnchor.MiddleCenter);
@@ -122,7 +122,7 @@ public static class UIBuilder
     /// <summary>왼→오로 차오르는 게이지. 반환값은 채움 Image (fillAmount 0~1).</summary>
     public static Image Gauge(string name, Transform parent, Color fillColor)
     {
-        Image bg = Panel(name, parent, new Color(0f, 0f, 0f, 0.6f), false);
+        Image bg = Panel(name, parent, UITheme.Inset, false);
 
         RectTransform fillRt = Rect("Fill", bg.transform);
         Stretch(fillRt, 3f);
@@ -146,7 +146,7 @@ public static class UIBuilder
         Image panel = Panel(name, parent);
         RectTransform panelRt = panel.rectTransform;
 
-        Text titleText = Label("Title", panelRt, title, 22, new Color(1f, 0.82f, 0.5f), TextAnchor.UpperLeft);
+        Text titleText = Label("Title", panelRt, title, 22, UITheme.Brass, TextAnchor.UpperLeft);
         Place(titleText.rectTransform, new Vector2(0f, 1f), Vector2.one, new Vector2(0f, 1f), new Vector2(16f, -10f), new Vector2(-32f, 30f));
 
         RectTransform viewport = Rect("Viewport", panelRt);
@@ -167,7 +167,7 @@ public static class UIBuilder
         text.font = DefaultFont;
         text.fontSize = 20;
         text.lineSpacing = 1.1f;
-        text.color = new Color(0.92f, 0.92f, 0.92f);
+        text.color = UITheme.TextMain;
         text.alignment = TextAnchor.UpperLeft;
         text.horizontalOverflow = HorizontalWrapMode.Wrap;
         text.verticalOverflow = VerticalWrapMode.Overflow;
@@ -176,11 +176,11 @@ public static class UIBuilder
         fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
         // 스크롤바 (오른쪽 얇은 막대)
-        Image barBg = Panel("Scrollbar", panelRt, new Color(1f, 1f, 1f, 0.08f), false);
+        Image barBg = Panel("Scrollbar", panelRt, UITheme.Hairline, false);
         Place(barBg.rectTransform, new Vector2(1f, 0f), Vector2.one, new Vector2(1f, 0.5f), new Vector2(-8f, -16f), new Vector2(10f, -56f));
         RectTransform slide = Rect("Sliding Area", barBg.transform);
         Stretch(slide);
-        Image handle = Panel("Handle", slide, new Color(0.85f, 0.7f, 0.45f, 0.8f), false);
+        Image handle = Panel("Handle", slide, UITheme.Alpha(UITheme.Brass, 0.8f), false);
         Stretch(handle.rectTransform);
         Scrollbar bar = barBg.gameObject.AddComponent<Scrollbar>();
         bar.direction = Scrollbar.Direction.BottomToTop;

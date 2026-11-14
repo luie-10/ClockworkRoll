@@ -146,7 +146,7 @@ public class LoadingScreen : MonoBehaviour
         int i = UnityEngine.Random.Range(0, tips.Length);
         if (i == lastTip) i = (i + 1) % tips.Length;
         lastTip = i;
-        return "<color=#dcb06b>도움말</color>   " + tips[i];
+        return $"<color={UITheme.HexBrass}>도움말</color>   " + tips[i];
     }
 
     void Update()
@@ -175,14 +175,14 @@ public class LoadingScreen : MonoBehaviour
         screen.group = go.AddComponent<CanvasGroup>();
         Vector2 center = new Vector2(0.5f, 0.5f);
 
-        Image bg = UIBuilder.Panel("Cover", go.transform, new Color(0.022f, 0.025f, 0.035f, 1f), false);
+        Image bg = UIBuilder.Panel("Cover", go.transform, UITheme.Backdrop, false);
         bg.sprite = null;
         UIBuilder.Stretch(bg.rectTransform);
         bg.raycastTarget = true;   // 덮여 있는 동안 뒤의 화면을 누르지 못하게
 
         // 맞물린 톱니 두 개
         screen.bigGear = Gear(bg.transform, IconPainter.Gear, new Vector2(-46f, 96f), 230f, UITheme.Brass);
-        screen.smallGear = Gear(bg.transform, IconPainter.GearSmall, new Vector2(94f, 24f), 150f, new Color(0.62f, 0.5f, 0.3f));
+        screen.smallGear = Gear(bg.transform, IconPainter.GearSmall, new Vector2(94f, 24f), 150f, UITheme.BrassFill);
         screen.smallGear.localRotation = Quaternion.Euler(0f, 0f, 22.5f);
 
         screen.titleText = UIBuilder.Label("Title", bg.transform, "", 46, UITheme.Brass, TextAnchor.MiddleCenter);

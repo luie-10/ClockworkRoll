@@ -67,7 +67,7 @@ public class CardTooltip : MonoBehaviour
         tip.canvasRect = (RectTransform)go.transform;
 
         // 폭은 고정, 높이만 내용에 맞춰 늘어나는 패널
-        Image bg = UIBuilder.Panel("Tooltip", go.transform, new Color(0.03f, 0.03f, 0.04f, 0.94f));
+        Image bg = UIBuilder.Panel("Tooltip", go.transform, UITheme.Window);
         bg.raycastTarget = false;
         tip.panel = bg.rectTransform;
         tip.panel.pivot = new Vector2(0.5f, 0f);
@@ -82,7 +82,7 @@ public class CardTooltip : MonoBehaviour
         fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
         fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
-        tip.text = UIBuilder.Label("Text", bg.transform, "", 21, Color.white, TextAnchor.UpperLeft);
+        tip.text = UIBuilder.Label("Text", bg.transform, "", 21, UITheme.TextMain, TextAnchor.UpperLeft);
         tip.text.horizontalOverflow = HorizontalWrapMode.Wrap;
         tip.text.lineSpacing = 1.1f;
 
@@ -125,21 +125,21 @@ public class CardTooltip : MonoBehaviour
 
         string rarityHex = "#" + ColorUtility.ToHtmlStringRGB(DiceInfo.RarityColor(d.rarity));
         string s = $"<size=26><b>{(absorbed ? "◈ " : "")}{d.cardName}</b></size>   " +
-                   $"<color={rarityHex}>{DiceInfo.RarityName(d.rarity)}</color> · <color=#8cd9ff>기력 {d.cost}</color> · <color=#ffd159>{TimedAction.LengthOf(d)}칸</color>";
+                   $"<color={rarityHex}>{DiceInfo.RarityName(d.rarity)}</color> · <color={UITheme.HexKi}>기력 {d.cost}</color> · <color={UITheme.HexGold}>{TimedAction.LengthOf(d)}칸</color>";
         if (d.requireTension > 0)
-            s += $" · <color=#ff9a4d>장력 {d.requireTension}단계 필요</color>";
+            s += $" · <color={UITheme.HexTension}>장력 {d.requireTension}단계 필요</color>";
 
         if (!string.IsNullOrEmpty(d.cardDescription))
-            s += $"\n<color=#a8a8a8><i>{d.cardDescription}</i></color>";
+            s += $"\n<color={UITheme.HexMuted}><i>{d.cardDescription}</i></color>";
 
         string detail = DiceInfo.Detail(d);
-        if (detail.Length > 0) s += "\n<color=#e8c27a>─ 칸 ─</color>\n" + detail;
+        if (detail.Length > 0) s += $"\n<color={UITheme.HexBrass}>─ 칸 ─</color>\n" + detail;
 
         string keywords = DiceInfo.Keywords(d);
-        if (keywords.Length > 0) s += "\n<color=#e8c27a>─ 용어 ─</color>\n<size=18>" + keywords + "</size>";
+        if (keywords.Length > 0) s += $"\n<color={UITheme.HexBrass}>─ 용어 ─</color>\n<size=18>" + keywords + "</size>";
 
         if (absorbed)
-            s += $"\n<color=#d9a6ff>흡수한 기억 · 침식 {entry.corruption} — 쓸 때마다 기억이 새어 나와 나를 해칠 수 있다</color>";
+            s += $"\n<color={UITheme.HexAbsorb}>흡수한 기억 · 침식 {entry.corruption} — 쓸 때마다 기억이 새어 나와 나를 해칠 수 있다</color>";
         return s;
     }
 }

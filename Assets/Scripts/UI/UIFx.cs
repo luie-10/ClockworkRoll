@@ -202,7 +202,7 @@ public class PhaseBanner : MonoBehaviour
         UIBuilder.Place(instance.band, new Vector2(0f, 0.5f), new Vector2(1f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 150f), new Vector2(0f, 92f));
         Image bg = instance.band.gameObject.AddComponent<Image>();
         bg.sprite = ProceduralSprites.HorizontalFade();
-        bg.color = new Color(0.02f, 0.02f, 0.03f, 0.78f);
+        bg.color = UITheme.Alpha(UITheme.InkDeep, 0.78f);
         bg.raycastTarget = false;
 
         instance.lineTop = Line(instance.band, 1f);
@@ -227,7 +227,7 @@ public class PhaseBanner : MonoBehaviour
     {
         label.text = text;
         label.color = color;
-        lineTop.color = lineBottom.color = new Color(color.r, color.g, color.b, 0.8f);
+        lineTop.color = lineBottom.color = UITheme.Alpha(color, 0.8f);
         age = 0f;
     }
 

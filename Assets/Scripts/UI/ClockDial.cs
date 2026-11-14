@@ -178,15 +178,15 @@ public class ClockDial : MonoBehaviour
         infoText.gameObject.SetActive(false);
     }
 
-    private static readonly Color cellColor = new Color(0.115f, 0.115f, 0.145f, 0.98f);
-    private static readonly Color ringIdle = new Color(0.78f, 0.62f, 0.36f, 0.55f);     // 칸 둘레의 얇은 황동 테
-    private static readonly Color hourInk = new Color(0.95f, 0.88f, 0.72f);
-    private static readonly Color spentColor = new Color(0.45f, 0.45f, 0.45f, 0.6f);
-    private static readonly Color enemyColor = new Color(1f, 0.42f, 0.33f);
-    private static readonly Color playerColor = new Color(0.4f, 0.75f, 1f);
-    private static readonly Color clashColor = new Color(1f, 0.82f, 0.35f);
-    private static readonly Color validColor = new Color(0.3f, 0.85f, 0.4f, 0.95f);
-    private static readonly Color invalidColor = new Color(0.8f, 0.2f, 0.2f, 0.95f);
+    private static readonly Color cellColor = UITheme.Raised;
+    private static readonly Color ringIdle = UITheme.Alpha(UITheme.Brass, 0.55f);     // 칸 둘레의 얇은 황동 테
+    private static readonly Color hourInk = Color.Lerp(UITheme.TextMain, UITheme.BrassBright, 0.5f);   // 숫자: 황동 기가 도는 글자색
+    private static readonly Color spentColor = UITheme.Spent;
+    private static readonly Color enemyColor = UITheme.Enemy;
+    private static readonly Color playerColor = UITheme.Player;
+    private static readonly Color clashColor = UITheme.Gold;
+    private static readonly Color validColor = UITheme.Alpha(UITheme.Good, 0.95f);
+    private static readonly Color invalidColor = UITheme.Alpha(UITheme.Danger, 0.95f);
 
     private class Cell
     {
@@ -251,7 +251,7 @@ public class ClockDial : MonoBehaviour
         float reach = Radius - CellSize * 0.5f - 4f;                 // 축에서 바늘 끝까지
         float handH = reach / (1f - ClockArt.HandPivot);
         Vector2 handSize = new Vector2(handH * ClockArt.HandW / ClockArt.HandH, handH);
-        Image shadowImg = NewImage("HandShadow", face, ClockArt.Hand, new Color(0f, 0f, 0f, 0.45f));
+        Image shadowImg = NewImage("HandShadow", face, ClockArt.Hand, UITheme.Alpha(Color.black, 0.45f));
         handShadow = shadowImg.rectTransform;
         handShadow.pivot = new Vector2(0.5f, ClockArt.HandPivot);
         handShadow.sizeDelta = handSize;
@@ -271,7 +271,7 @@ public class ClockDial : MonoBehaviour
         for (int h = 1; h <= Hours; h++) cells[h] = BuildCell(face, h);
 
         // 아래쪽 설명 줄
-        infoText = UIBuilder.Label("Info", root, "", 18, Color.white, TextAnchor.MiddleCenter);
+        infoText = UIBuilder.Label("Info", root, "", 18, UITheme.TextMain, TextAnchor.MiddleCenter);
         UIBuilder.Place(infoText.rectTransform, Vector2.zero, new Vector2(1f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 10f), new Vector2(-36f, 60f));
         infoText.raycastTarget = false;
         infoText.horizontalOverflow = HorizontalWrapMode.Wrap;
@@ -323,7 +323,7 @@ public class ClockDial : MonoBehaviour
     {
         ring = NewImage(name + "Ring", cell, ProceduralSprites.Circle(), side);
         ring.rectTransform.anchoredPosition = new Vector2(0f, y);
-        Image dark = NewImage("Gap", ring.transform, ProceduralSprites.Circle(), new Color(0.04f, 0.04f, 0.05f, 1f));   // 테와 패 사이의 가는 틈
+        Image dark = NewImage("Gap", ring.transform, ProceduralSprites.Circle(), UITheme.Alpha(UITheme.Backdrop, 1f));   // 테와 패 사이의 가는 틈
         dark.rectTransform.anchorMin = Vector2.zero;
         dark.rectTransform.anchorMax = Vector2.one;
         dark.rectTransform.offsetMin = new Vector2(2.5f, 2.5f);
@@ -332,7 +332,7 @@ public class ClockDial : MonoBehaviour
         Image dot = NewImage(name, cell, ClockArt.Token, side);
         dot.rectTransform.sizeDelta = new Vector2(24f, 24f);
         dot.rectTransform.anchoredPosition = new Vector2(0f, y);
-        tag = UIBuilder.Label("Tag", dot.transform, "", 15, new Color(0.07f, 0.05f, 0.05f), TextAnchor.MiddleCenter, false);
+        tag = UIBuilder.Label("Tag", dot.transform, "", 15, UITheme.TextOnBrass, TextAnchor.MiddleCenter, false);
         tag.fontStyle = FontStyle.Bold;
         UIBuilder.Stretch(tag.rectTransform);
         tag.raycastTarget = false;
@@ -412,7 +412,7 @@ public class ClockDial : MonoBehaviour
                 if (ghost != null)
                 {
                     c.playerDot.color = new Color(c.playerDot.color.r, c.playerDot.color.g, c.playerDot.color.b, 0.55f);
-                    c.playerRing.color = new Color(playerColor.r, playerColor.g, playerColor.b, 0.55f);
+                    c.playerRing.color = UITheme.Alpha(playerColor, 0.55f);
                 }
             }
             else
@@ -423,22 +423,22 @@ public class ClockDial : MonoBehaviour
             bool clash = enemy != null && mine != null;
             bool now = h == bm.CurrentHour;
             c.glow.enabled = clash || now;
-            c.glow.color = now ? new Color(1f, 0.97f, 0.88f, 0.9f) : new Color(clashColor.r, clashColor.g, clashColor.b, 0.8f);
-            c.ring.color = now ? Color.white : clash ? clashColor : ringIdle;
+            c.glow.color = now ? UITheme.Alpha(UITheme.BrassBright, 0.9f) : UITheme.Alpha(clashColor, 0.8f);
+            c.ring.color = now ? UITheme.BrassBright : clash ? clashColor : ringIdle;
 
             c.bg.color = inPreview ? (previewOk ? validColor : invalidColor)
-                       : h == bm.CurrentHour ? new Color(0.3f, 0.26f, 0.16f, 0.98f)
+                       : h == bm.CurrentHour ? UITheme.BrassDeep
                        : cellColor;
             c.bg.rectTransform.localScale = Vector3.one * (h == bm.CurrentHour ? 1.18f : 1f);
-            c.hourText.color = (enemy != null || mine != null || inPreview) ? new Color(1f, 1f, 1f, 0.3f) : hourInk;
+            c.hourText.color = (enemy != null || mine != null || inPreview) ? UITheme.Alpha(UITheme.TextMain, 0.3f) : hourInk;
         }
 
         centerText.text = bm.Phase == BattleManager.BattlePhase.EnemyTurn
             ? $"<b>{bm.CurrentHour}시</b>"
-            : pending != null ? $"<color=#7fd4ff>{pending.cardName}</color>\n{previewLength}칸" : "계획";
+            : pending != null ? $"<color={UITheme.HexKi}>{pending.cardName}</color>\n{previewLength}칸" : "계획";
 
         infoText.text = hoveredHour > 0 ? DescribeHour(bm, hoveredHour)
-                      : "<color=#a8a8a8>칸에 마우스 = 그 칸의 내용 · 내 칸 위에서 숫자 키 = 그 행동의 대상 변경\n바깥을 누르면 카드 뒤로 돌아간다</color>";
+                      : $"<color={UITheme.HexMuted}>칸에 마우스 = 그 칸의 내용 · 내 칸 위에서 숫자 키 = 그 행동의 대상 변경\n바깥을 누르면 카드 뒤로 돌아간다</color>";
     }
 
     /// <summary>
@@ -477,7 +477,7 @@ public class ClockDial : MonoBehaviour
         string dieText = die != null
             ? $"<color={DiceInfo.ColorHex(die.diceDetail)}>{DiceInfo.Name(die.diceDetail)} {die.minRoll}~{die.maxRoll}</color>"
             : "-";
-        string aim = a.owner.isPlayer && a.target != null ? $" <color=#ffd159>→ [{a.target.slotNumber}] {a.target.unitName}</color>" : "";
+        string aim = a.owner.isPlayer && a.target != null ? $" <color={UITheme.HexGold}>→ [{a.target.slotNumber}] {a.target.unitName}</color>" : "";
         return $"<color={hex}>{a.owner.unitName} [{a.card.data.cardName} {hour - a.hour + 1}/{a.length}]</color> {dieText}{aim}";
     }
 
@@ -491,11 +491,11 @@ public class ClockDial : MonoBehaviour
         }
         TimedAction mine = FindCovering(bm.PlayerActions, hour);
 
-        if (foes.Count == 0 && mine == null) return s + "<color=#a8a8a8>비어 있음</color>";
+        if (foes.Count == 0 && mine == null) return s + $"<color={UITheme.HexMuted}>비어 있음</color>";
         s += string.Join("  /  ", foes);
-        if (foes.Count > 0 && mine != null) s += "\n<color=#ffd159>↕ 합</color>  ";
+        if (foes.Count > 0 && mine != null) s += $"\n<color={UITheme.HexGold}>↕ 합</color>  ";
         if (mine != null) s += DescribeDie(mine, hour, "#66bfff");
-        else if (foes.Count > 0) s += "\n<color=#a8a8a8>내 칸 없음 — 공격이면 그대로 맞는다</color>";
+        else if (foes.Count > 0) s += $"\n<color={UITheme.HexMuted}>내 칸 없음 — 공격이면 그대로 맞는다</color>";
         return s;
     }
 

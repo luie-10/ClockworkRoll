@@ -21,7 +21,7 @@ public class CardView : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
     [SerializeField] private Image backgroundImage;
 
     [Header("선택 표시")]
-    [SerializeField] private Color selectedColor = new Color(1f, 0.9f, 0.4f);
+    private static readonly Color selectedColor = UITheme.Gold;
 
     [Header("마우스 올림 연출")]
     [SerializeField] private float hoverScale = 1.15f;
@@ -48,13 +48,13 @@ public class CardView : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
     private Color edgeColor = Color.white;
 
     // 카드 몸통은 어두운 먹색 하나로 통일하고, 등급은 테두리 색으로만 구분한다 (밝은 바탕 + 밝은 글자 문제 해결)
-    private static readonly Color cardInk = new Color(0.085f, 0.08f, 0.09f, 1f);
-    private static readonly Color selectedInk = new Color(0.2f, 0.16f, 0.07f, 1f);
+    private static readonly Color cardInk = UITheme.Alpha(UITheme.InkSolid, 1f);
+    private static readonly Color selectedInk = UITheme.Alpha(UITheme.BrassDeep, 1f);
     // 흡수 카드(◈) 전용 색
-    private static readonly Color absorbedBgColor = new Color(0.15f, 0.09f, 0.2f, 1f);
-    private static readonly Color absorbedNameColor = new Color(0.88f, 0.68f, 1f);
-    private static readonly Color absorbedEdgeColor = new Color(0.72f, 0.45f, 0.95f);
-    private static readonly Color unusableCostColor = new Color(1f, 0.35f, 0.3f);
+    private static readonly Color absorbedBgColor = UITheme.AbsorbFill;
+    private static readonly Color absorbedNameColor = UITheme.AbsorbText;
+    private static readonly Color absorbedEdgeColor = UITheme.Absorb;
+    private static readonly Color unusableCostColor = UITheme.Bad;
 
     void Awake()
     {
@@ -113,10 +113,10 @@ public class CardView : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
                 {
                     badge.sprite = ProceduralSprites.Circle();
                     badge.type = Image.Type.Simple;
-                    badge.color = new Color(0.05f, 0.09f, 0.14f, 1f);
+                    badge.color = Color.Lerp(UITheme.Backdrop, UITheme.Ki, 0.08f);   // 기력 배지: 바탕색에 기력의 푸른 기를 살짝
                     Outline ring = badge.GetComponent<Outline>();
                     if (ring == null) ring = badge.gameObject.AddComponent<Outline>();
-                    ring.effectColor = new Color(UITheme.Ki.r, UITheme.Ki.g, UITheme.Ki.b, 0.7f);
+                    ring.effectColor = UITheme.Alpha(UITheme.Ki, 0.7f);
                     ring.effectDistance = new Vector2(1.5f, -1.5f);
                 }
             }
@@ -151,7 +151,7 @@ public class CardView : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
                 plate.offsetMin = new Vector2(8f, 8f);
                 plate.offsetMax = new Vector2(-8f, -124f);   // 위로 이름(58) + 그림(62)
                 Image bg = plate.GetComponent<Image>();
-                if (bg != null) bg.color = new Color(0f, 0f, 0f, 0.32f);
+                if (bg != null) bg.color = UITheme.Inset;
             }
             UIBuilder.Stretch(diceText.rectTransform, 8f);
             UITheme.StyleText(diceText, 16, UITheme.TextMain);
@@ -167,7 +167,7 @@ public class CardView : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
         artImage = art.gameObject.AddComponent<Image>();
         artImage.raycastTarget = false;
         Outline frame = art.gameObject.AddComponent<Outline>();
-        frame.effectColor = new Color(0f, 0f, 0f, 0.8f);
+        frame.effectColor = UITheme.Alpha(Color.black, 0.8f);
         frame.effectDistance = new Vector2(1f, -1f);
     }
 
@@ -194,7 +194,7 @@ public class CardView : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
             bool absorbed = card.entry != null && card.entry.absorbed;
             normalColor = absorbed ? absorbedBgColor : cardInk;
             Color rarity = DiceInfo.RarityColor(card.data.rarity);
-            edgeColor = absorbed ? absorbedEdgeColor : new Color(rarity.r, rarity.g, rarity.b, 0.85f);
+            edgeColor = absorbed ? absorbedEdgeColor : UITheme.Alpha(rarity, 0.85f);
             SetSelected(selected);
         }
         if (costText != null) costNormalColor = costText.color;
@@ -232,7 +232,7 @@ public class CardView : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
             // 칸 = 시계판에서 차지하는 시간
             string rarityHex = ColorUtility.ToHtmlStringRGB(DiceInfo.RarityColor(d.rarity));
             string meta = $"{TimedAction.LengthOf(d)}칸 · <color=#{rarityHex}>{DiceInfo.RarityName(d.rarity)}</color>";
-            if (d.requireTension > 0) meta += $" · <color=#ff9a4d>장력 {d.requireTension}</color>";
+            if (d.requireTension > 0) meta += $" · <color={UITheme.HexTension}>장력 {d.requireTension}</color>";
             metaText.text = meta;
         }
 
@@ -253,12 +253,12 @@ public class CardView : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
                     {
                         foreach (DiceEffect fx in die.effects)
                         {
-                            if (fx != null) sb.AppendLine($"<color=#ffb3c4> └ {fx.Describe()}</color>");
+                            if (fx != null) sb.AppendLine($"<color={UITheme.HexEffect}> └ {fx.Describe()}</color>");
                         }
                     }
                 }
             }
-            if (absorbed) sb.AppendLine($"<color=#d9a6ff>침식 {entry.corruption}</color>");
+            if (absorbed) sb.AppendLine($"<color={UITheme.HexAbsorb}>침식 {entry.corruption}</color>");
             diceText.text = sb.ToString().TrimEnd('\n', '\r');
         }
 

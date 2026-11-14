@@ -589,14 +589,14 @@ public class BattleManager : MonoBehaviour
 
             if (foe == partner)
             {
-                Log($"<color=#e8c27a>{h}시 — 합!</color> {foe.owner.unitName} ↔ {playerUnit.unitName}");
+                Log($"<color={UITheme.HexBrass}>{h}시 — 합!</color> {foe.owner.unitName} ↔ {playerUnit.unitName}");
                 // 먼저 시작한 행동이 공격자 (같은 시각에 시작했으면 적)
                 if (foe.hour <= mine.hour) yield return StartCoroutine(ExchangeRoutine(foe, mine, h, null));
                 else yield return StartCoroutine(ExchangeRoutine(mine, foe, h, null));
             }
             else if (foe.DieAt(h) != null && foe.DieAt(h).diceType == DiceType.Attack)
             {
-                Log($"<color=#e8c27a>{h}시</color> — {foe.owner.unitName}의 일방 공격!");
+                Log($"<color={UITheme.HexBrass}>{h}시</color> — {foe.owner.unitName}의 일방 공격!");
                 yield return StartCoroutine(ExchangeRoutine(foe, null, h, playerUnit));
             }
         }
@@ -606,7 +606,7 @@ public class BattleManager : MonoBehaviour
             Unit target = AliveTargetFor(mine);
             if (target != null)
             {
-                Log($"<color=#e8c27a>{h}시</color> — {playerUnit.unitName}의 일방 공격!");
+                Log($"<color={UITheme.HexBrass}>{h}시</color> — {playerUnit.unitName}의 일방 공격!");
                 yield return StartCoroutine(ExchangeRoutine(mine, null, h, target));
             }
         }
@@ -713,7 +713,7 @@ public class BattleManager : MonoBehaviour
         TensionPoints = Mathf.Min(max, TensionPoints + amount);
         if (TensionStage > before)
         {
-            Log($"<color=#ff9a4d>장력 {TensionStage}단계!</color> 삼킬 수 있는 기억 +{TensionStage}");
+            Log($"<color={UITheme.HexTension}>장력 {TensionStage}단계!</color> 삼킬 수 있는 기억 +{TensionStage}");
             TensionGauge.Pulse();
             if (StageLighting.Instance != null) StageLighting.Instance.SetEmotion(TensionStage);   // 장력이 오를수록 무대 조명이 달아오른다
             if (clashFx && playerUnit != null) StatusPopup(playerUnit, $"장력 {TensionStage}단계!", tensionColor);
@@ -1783,8 +1783,8 @@ public class BattleManager : MonoBehaviour
         {
             switch (Phase)
             {
-                case BattlePhase.PlayerTurn: phaseText.text = "<color=#7fd4ff>계획 — 태엽판을 시계판에</color>"; break;
-                case BattlePhase.EnemyTurn:  phaseText.text = $"<color=#e8c27a>시계 진행 — {CurrentHour}시</color>"; break;
+                case BattlePhase.PlayerTurn: phaseText.text = $"<color={UITheme.HexKi}>계획 — 태엽판을 시계판에</color>"; break;
+                case BattlePhase.EnemyTurn:  phaseText.text = $"<color={UITheme.HexBrass}>시계 진행 — {CurrentHour}시</color>"; break;
                 case BattlePhase.End:        phaseText.text = "전투 종료"; break;
                 default:                     phaseText.text = ""; break;
             }
@@ -1798,7 +1798,7 @@ public class BattleManager : MonoBehaviour
         if (battleLogText == null) return;
 
         // 턴/무대 구분선은 황동색으로 강조
-        string line = message.StartsWith("──") ? $"<color=#e8c27a>{message}</color>" : message;
+        string line = message.StartsWith("──") ? $"<color={UITheme.HexBrass}>{message}</color>" : message;
         logLines.Insert(0, line);                          // 최신 로그가 위로 (아래로 스크롤하면 이전 기록)
         while (logLines.Count > Mathf.Max(1, maxLogLines)) logLines.RemoveAt(logLines.Count - 1);
         battleLogText.text = string.Join("\n", logLines);

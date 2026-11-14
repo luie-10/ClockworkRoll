@@ -59,7 +59,7 @@ public class DeckViewer : MonoBehaviour
         // 버튼: 전투 HUD 안 (스토리 중엔 같이 숨겨짐). HUD가 없으면 창 Canvas에 둔다
         BattleHUD hud = FindAnyObjectByType<BattleHUD>();
         Transform buttonParent = hud != null ? hud.transform : canvasGO.transform;
-        Button open = UIBuilder.Button("DeckButton", buttonParent, "덱 보기 (Tab)", new Color(0.22f, 0.3f, 0.4f), 26);
+        Button open = UIBuilder.Button("DeckButton", buttonParent, "덱 보기 (Tab)", UITheme.InkSolid, 26);
         UITheme.StyleButton(open, false, 22);
         UIBuilder.Place((RectTransform)open.transform, Vector2.zero, Vector2.zero, Vector2.zero, new Vector2(28f, 300f), new Vector2(200f, 56f));
         open.onClick.AddListener(Toggle);
@@ -106,7 +106,7 @@ public class DeckViewer : MonoBehaviour
         foreach (TimedAction a in bm.PlayerActions) onClock.Add(a.card.entry);
 
         int owned = GameManager.Instance != null && GameManager.Instance.OwnedDeck != null ? GameManager.Instance.OwnedDeck.Count : 0;
-        titleText.text = $"보유 덱 {owned}장   <size=20><color=#a8a8a8>◈ = 흡수한 태엽판 · 뽑을 더미는 순서를 감추고 이름순</color></size>";
+        titleText.text = $"보유 덱 {owned}장   <size=20><color={UITheme.HexMuted}>◈ = 흡수한 태엽판 · 뽑을 더미는 순서를 감추고 이름순</color></size>";
 
         Fill(columns[0], "뽑을 더미", hm.DrawPile);
         Fill(columns[1], "손패", hand);
@@ -117,7 +117,7 @@ public class DeckViewer : MonoBehaviour
     /// <summary>같은 태엽판은 "이름 ×장수" 상자 하나로 묶어 이름순으로 쌓는다.</summary>
     private static void Fill(Column column, string label, IReadOnlyList<DeckEntry> entries)
     {
-        column.title.text = $"{label} <color=#e8c27a>({entries.Count})</color>";
+        column.title.text = $"{label} <color={UITheme.HexBrass}>({entries.Count})</color>";
 
         SortedDictionary<string, int> counts = new SortedDictionary<string, int>();
         Dictionary<string, DeckEntry> sample = new Dictionary<string, DeckEntry>();
@@ -140,7 +140,7 @@ public class DeckViewer : MonoBehaviour
 
         if (counts.Count == 0)
         {
-            Text empty = UIBuilder.Label("Empty", column.content, "(없음)", 20, new Color(0.5f, 0.5f, 0.5f), TextAnchor.MiddleCenter, false);
+            Text empty = UIBuilder.Label("Empty", column.content, "(없음)", 20, UITheme.TextDim, TextAnchor.MiddleCenter, false);
             empty.gameObject.AddComponent<LayoutElement>().preferredHeight = 40f;
             return;
         }
@@ -151,9 +151,9 @@ public class DeckViewer : MonoBehaviour
     /// <summary>태엽판 상자 하나: 왼쪽 등급 색 띠 + 1줄 이름·장수·기력(·침식) + 2줄 주사위</summary>
     private static void BuildEntry(RectTransform parent, string name, int count, DeckEntry e)
     {
-        Color stripe = e.absorbed ? new Color(0.85f, 0.6f, 1f) : DiceInfo.RarityColor(e.data.rarity);
+        Color stripe = e.absorbed ? UITheme.Absorb : DiceInfo.RarityColor(e.data.rarity);
 
-        Image box = UIBuilder.Panel("Entry " + name, parent, new Color(0.11f, 0.1f, 0.12f, 0.98f), false);
+        Image box = UIBuilder.Panel("Entry " + name, parent, UITheme.Raised, false);
         box.raycastTarget = false;
         box.gameObject.AddComponent<LayoutElement>().preferredHeight = EntryHeight;
 
@@ -164,15 +164,15 @@ public class DeckViewer : MonoBehaviour
         UIBuilder.Place(band.rectTransform, Vector2.zero, new Vector2(0f, 1f), new Vector2(0f, 0.5f), new Vector2(4f, 0f), new Vector2(6f, -10f));
 
         string nameHex = "#" + ColorUtility.ToHtmlStringRGB(stripe);
-        string line1 = $"<color={nameHex}><b>{name}</b></color>" + (count > 1 ? $" <color=#ffffff>×{count}</color>" : "") +
-                       $"   <color=#8cd9ff>기력 {e.data.cost}</color>" +
-                       (e.absorbed ? $"  <color=#d9a6ff>침식 {e.corruption}</color>" : "");
+        string line1 = $"<color={nameHex}><b>{name}</b></color>" + (count > 1 ? $" <color={UITheme.HexText}>×{count}</color>" : "") +
+                       $"   <color={UITheme.HexKi}>기력 {e.data.cost}</color>" +
+                       (e.absorbed ? $"  <color={UITheme.HexAbsorb}>침식 {e.corruption}</color>" : "");
 
-        Text top = UIBuilder.Label("Name", box.transform, line1, 21, Color.white, TextAnchor.MiddleLeft, false);
+        Text top = UIBuilder.Label("Name", box.transform, line1, 21, UITheme.TextMain, TextAnchor.MiddleLeft, false);
         UIBuilder.Place(top.rectTransform, new Vector2(0f, 0.5f), Vector2.one, new Vector2(0f, 0.5f), new Vector2(18f, 0f), new Vector2(-24f, 0f));
         top.horizontalOverflow = HorizontalWrapMode.Overflow;
 
-        Text dice = UIBuilder.Label("Dice", box.transform, DiceInfo.Summary(e.data), 19, Color.white, TextAnchor.MiddleLeft, false);
+        Text dice = UIBuilder.Label("Dice", box.transform, DiceInfo.Summary(e.data), 19, UITheme.TextMain, TextAnchor.MiddleLeft, false);
         UIBuilder.Place(dice.rectTransform, Vector2.zero, new Vector2(1f, 0.5f), new Vector2(0f, 0.5f), new Vector2(18f, 0f), new Vector2(-24f, 0f));
         dice.horizontalOverflow = HorizontalWrapMode.Overflow;
     }
@@ -181,7 +181,7 @@ public class DeckViewer : MonoBehaviour
 
     private void Build(Transform canvas)
     {
-        Image dim = UIBuilder.Panel("Dim", canvas, new Color(0f, 0f, 0f, 0.6f), false);
+        Image dim = UIBuilder.Panel("Dim", canvas, UITheme.Scrim, false);
         UIBuilder.Stretch(dim.rectTransform);
         dim.raycastTarget = true;   // 창이 열려 있는 동안 뒤 클릭 막기
         Button dimClose = dim.gameObject.AddComponent<Button>();
@@ -189,12 +189,12 @@ public class DeckViewer : MonoBehaviour
         dimClose.onClick.AddListener(() => panelRoot.SetActive(false));   // 바깥 클릭 = 닫기
         panelRoot = dim.gameObject;
 
-        Image window = UIBuilder.Panel("Window", dim.transform, new Color(0.05f, 0.05f, 0.06f, 0.97f));
+        Image window = UIBuilder.Panel("Window", dim.transform, UITheme.Window);
         UIBuilder.Place(window.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(1640f, 860f));
         window.raycastTarget = true;
         window.gameObject.AddComponent<Button>().transition = Selectable.Transition.None;   // 창 안 클릭이 바깥(닫기)으로 번지지 않게 여기서 받는다
 
-        titleText = UIBuilder.Label("Title", window.transform, "", 34, new Color(1f, 0.84f, 0.55f), TextAnchor.MiddleLeft);
+        titleText = UIBuilder.Label("Title", window.transform, "", 34, UITheme.Brass, TextAnchor.MiddleLeft);
         UIBuilder.Place(titleText.rectTransform, new Vector2(0f, 1f), Vector2.one, new Vector2(0.5f, 1f), new Vector2(0f, -14f), new Vector2(-60f, 56f));
 
         // 네 칸: 뽑을 더미 / 손패 / 시계판 위 / 버림패
@@ -204,7 +204,7 @@ public class DeckViewer : MonoBehaviour
             columns[i] = BuildColumn(window.transform, new Vector2(x0, 0.08f), new Vector2(x0 + 0.23f, 0.9f));
         }
 
-        Button close = UIBuilder.Button("Close", window.transform, "닫기 (Tab / Esc)", new Color(0.35f, 0.25f, 0.12f), 24);
+        Button close = UIBuilder.Button("Close", window.transform, "닫기 (Tab / Esc)", UITheme.InkSolid, 24);
         UITheme.StyleButton(close, false, 20);
         UIBuilder.Place((RectTransform)close.transform, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-24f, 14f), new Vector2(240f, 46f));
         close.onClick.AddListener(() => panelRoot.SetActive(false));
@@ -219,11 +219,11 @@ public class DeckViewer : MonoBehaviour
     {
         Column col = new Column();
 
-        Image frame = UIBuilder.Panel("Column", window, new Color(0.08f, 0.08f, 0.09f, 0.95f));
+        Image frame = UIBuilder.Panel("Column", window, UITheme.InkSolid);
         UIBuilder.Place(frame.rectTransform, anchorMin, anchorMax, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
 
         // 제목 줄 (위 46px)
-        col.title = UIBuilder.Label("Title", frame.transform, "", 24, new Color(1f, 0.9f, 0.7f), TextAnchor.MiddleLeft);
+        col.title = UIBuilder.Label("Title", frame.transform, "", 24, UITheme.TextMain, TextAnchor.MiddleLeft);
         UIBuilder.Place(col.title.rectTransform, new Vector2(0f, 1f), Vector2.one, new Vector2(0.5f, 1f), new Vector2(0f, -4f), new Vector2(-28f, 42f));
 
         // 목록 영역 (제목 아래 ~ 바닥): 이 밖으로 나간 상자는 잘린다
@@ -234,7 +234,7 @@ public class DeckViewer : MonoBehaviour
         viewport.offsetMax = new Vector2(-10f, -50f);
         viewport.gameObject.AddComponent<RectMask2D>();
         Image hit = viewport.gameObject.AddComponent<Image>();
-        hit.color = new Color(0f, 0f, 0f, 0f);   // 빈 곳에서도 휠 스크롤이 먹도록
+        hit.color = Color.clear;   // 빈 곳에서도 휠 스크롤이 먹도록
 
         col.content = UIBuilder.Rect("Content", viewport);
         col.content.anchorMin = new Vector2(0f, 1f);
