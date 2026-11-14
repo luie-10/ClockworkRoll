@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c432b655cc2ee62408eb86f1bf1d0dbc, type: 3}
+  m_Name: "기름 망령"
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyData
+  enemyName: "기름 망령"
+  nicknames:
+  - "검은 웅덩이"
+  - "그을음"
+  - "미끄러운 것"
+  maxHp: 36
+  resistance:
+    slash: 0
+    thrust: 0
+    blunt: 1
+  sprite: {fileID: 0}
+  spriteHeight: 2
+  poses:
+    slash: {fileID: 0}
+    thrust: {fileID: 0}
+    blunt: {fileID: 0}
+    guard: {fileID: 0}
+    evade: {fileID: 0}
+    hit: {fileID: 0}
+    down: {fileID: 0}
+  modelPrefab: {fileID: 0}
+  tintColor: {r: 0.3, g: 0.28, b: 0.38, a: 1}
+  actionsPerRound: 1
+  behavior: 2
+  trait: 7
+  traitAmount: 2
+  deck:
+  - {fileID: 11400000, guid: 4012870cd3d34c63a9b2e50d7d845e40, type: 2}
+  - {fileID: 11400000, guid: ec08c3eb7d4d4012b72ac7a6720cb242, type: 2}
+  - {fileID: 11400000, guid: 11551e66f27f4eefbec724fb3a6e9954, type: 2}

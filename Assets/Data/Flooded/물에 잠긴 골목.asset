@@ -20,6 +20,6 @@ MonoBehaviour:
   enemies:
   - enemy: {fileID: 11400000, guid: 5d8ea618ca592c8ce8f8863eea9d8e73, type: 2}
     spawnPosition: {x: 3, y: 0, z: 1.2}
-  - enemy: {fileID: 11400000, guid: 5d8ea618ca592c8ce8f8863eea9d8e73, type: 2}
+  - enemy: {fileID: 11400000, guid: 162338aab8dd4fd28870e3d9e486b3bf, type: 2}
     spawnPosition: {x: 4.5, y: 0, z: -1}
   deckOverride: []

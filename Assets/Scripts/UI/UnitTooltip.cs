@@ -113,6 +113,15 @@ public class UnitTooltip : MonoBehaviour
         string status = DiceInfo.StatusLine(u);
         if (status.Length > 0) s += "\n" + status + "  <color=#888888>(괄호 = 다음 턴)</color>";
 
+        // 적 유형: 행동 유형 + 특성
+        if (!u.isPlayer)
+        {
+            if (u.behavior != EnemyBehavior.Random)
+                s += $"\n<color=#ff9e73>{EnemyTypeInfo.Name(u.behavior)}</color>  <color=#c8c8c8>{EnemyTypeInfo.Describe(u.behavior)}</color>";
+            if (u.trait != EnemyTrait.None && u.traitAmount > 0)
+                s += $"\n<color=#ffd159>{EnemyTypeInfo.Name(u.trait)}</color>  <color=#c8c8c8>{EnemyTypeInfo.Describe(u.trait, u.traitAmount)}</color>";
+        }
+
         s += "\n<color=#e8c27a>─ 내성 (받는 피해) ─</color>";
         s += ResistLine(DiceDetail.Slash, u);
         s += ResistLine(DiceDetail.Thrust, u);

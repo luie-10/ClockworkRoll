@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c432b655cc2ee62408eb86f1bf1d0dbc, type: 3}
+  m_Name: "독니 쥐"
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyData
+  enemyName: "독니 쥐"
+  nicknames:
+  - "초록 이빨"
+  - "침 흘리는 놈"
+  - "곪은 꼬리"
+  - "하수구 독"
+  maxHp: 28
+  resistance:
+    slash: 1
+    thrust: 0
+    blunt: 1
+  sprite: {fileID: 0}
+  spriteHeight: 2
+  poses:
+    slash: {fileID: 0}
+    thrust: {fileID: 0}
+    blunt: {fileID: 0}
+    guard: {fileID: 0}
+    evade: {fileID: 0}
+    hit: {fileID: 0}
+    down: {fileID: 0}
+  modelPrefab: {fileID: 0}
+  tintColor: {r: 0.45, g: 0.7, b: 0.35, a: 1}
+  actionsPerRound: 1
+  behavior: 1
+  trait: 0
+  traitAmount: 1
+  deck:
+  - {fileID: 11400000, guid: da031dbe248b48b48798b253ee86ad98, type: 2}
+  - {fileID: 11400000, guid: 71f7c58f2d1a43d087bd257e90a95877, type: 2}
+  - {fileID: 11400000, guid: 05fe56dbee7946dc92a1b0f24e989c59, type: 2}

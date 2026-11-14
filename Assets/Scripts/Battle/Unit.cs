@@ -50,6 +50,14 @@ public class Unit : MonoBehaviour
     [Tooltip("적: 한 라운드(시계판 한 바퀴)에 하는 행동 수")]
     public int actionsPerRound = 1;
 
+    [Header("적 유형 (SpawnEnemies에서 EnemyData로부터 복사됨)")]
+    public EnemyBehavior behavior = EnemyBehavior.Random;
+    public EnemyTrait trait = EnemyTrait.None;
+    public int traitAmount = 1;
+
+    /// <summary>순서형: 다음에 쓸 덱 위치</summary>
+    [System.NonSerialized] public int patternStep;
+
     public event Action<Unit, int> OnDamaged;   // (피격 유닛, 피해량)
     public event Action<Unit> OnDead;
 
@@ -72,6 +80,7 @@ public class Unit : MonoBehaviour
         Hp = newMaxHp;
         personalDeck = deck != null ? new List<CardData>(deck) : new List<CardData>();
         if (newResistance != null) resistance = newResistance.Clone();
+        patternStep = 0;
         ClearStatus();
 
         if (bodyRenderer == null) bodyRenderer = GetComponentInChildren<Renderer>();

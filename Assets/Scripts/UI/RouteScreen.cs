@@ -504,7 +504,7 @@ public class RouteScreen : MonoBehaviour
             case NodeType.Elite:    return "강한 적과 싸운다. 이기면 태엽판 3장 중 1장.";
             case NodeType.Rest:     return $"둘 중 하나: 최대 체력의 {Mathf.RoundToInt(RestHealRatio * 100)}% 회복 / 태엽판 1장 버리기.";
             case NodeType.Remove:   return "덱에서 태엽판 1장을 버린다.";
-            case NodeType.Treasure: return "부품 3개 중 1개를 얻는다. 최대 기력이 늘어난다.";
+            case NodeType.Treasure: return "부품 3개 중 1개를 얻는다. 이번 판 내내 효과가 이어진다.";
             default:                return "무슨 일이 생길지 모른다.";
         }
     }
@@ -965,17 +965,30 @@ public class RouteScreen : MonoBehaviour
         if (picked != null)
         {
             GameManager.Instance.GainItem(picked);
-            yield return Message(title, $"<color=#ffd98a>[{picked.name}]</color>을(를) 몸에 달았다.\n\n<color=#8cd9ff>최대 기력 {GameManager.Instance.MaxKi}</color>");
+            yield return Message(title, $"<color=#ffd98a>[{picked.name}]</color>을(를) 몸에 달았다.\n\n{picked.description}\n\n" +
+                                        $"<color=#a8a29a>체력 {Player.Hp}/{Player.MaxHp}</color>   ·   <color=#8cd9ff>최대 기력 {GameManager.Instance.MaxKi}</color>");
         }
     }
 
     private void ItemTile(RunItem item, Action onClick)
     {
         Image frame = UIBuilder.Panel("Item " + item.name, choiceRow, UITheme.InkSolid, false);
-        frame.rectTransform.sizeDelta = new Vector2(300f, 240f);
+        frame.rectTransform.sizeDelta = new Vector2(300f, 340f);
         frame.raycastTarget = true;
         Outline edge = frame.gameObject.AddComponent<Outline>();
         edge.effectColor = new Color(UITheme.Ki.r, UITheme.Ki.g, UITheme.Ki.b, 0.75f);
+
+        // 부품 그림 (IconPainter가 코드로 그린 문양에 황동색을 입힌다)
+        if (!string.IsNullOrEmpty(item.icon))
+        {
+            RectTransform art = UIBuilder.Rect("Art", frame.transform);
+            UIBuilder.Place(art, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -22f), new Vector2(124f, 124f));
+            Image artImg = art.gameObject.AddComponent<Image>();
+            artImg.sprite = RouteIcons.Get(item.icon, 256);
+            artImg.color = UITheme.Brass;
+            artImg.preserveAspect = true;
+            artImg.raycastTarget = false;
+        }
         edge.effectDistance = new Vector2(2f, -2f);
         Button b = frame.gameObject.AddComponent<Button>();
         b.targetGraphic = frame;
@@ -984,10 +997,10 @@ public class RouteScreen : MonoBehaviour
 
         Text n = UIBuilder.Label("Name", frame.transform, item.name, 28, UITheme.Brass, TextAnchor.MiddleCenter);
         n.fontStyle = FontStyle.Bold;
-        UIBuilder.Place(n.rectTransform, new Vector2(0f, 1f), Vector2.one, new Vector2(0.5f, 1f), new Vector2(0f, -36f), new Vector2(-24f, 44f));
+        UIBuilder.Place(n.rectTransform, new Vector2(0f, 1f), Vector2.one, new Vector2(0.5f, 1f), new Vector2(0f, -158f), new Vector2(-24f, 44f));
         Text d = UIBuilder.Label("Desc", frame.transform, item.description, 23, UITheme.TextMain, TextAnchor.UpperCenter);
         d.lineSpacing = 1.25f;
-        UIBuilder.Place(d.rectTransform, new Vector2(0f, 1f), Vector2.one, new Vector2(0.5f, 1f), new Vector2(0f, -104f), new Vector2(-30f, 120f));
+        UIBuilder.Place(d.rectTransform, new Vector2(0f, 1f), Vector2.one, new Vector2(0.5f, 1f), new Vector2(0f, -212f), new Vector2(-30f, 120f));
     }
 
     /// <summary>새 태엽판 3장 중 1장 (건너뛸 수 있음)</summary>

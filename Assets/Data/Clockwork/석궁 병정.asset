@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c432b655cc2ee62408eb86f1bf1d0dbc, type: 3}
+  m_Name: "석궁 병정"
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyData
+  enemyName: "석궁 병정"
+  nicknames:
+  - "외눈 4호"
+  - "녹슨 시위"
+  - "망루지기"
+  - "15호"
+  maxHp: 28
+  resistance:
+    slash: 2
+    thrust: 0
+    blunt: 0
+  sprite: {fileID: 0}
+  spriteHeight: 2
+  poses:
+    slash: {fileID: 0}
+    thrust: {fileID: 0}
+    blunt: {fileID: 0}
+    guard: {fileID: 0}
+    evade: {fileID: 0}
+    hit: {fileID: 0}
+    down: {fileID: 0}
+  modelPrefab: {fileID: 0}
+  tintColor: {r: 0.5, g: 0.55, b: 0.35, a: 1}
+  actionsPerRound: 1
+  behavior: 2
+  trait: 0
+  traitAmount: 1
+  deck:
+  - {fileID: 11400000, guid: 4fa44b5e3a2f443ea86ea49524dd69ec, type: 2}
+  - {fileID: 11400000, guid: a189b1b6bcfe4cc984365bcc685eb10d, type: 2}

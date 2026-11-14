@@ -31,6 +31,16 @@ public class IconPainter
     public const string Fight = "fight", Elite = "elite", Rest = "rest", Event = "event", Remove = "remove",
                         Treasure = "treasure", Boss = "boss", Start = "start", Gear = "gear", GearSmall = "gear-small", ClockFace = "clock";
 
+    // 부품 (RunItems) 그림
+    public const string ItemSpring = "item-spring", ItemBarrel = "item-barrel", ItemCog = "item-cog", ItemPlate = "item-plate",
+                        ItemOilCan = "item-oilcan", ItemMedkit = "item-medkit", ItemWhetstone = "item-whetstone",
+                        ItemCoil = "item-coil", ItemRustOil = "item-rustoil";
+
+    public static readonly string[] ItemIcons =
+    {
+        ItemSpring, ItemBarrel, ItemCog, ItemPlate, ItemOilCan, ItemMedkit, ItemWhetstone, ItemCoil, ItemRustOil,
+    };
+
     public static float[] Draw(string kind, int size)
     {
         IconPainter p = new IconPainter(size);
@@ -47,8 +57,166 @@ public class IconPainter
             case Gear:      p.GearWheel(12, 0.74f, 0.2f, true); break;
             case GearSmall: p.GearWheel(8, 0.68f, 0.24f, false); break;
             case ClockFace: p.Clock(); break;
+
+            case ItemSpring:    p.Mainspring(); break;
+            case ItemBarrel:    p.SpringBarrel(); break;
+            case ItemCog:       p.BrassCog(); break;
+            case ItemPlate:     p.PatchedPlate(); break;
+            case ItemOilCan:    p.OilCan(); break;
+            case ItemMedkit:    p.Medkit(); break;
+            case ItemWhetstone: p.Whetstone(); break;
+            case ItemCoil:      p.CoilSpring(); break;
+            case ItemRustOil:   p.RustOilFlask(); break;
         }
         return p.Alpha;
+    }
+
+    // ─────────────────────────── 부품 그림 ───────────────────────────
+
+    // ── 여분의 태엽: 통 안에 감긴 태엽 (소용돌이) ──
+    private void Mainspring()
+    {
+        Fill(Ring(0f, 0f, 0.86f, 0.065f));
+        const int steps = 96;
+        float px = 0f, py = 0f;
+        for (int i = 0; i <= steps; i++)
+        {
+            double a = i / (double)steps * Math.PI * 2.0 * 2.6 + Math.PI * 0.5;   // 2.6바퀴
+            float r = 0.14f + 0.66f * i / steps;
+            float x = (float)(r * Math.Cos(a)), y = (float)(r * Math.Sin(a));
+            if (i > 0) Fill(Seg(px, py, x, y, 0.05f));
+            px = x; py = y;
+        }
+        Fill(Circle(0f, 0f, 0.17f));
+        Cut(Box(0f, 0f, 0.06f, 0.06f, 0f));   // 감개가 들어가는 네모 구멍
+    }
+
+    // ── 무거운 태엽통: 쇠띠 두른 통 + 위에 꽂힌 감개 ──
+    private void SpringBarrel()
+    {
+        Fill(Box(0f, 0.38f, 0.055f, 0.22f, 0f));           // 감개 축
+        Fill(Ring(-0.21f, 0.74f, 0.16f, 0.055f));          // 감개 날개 (고리 둘)
+        Fill(Ring(0.21f, 0.74f, 0.16f, 0.055f));
+        Fill(Box(0f, -0.3f, 0.64f, 0.56f, 0.14f));         // 통
+        Cut(Seg(-0.7f, 0.0f, 0.7f, 0.0f, 0.026f));         // 쇠띠
+        Cut(Seg(-0.7f, -0.6f, 0.7f, -0.6f, 0.026f));
+        Cut(Circle(0f, -0.3f, 0.17f));                     // 가운데 축 구멍
+        Fill(Circle(0f, -0.3f, 0.08f));
+        Cut(Circle(-0.46f, -0.3f, 0.045f));                // 대갈못
+        Cut(Circle(0.46f, -0.3f, 0.045f));
+    }
+
+    // ── 황동 톱니: 속을 한 겹 파낸 굵은 톱니바퀴 ──
+    private void BrassCog()
+    {
+        Teeth(8, 0.56f, 0.24f, 0.15f);
+        Fill(Circle(0f, 0f, 0.64f));
+        Cut(Ring(0f, 0f, 0.43f, 0.035f));
+        Cut(Circle(0f, 0f, 0.17f));
+        for (int i = 0; i < 4; i++)                        // 십자 살 사이의 작은 구멍
+        {
+            Transform(0f, 0f, 45f + i * 90f);
+            Cut(Circle(0f, 0.3f, 0.055f));
+        }
+        Reset();
+    }
+
+    // ── 덧댄 철판: 방패꼴 철판 위에 비뚤게 덧댄 조각과 대갈못 ──
+    private void PatchedPlate()
+    {
+        Fill(Poly(-0.72f, 0.82f, 0.72f, 0.82f, 0.72f, -0.08f, 0.36f, -0.62f, 0f, -0.9f, -0.36f, -0.62f, -0.72f, -0.08f));
+        Cut(Circle(-0.52f, 0.63f, 0.06f));                 // 모서리 대갈못
+        Cut(Circle(0.52f, 0.63f, 0.06f));
+        Cut(Circle(0f, -0.66f, 0.06f));
+
+        Transform(0.04f, 0.12f, 14f);                      // 덧댄 조각
+        Cut(Box(0f, 0f, 0.4f, 0.31f, 0.04f));
+        Fill(Box(0f, 0f, 0.34f, 0.25f, 0.03f));
+        Cut(Circle(-0.24f, 0.15f, 0.045f));
+        Cut(Circle(0.24f, 0.15f, 0.045f));
+        Cut(Circle(-0.24f, -0.15f, 0.045f));
+        Cut(Circle(0.24f, -0.15f, 0.045f));
+        Reset();
+    }
+
+    // ── 기름 깡통: 긴 주둥이 달린 기름통 + 떨어지는 기름 한 방울 ──
+    private void OilCan()
+    {
+        Fill(Ring(-0.58f, -0.3f, 0.26f, 0.06f));                                   // 손잡이
+        Fill(Seg(0.16f, -0.1f, 0.74f, 0.66f, 0.06f));                              // 주둥이
+        Fill(Poly(-0.62f, -0.84f, 0.4f, -0.84f, 0.28f, 0.04f, -0.5f, 0.04f));      // 몸통
+        Fill(Box(-0.11f, 0.13f, 0.2f, 0.1f, 0.04f));                               // 마개
+        Cut(Seg(-0.7f, -0.56f, 0.5f, -0.56f, 0.026f));                             // 띠
+        Cut(Seg(-0.7f, -0.2f, 0.5f, -0.2f, 0.026f));
+        Drop(0.82f, 0.22f, 0.1f);
+    }
+
+    /// <summary>물방울 (cx, cy = 둥근 아랫부분의 가운데, r = 반지름)</summary>
+    private void Drop(float cx, float cy, float r)
+    {
+        Fill(Circle(cx, cy, r));
+        Fill(Poly(cx - r * 0.86f, cy + r * 0.5f, cx + r * 0.86f, cy + r * 0.5f, cx, cy + r * 2.3f));
+    }
+
+    // ── 시계공의 구급함: 손잡이 달린 상자 + 십자 ──
+    private void Medkit()
+    {
+        Fill(Ring(0f, 0.42f, 0.27f, 0.06f));               // 손잡이 (아래 절반은 상자에 가린다)
+        Fill(Box(0f, -0.2f, 0.8f, 0.58f, 0.1f));
+        Cut(Seg(-0.86f, 0.2f, 0.86f, 0.2f, 0.024f));       // 뚜껑 선
+        Cut(Box(0f, -0.26f, 0.11f, 0.33f, 0f));            // 십자
+        Cut(Box(0f, -0.26f, 0.33f, 0.11f, 0f));
+    }
+
+    // ── 숫돌: 비스듬한 돌 위에 올린 칼날 + 튀는 불티 ──
+    private void Whetstone()
+    {
+        Transform(0f, -0.42f, -8f);                        // 숫돌
+        Fill(Box(0f, 0f, 0.82f, 0.24f, 0.06f));
+        Cut(Seg(-0.62f, 0.07f, 0.4f, 0.07f, 0.022f));
+        Cut(Seg(-0.3f, -0.08f, 0.62f, -0.08f, 0.022f));
+
+        Transform(-0.14f, 0.04f, 22f);                     // 칼
+        Sdf[] knife =
+        {
+            Poly(-0.1f, -0.1f, 0.72f, -0.1f, 0.98f, 0.1f, -0.1f, 0.1f),   // 날
+            Box(-0.16f, 0f, 0.045f, 0.2f, 0.02f),                         // 코등이
+            Box(-0.48f, 0f, 0.3f, 0.075f, 0.06f),                         // 손잡이
+        };
+        foreach (Sdf s in knife) Cut(s, 0.06f);            // 숫돌과 겹치는 자리를 살짝 파낸다
+        foreach (Sdf s in knife) Fill(s);
+        Reset();
+
+        Fill(Seg(0.6f, 0.54f, 0.72f, 0.72f, 0.03f));       // 불티
+        Fill(Seg(0.8f, 0.44f, 0.94f, 0.5f, 0.03f));
+        Fill(Seg(0.44f, 0.6f, 0.44f, 0.76f, 0.03f));
+    }
+
+    // ── 팽팽한 용수철: 두 받침 사이에서 눌린 코일 ──
+    private void CoilSpring()
+    {
+        Fill(Box(0f, 0.84f, 0.62f, 0.075f, 0.03f));
+        Fill(Box(0f, -0.84f, 0.62f, 0.075f, 0.03f));
+        const int turns = 6;
+        float step = 1.52f / turns;
+        for (int i = 0; i < turns; i++)
+        {
+            float y0 = 0.76f - i * step, y1 = y0 - step;
+            float x0 = i % 2 == 0 ? -0.46f : 0.46f;
+            Fill(Seg(x0, y0, -x0, y1, 0.065f));
+        }
+    }
+
+    // ── 방청유: 목이 긴 둥근 병, 안에 기름 한 방울 ──
+    private void RustOilFlask()
+    {
+        Fill(Box(0f, 0.38f, 0.17f, 0.32f, 0.02f));         // 목
+        Fill(Box(0f, 0.74f, 0.27f, 0.07f, 0.03f));         // 주둥이 테
+        Fill(Box(0f, 0.9f, 0.12f, 0.07f, 0.03f));          // 마개
+        Fill(Circle(0f, -0.32f, 0.6f));                    // 몸통
+        Cut(Seg(-0.3f, 0.5f, 0.3f, 0.5f, 0.022f));         // 목의 띠
+        Cut(Circle(0f, -0.42f, 0.2f));                     // 기름 방울 (파낸 모양)
+        Cut(Poly(-0.172f, -0.32f, 0.172f, -0.32f, 0f, 0.04f));
     }
 
     // ── 전투: 엇갈린 두 자루의 검 ──

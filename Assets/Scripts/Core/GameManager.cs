@@ -255,6 +255,15 @@ public class GameManager : MonoBehaviour
         // 1) 고른 적의 태엽판을 흡수한다 (덱 오염 = 이 게임의 핵심 트레이드오프)
         if (absorbed != null && absorbed.Count > 0) AbsorbCards(absorbed);
 
+        // 1-1) 부품: 전투에서 이길 때마다 발동하는 효과 (전투 없는 챕터는 건너뛴다)
+        if (chapter.battle != null || routeBattleWon != null)
+        {
+            foreach (RunItem item in OwnedItems)
+            {
+                if (item != null && item.onBattleWon != null) item.onBattleWon(this);
+            }
+        }
+
         // 지도 위 전투였으면 챕터 보상/대사 없이 지도로 돌아간다
         if (routeBattleWon != null)
         {

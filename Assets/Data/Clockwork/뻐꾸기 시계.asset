@@ -35,6 +35,9 @@ MonoBehaviour:
   modelPrefab: {fileID: 0}
   tintColor: {r: 0.55, g: 0.38, b: 0.22, a: 1}
   actionsPerRound: 1
+  behavior: 3
+  trait: 6
+  traitAmount: 2
   deck:
   - {fileID: 11400000, guid: 855ebab93268493073ef5c2f3dfa01df, type: 2}
   - {fileID: 11400000, guid: 1d7210bd3356bb881a669b234d0e10db, type: 2}

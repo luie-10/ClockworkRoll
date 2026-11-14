@@ -19,7 +19,7 @@ MonoBehaviour:
   enemies:
   - enemy: {fileID: 11400000, guid: 3acf0247666cde5a113762386108c1b2, type: 2}
     spawnPosition: {x: 2, y: 0, z: 1.4}
-  - enemy: {fileID: 11400000, guid: 3acf0247666cde5a113762386108c1b2, type: 2}
+  - enemy: {fileID: 11400000, guid: a70ca6a57af44f5f9195f803712bbf6c, type: 2}
     spawnPosition: {x: 3.3, y: 0, z: -1.3}
   - enemy: {fileID: 11400000, guid: 3acf0247666cde5a113762386108c1b2, type: 2}
     spawnPosition: {x: 4.6, y: 0, z: 0.4}

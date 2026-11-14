@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c432b655cc2ee62408eb86f1bf1d0dbc, type: 3}
+  m_Name: "이끼 게"
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyData
+  enemyName: "이끼 게"
+  nicknames:
+  - "푸른 등딱지"
+  - "물때"
+  - "느린 집게"
+  maxHp: 40
+  resistance:
+    slash: 0
+    thrust: 2
+    blunt: 0
+  sprite: {fileID: 0}
+  spriteHeight: 2
+  poses:
+    slash: {fileID: 0}
+    thrust: {fileID: 0}
+    blunt: {fileID: 0}
+    guard: {fileID: 0}
+    evade: {fileID: 0}
+    hit: {fileID: 0}
+    down: {fileID: 0}
+  modelPrefab: {fileID: 0}
+  tintColor: {r: 0.35, g: 0.6, b: 0.4, a: 1}
+  actionsPerRound: 1
+  behavior: 2
+  trait: 2
+  traitAmount: 2
+  deck:
+  - {fileID: 11400000, guid: aa82da2c121d46e0978a33e0ba21ec06, type: 2}
+  - {fileID: 11400000, guid: abd745957fca46e2852ef4876d19ae84, type: 2}
