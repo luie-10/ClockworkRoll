@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: "\uC608\uBE44 \uB3D9\uB825"
   m_EditorClassIdentifier: Assembly-CSharp::CardData
   cardName: "\uC608\uBE44 \uB3D9\uB825"
-  cardArt: {fileID: 0}
+  cardArt: {fileID: 21300000, guid: decab80079d2eec47aa66b19cf72c5ad, type: 3}
   rarity: 2
   cost: 1
   requireTension: 0

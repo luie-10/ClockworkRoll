@@ -13,13 +13,14 @@ MonoBehaviour:
   m_Name: "\uD0DC\uC5FD \uAC70\uBA38\uB9AC"
   m_EditorClassIdentifier: Assembly-CSharp::CardData
   cardName: "\uD0DC\uC5FD \uAC70\uBA38\uB9AC"
-  cardArt: {fileID: 0}
+  cardArt: {fileID: 21300000, guid: 0b11f96e7474472418bae77133d21104, type: 3}
   rarity: 2
   cost: 2
   requireTension: 0
   exhaust: 0
   innate: 0
-  cardDescription: "\uD558\uC218\uAD6C\uC758 \uAC70\uBA38\uB9AC\uC5D0\uAC8C \uBC30\uC6B4 \uAC83."
+  cardDescription: "\uD558\uC218\uAD6C\uC758 \uAC70\uBA38\uB9AC\uC5D0\uAC8C \uBC30\uC6B4
+    \uAC83."
   diceList:
   - diceName: 
     diceType: 0
