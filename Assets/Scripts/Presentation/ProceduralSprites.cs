@@ -9,7 +9,9 @@ using UnityEngine;
 /// </summary>
 public static class ProceduralSprites
 {
-    private static Sprite roundedBox, square, circle, verticalFade, horizontalFade, bevel;
+    private static Sprite roundedBox, square, circle, verticalFade, horizontalFade, bevel, frameThin, frameBold, softShadow;
+
+    public const int ShadowPad = 16;   // 그림자가 상자 밖으로 번지는 폭(px)
 
     public const int BoxSize = 64;
     public const int BoxCorner = 14;   // 모서리 반지름(px) = 9-slice 테두리
@@ -125,6 +127,74 @@ public static class ProceduralSprites
             bevel.name = "Bevel";
         }
         return bevel;
+    }
+
+    /// <summary>
+    /// 둥근 상자의 테두리 선만 (속은 비어 있다). RoundedBox와 같은 모양 · 같은 9-slice라 그 위에 겹치면 딱 맞는다.
+    /// Outline 컴포넌트(그림을 네 번 어긋나게 겹쳐 그리는 방식)와 달리 선 굵기가 고르고 모서리가 뭉개지지 않는다.
+    /// bold = 굵은 선 (고른 것 · 마우스를 올린 것)
+    /// </summary>
+    public static Sprite Frame(bool bold = false)
+    {
+        Sprite cached = bold ? frameBold : frameThin;
+        if (cached != null) return cached;
+
+        float thick = bold ? 4.6f : 2.4f;   // 텍스처 px — Pixels Per Unit Multiplier 1.6이면 화면에서 약 2.9 / 1.5px
+        Texture2D tex = new Texture2D(BoxSize, BoxSize, TextureFormat.RGBA32, false);
+        tex.wrapMode = TextureWrapMode.Clamp;
+        float r = BoxCorner;
+        for (int y = 0; y < BoxSize; y++)
+        {
+            for (int x = 0; x < BoxSize; x++)
+            {
+                float cx = Mathf.Clamp(x + 0.5f, r, BoxSize - r);
+                float cy = Mathf.Clamp(y + 0.5f, r, BoxSize - r);
+                float d = Vector2.Distance(new Vector2(x + 0.5f, y + 0.5f), new Vector2(cx, cy));
+                // 가장자리에서 안쪽으로 들어온 깊이 (곧은 변에서는 변까지의 거리, 모서리에서는 둥근 호까지의 거리)
+                float depth = d > 0f ? r - d : Mathf.Min(Mathf.Min(x + 0.5f, BoxSize - x - 0.5f), Mathf.Min(y + 0.5f, BoxSize - y - 0.5f));
+                float a = Mathf.Clamp01(depth + 0.5f) * Mathf.Clamp01(thick - depth + 0.5f);
+                tex.SetPixel(x, y, new Color(1f, 1f, 1f, a));
+            }
+        }
+        tex.Apply();
+        Sprite s = Sprite.Create(tex, new Rect(0, 0, BoxSize, BoxSize), new Vector2(0.5f, 0.5f), 100f, 0,
+            SpriteMeshType.FullRect, new Vector4(BoxCorner + 2, BoxCorner + 2, BoxCorner + 2, BoxCorner + 2));
+        s.name = bold ? "FrameBold" : "Frame";
+        if (bold) frameBold = s; else frameThin = s;
+        return s;
+    }
+
+    /// <summary>
+    /// 상자 밖으로 번지는 부드러운 그림자 (속은 비어 있어 상자 자체는 어두워지지 않는다).
+    /// 상자보다 사방으로 ShadowPad만큼 크게 놓는다. 9-slice.
+    /// </summary>
+    public static Sprite SoftShadow()
+    {
+        if (softShadow == null)
+        {
+            const int size = 96;
+            const float box = ShadowPad, r = 9f;   // 상자 = 가장자리에서 ShadowPad 들어온 둥근 사각형
+            Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            tex.wrapMode = TextureWrapMode.Clamp;
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    float cx = Mathf.Clamp(x + 0.5f, box + r, size - box - r);
+                    float cy = Mathf.Clamp(y + 0.5f, box + r, size - box - r);
+                    float outside = Vector2.Distance(new Vector2(x + 0.5f, y + 0.5f), new Vector2(cx, cy)) - r;   // 상자 밖으로 나온 거리
+                    float fall = Mathf.Clamp01(1f - outside / ShadowPad);
+                    float a = outside < -1f ? 0f : fall * fall * Mathf.Clamp01(outside + 1.5f);
+                    tex.SetPixel(x, y, new Color(0f, 0f, 0f, a));
+                }
+            }
+            tex.Apply();
+            int b = ShadowPad + 12;
+            softShadow = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f, 0,
+                SpriteMeshType.FullRect, new Vector4(b, b, b, b));
+            softShadow.name = "SoftShadow";
+        }
+        return softShadow;
     }
 
     public static Sprite Square()

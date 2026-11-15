@@ -73,6 +73,7 @@ public class UnitTooltip : MonoBehaviour
         tip.text.horizontalOverflow = HorizontalWrapMode.Overflow;   // 줄바꿈 없이 가장 긴 줄에 맞춰 폭 결정
         tip.text.lineSpacing = 1.1f;
 
+        UITheme.Elevate(bg, 0.7f);
         UIPop.Ensure(bg.gameObject, 0.95f, 0.14f);
         bg.gameObject.SetActive(false);
         return tip;

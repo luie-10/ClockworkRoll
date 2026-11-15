@@ -36,14 +36,14 @@ public static class UITheme
     public static readonly Color Brass = new Color(0.86f, 0.69f, 0.42f);                // 제목 · 강조 글자 · 문양
     public static readonly Color BrassButton = new Color(0.86f, 0.66f, 0.33f);          // 주 버튼의 면
     public static readonly Color BrassFill = new Color(0.72f, 0.54f, 0.26f);            // 눌린 황동 · 채움
-    public static readonly Color BrassDeep = new Color(0.27f, 0.2f, 0.08f, 0.98f);      // 고른 것의 바탕 (어두운 황동)
+    public static readonly Color BrassDeep = new Color(0.2f, 0.15f, 0.065f, 0.98f);     // 고른 것의 바탕 (어두운 황동 — 그 위의 글자가 4.5:1 이상 나오게 어둡게)
     public static readonly Color BrassLine = new Color(0.86f, 0.69f, 0.42f, 0.42f);     // 패널 테두리
     public static readonly Color Gold = new Color(1f, 0.82f, 0.35f);                    // 꼭 봐야 하는 것: 고른 카드 · 합이 일어나는 칸 · 숫자
 
     // ── 글자 ──
     public static readonly Color TextMain = new Color(0.94f, 0.92f, 0.88f);
     public static readonly Color TextMuted = new Color(0.64f, 0.62f, 0.58f);
-    public static readonly Color TextDim = new Color(0.5f, 0.48f, 0.45f);
+    public static readonly Color TextDim = new Color(0.58f, 0.56f, 0.53f);            // 가장 옅은 글자 — 어느 바탕에서도 명도 대비 4.5:1 이상
     public static readonly Color TextOnBrass = new Color(0.09f, 0.07f, 0.05f);
 
     // ── 뜻이 있는 색 ──
@@ -100,16 +100,78 @@ public static class UITheme
         img.pixelsPerUnitMultiplier = 1.6f;
         img.color = fill;
 
-        Outline o = img.GetComponent<Outline>();
-        if (border == null)
+        if (border == null) NoBorder(img);
+        else Border(img, border.Value);
+    }
+
+    private const string FrameName = "Frame", ShadowName = "Shadow";
+
+    /// <summary>
+    /// 둥근 상자에 또렷한 테두리 선을 두른다 (선만 그린 그림을 자식으로 겹친다 — 굵기가 고르고 모서리가 뭉개지지 않는다).
+    /// 이미 있으면 색 · 굵기만 바꾼다. 예전 방식의 Outline이 붙어 있으면 끈다. 돌려주는 Image의 color로 나중에 색을 바꿀 수 있다.
+    /// </summary>
+    public static Image Border(Image img, Color color, bool bold = false)
+    {
+        if (img == null) return null;
+        Outline old = img.GetComponent<Outline>();
+        if (old != null) old.enabled = false;
+
+        Transform t = img.transform.Find(FrameName);
+        Image frame = t != null ? t.GetComponent<Image>() : null;
+        if (frame == null)
         {
-            if (o != null) o.enabled = false;
-            return;
+            frame = Overlay(img.transform, FrameName, 0f, 0f);
+            frame.type = Image.Type.Sliced;
         }
-        if (o == null) o = img.gameObject.AddComponent<Outline>();
-        o.enabled = true;
-        o.effectColor = border.Value;
-        o.effectDistance = new Vector2(BorderWidth, -BorderWidth);
+        frame.sprite = ProceduralSprites.Frame(bold);
+        frame.pixelsPerUnitMultiplier = img.pixelsPerUnitMultiplier;
+        frame.color = color;
+        frame.enabled = true;
+        return frame;
+    }
+
+    public static void NoBorder(Image img)
+    {
+        if (img == null) return;
+        Outline old = img.GetComponent<Outline>();
+        if (old != null) old.enabled = false;
+        Transform t = img.transform.Find(FrameName);
+        if (t != null) t.gameObject.SetActive(false);
+    }
+
+    /// <summary>떠 있는 것(창 · 정보창 · 카드)에 부드러운 그림자를 깐다 — 뒤의 화면에서 한 단 떠 보인다. strength = 짙기(0~1)</summary>
+    public static void Elevate(Image img, float strength = 0.55f)
+    {
+        if (img == null || !Application.isPlaying) return;
+        Transform t = img.transform.Find(ShadowName);
+        Image shadow = t != null ? t.GetComponent<Image>() : null;
+        if (shadow == null)
+        {
+            float pad = ProceduralSprites.ShadowPad;
+            shadow = Overlay(img.transform, ShadowName, pad, 5f);   // 사방으로 번지고, 아래로 조금 처진다
+            shadow.sprite = ProceduralSprites.SoftShadow();
+            shadow.type = Image.Type.Sliced;
+            shadow.pixelsPerUnitMultiplier = 1f;
+            shadow.transform.SetAsFirstSibling();
+        }
+        shadow.color = new Color(1f, 1f, 1f, strength);
+    }
+
+    /// <summary>부모를 꽉 채우는(또는 grow만큼 더 큰) 장식 그림. 클릭도 레이아웃도 건드리지 않는다</summary>
+    private static Image Overlay(Transform parent, string name, float grow, float drop)
+    {
+        GameObject go = new GameObject(name, typeof(RectTransform));
+        go.transform.SetParent(parent, false);
+        RectTransform rt = (RectTransform)go.transform;
+        rt.anchorMin = Vector2.zero;
+        rt.anchorMax = Vector2.one;
+        rt.offsetMin = new Vector2(-grow, -grow - drop);
+        rt.offsetMax = new Vector2(grow, grow - drop);
+        rt.SetAsFirstSibling();
+        go.AddComponent<LayoutElement>().ignoreLayout = true;   // 레이아웃 그룹 안에서도 자리를 차지하지 않게
+        Image img = go.AddComponent<Image>();
+        img.raycastTarget = false;
+        return img;
     }
 
     /// <summary>글자: 두꺼운 검은 외곽선 대신 옅은 그림자 (외곽선은 한글을 뭉개 보이게 한다)</summary>
@@ -241,6 +303,7 @@ public static class UITheme
         if (dlg != null)
         {
             StylePanel(dlg, Alpha(Window, 0.92f), BrassLine);
+            Elevate(dlg, 0.6f);
             RectTransform rt = dlg.rectTransform;
             rt.anchorMin = Vector2.zero; rt.anchorMax = new Vector2(1f, 0f); rt.pivot = new Vector2(0.5f, 0f);
             rt.anchoredPosition = new Vector2(0f, 24f);

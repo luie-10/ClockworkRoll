@@ -192,6 +192,7 @@ public class DeckViewer : MonoBehaviour
         Image window = UIBuilder.Panel("Window", dim.transform, UITheme.Window);
         UIBuilder.Place(window.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(1640f, 860f));
         window.raycastTarget = true;
+        UITheme.Elevate(window, 0.7f);
         window.gameObject.AddComponent<Button>().transition = Selectable.Transition.None;   // 창 안 클릭이 바깥(닫기)으로 번지지 않게 여기서 받는다
 
         titleText = UIBuilder.Label("Title", window.transform, "", 34, UITheme.Brass, TextAnchor.MiddleLeft);

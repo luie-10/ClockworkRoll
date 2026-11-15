@@ -17,7 +17,7 @@ using System.Text.RegularExpressions;
 
 class Fx { public int trigger, effect, amount; public bool next; }
 class Die { public int type, detail, min, max; public List<Fx> fx = new(); }
-class Card { public string name = "", guid = ""; public int rarity, cost, reqTension; public List<Die> dice = new(); public int Len => Math.Max(1, dice.Count); }
+class Card { public string name = "", guid = ""; public int rarity, cost, reqTension; public bool exhaust, innate; public List<Die> dice = new(); public int Len => Math.Max(1, dice.Count); }
 class Enemy { public string name = ""; public int maxHp, actions = 1; public int[] res = new int[3]; public List<Card> deck = new(); }
 class Stage { public string name = ""; public List<Enemy> enemies = new(); public List<Card> deckOverride = new(); }
 class Chapter { public string title = ""; public Stage? battle; public List<Card> rewards = new(); public List<Stage> fights = new(), elites = new(); }
@@ -27,7 +27,8 @@ static class T { public const int OnHit = 0, OnClashWin = 1, OnClashLose = 2, On
 static class E
 {
     public const int Rust = 0, RecoverKi = 1, DrawCard = 2, Heal = 3, Strength = 4, Endurance = 5, Feeble = 6, Fragile = 7, Paralysis = 8,
-        PowerNextDie = 9, DestroyNextDie = 10, Overwind = 11, Resonance = 12, Corrode = 13, Plating = 14, OnTheHour = 15, MaxKi = 16;
+        PowerNextDie = 9, DestroyNextDie = 10, Overwind = 11, Resonance = 12, Corrode = 13, Plating = 14, OnTheHour = 15, MaxKi = 16,
+        Lifesteal = 17, Tension = 18, Execute = 19, LastStand = 20, Combo = 21, Unopposed = 22, Burn = 23;
 }
 static class S { public const int Strength = 0, Endurance = 1, Feeble = 2, Fragile = 3, Paralysis = 4, Plating = 5; }
 
@@ -140,6 +141,8 @@ static class Loader
             if (l.StartsWith("  cardName:")) c.name = Unq(Val(l));
             else if (l.StartsWith("  rarity:")) c.rarity = int.Parse(Val(l));
             else if (l.StartsWith("  cost:")) c.cost = int.Parse(Val(l));
+            else if (l.StartsWith("  exhaust:")) c.exhaust = Val(l).Trim() == "1";
+            else if (l.StartsWith("  innate:")) c.innate = Val(l).Trim() == "1";
             else if (l.StartsWith("  requireEmotionLevel:") || l.StartsWith("  requireTension:")) c.reqTension = int.Parse(Val(l));
             else if (l.StartsWith("  - diceName:")) { die = new Die(); c.dice.Add(die); fx = null; }
             else if (die != null)
@@ -219,12 +222,12 @@ class Entry { public Card card = null!; public bool absorbed; public int corrupt
 class U
 {
     public string name = ""; public bool isPlayer; public int hp, maxHp; public int[] res = new int[3];
-    public int rust, pendingRust; public int[] status = new int[6], pending = new int[6];
+    public int rust, pendingRust, burn; public int[] status = new int[6], pending = new int[6];
     public List<Card> deck = new(); public int actions = 1;
     public bool Alive => hp > 0;
     public void Damage(int n) { if (!Alive || n <= 0) return; hp = Math.Max(0, hp - n); }
     public int Heal(int n) { if (!Alive || n <= 0) return 0; int b = hp; hp = Math.Min(maxHp, hp + n); return hp - b; }
-    public void ClearStatus() { rust = pendingRust = 0; Array.Clear(status); Array.Clear(pending); }
+    public void ClearStatus() { rust = pendingRust = burn = 0; Array.Clear(status); Array.Clear(pending); }
     public void Activate() { rust += pendingRust; pendingRust = 0; for (int i = 0; i < 6; i++) { status[i] = pending[i]; pending[i] = 0; } }
     public void AddStatus(int t, int n, bool next) { if (!Alive || n <= 0) return; if (next) pending[t] += n; else status[t] += n; }
     public void AddRust(int n, bool next) { if (!Alive || n <= 0) return; if (next) pendingRust += n; else rust += n; }
@@ -276,6 +279,7 @@ class Run
         player.ClearStatus();
         List<Entry> src = stage.deckOverride.Count > 0 ? stage.deckOverride.Select(c => new Entry { card = c, source = c.name }).ToList() : deck;
         draw = new List<Entry>(src); Shuffle(draw); discard.Clear(); hand.Clear();
+        { List<Entry> first = draw.Where(e => e.card.innate).ToList(); if (first.Count > 0) { draw.RemoveAll(e => e.card.innate); draw.InsertRange(0, first); } }   // 선천: 첫 손패로
         lastRounds = 0;
 
         while (true)
@@ -286,6 +290,12 @@ class Run
 
             player.Activate();
             foreach (U e in enemies) if (e.Alive) e.Activate();
+
+            // 과열: 라운드가 시작될 때 타오르고 절반으로 식는다
+            foreach (U u in enemies.Append(player)) if (u.Alive && u.burn > 0) { Hurt(null, u, u.burn); u.burn /= 2; }
+            if (!player.Alive) return false;
+            if (enemies.All(e => !e.Alive)) { lastTension = TensionStage; return true; }
+            rolled.Clear();
             ki = maxKi + battleMaxKi + pendingKi; pendingKi = 0;
             pActs.Clear();
             while (hand.Count < HandLimit && DrawOne()) { }
@@ -322,7 +332,7 @@ class Run
         }
     }
 
-    void Finish(Act a) { if (a.resolved) return; a.resolved = true; if (a.owner.isPlayer && a.entry != null) discard.Add(a.entry); }
+    void Finish(Act a) { if (a.resolved) return; a.resolved = true; if (a.owner.isPlayer && a.entry != null && !a.entry.card.exhaust) discard.Add(a.entry); }   // 소멸: 버림패로 가지 않는다
 
     bool DrawOne()
     {
@@ -391,8 +401,8 @@ class Run
         ad = TryDestroy(a, ad); dd = TryDestroy(d, dd);
         if (ad == null && dd == null) return;
         if (ad != null && dd != null && ad.type == 1 && dd.type == 1) return;
-        int ar = ad != null ? Roll(a, ad, dd, h) : -1;
-        int dr = dd != null ? Roll(d, dd, ad, h) : -1;
+        int ar = ad != null ? Roll(a, ad, dd, h, d) : -1;
+        int dr = dd != null ? Roll(d, dd, ad, h, a) : -1;
         if (ad != null && dd != null) tensionPts = Math.Min(TensionPerStage * 3, tensionPts + 1);
         if (ar == dr) return;
         if (ar > dr) { bool hit = Apply(a, d, ad!, ar); Effects(a, ad, d, dd, hit); }
@@ -401,7 +411,10 @@ class Run
 
     static readonly Dictionary<int, int> beats = new() { { 0, 1 }, { 1, 2 }, { 2, 0 } };
 
-    int Roll(U self, Die mine, Die? theirs, int h)
+    readonly Dictionary<U, int> rolled = new();   // 이번 라운드에 굴린 칸 수 ([연쇄]용)
+    int lastDmg;
+
+    int Roll(U self, Die mine, Die? theirs, int h, U? foe)
     {
         int max = Math.Max(mine.min, mine.max - self.rust);
         if (self.rust > 0) self.rust--;
@@ -411,6 +424,15 @@ class Run
         if (nextBonus.TryGetValue(self, out int p) && p > 0) { bonus += p; nextBonus.Remove(self); }
         if (cardPower.TryGetValue((self, mine), out int w) && w > 0) bonus += w;
         if (h % 3 == 0) foreach (Fx f in mine.fx) if (f.effect == E.OnTheHour) bonus += f.amount;
+        rolled.TryGetValue(self, out int before);
+        foreach (Fx f in mine.fx)
+        {
+            if (f.effect == E.Execute && foe != null && foe.Alive && foe.hp * 2 <= foe.maxHp) bonus += f.amount;
+            else if (f.effect == E.LastStand && self.hp * 2 <= self.maxHp) bonus += f.amount;
+            else if (f.effect == E.Combo) bonus += Math.Min(f.amount, before);
+            else if (f.effect == E.Unopposed && theirs == null) bonus += f.amount;
+        }
+        rolled[self] = before + 1;
         if (theirs != null)
         {
             if (mine.type == 0 && theirs.type == 0 && beats.TryGetValue(mine.detail, out int b) && theirs.detail == b) bonus += TypeBonus;
@@ -426,6 +448,7 @@ class Run
         int dmg = tgt.Resist(roll, die.detail) + tgt.status[S.Fragile];
         int plate = tgt.status[S.Plating];
         if (plate > 0) dmg = Math.Max(0, dmg - plate);
+        lastDmg = dmg;
         Hurt(src, tgt, dmg);
         return true;
     }
@@ -489,6 +512,9 @@ class Run
             case E.Corrode: Extra(opp, (opp.rust + opp.pendingRust) * f.amount); break;
             case E.Plating: self.AddStatus(S.Plating, f.amount, f.next); break;
             case E.MaxKi: if (self.isPlayer) battleMaxKi += f.amount; break;
+            case E.Lifesteal: self.Heal(Math.Min(f.amount, lastDmg)); break;
+            case E.Tension: if (self.isPlayer) tensionPts = Math.Min(TensionPerStage * 3, tensionPts + f.amount); break;
+            case E.Burn: if (opp.Alive) opp.burn += f.amount; break;
         }
     }
 
@@ -508,6 +534,12 @@ class Run
     {
         int b = extra + (mine.type == 0 ? self.status[S.Strength] - self.status[S.Feeble] : self.status[S.Endurance]);
         if (h % 3 == 0) foreach (Fx f in mine.fx) if (f.effect == E.OnTheHour) b += f.amount;
+        foreach (Fx f in mine.fx)
+        {
+            if (f.effect == E.LastStand && self.hp * 2 <= self.maxHp) b += f.amount;
+            else if (f.effect == E.Unopposed && theirs == null) b += f.amount;
+            else if (f.effect == E.Combo) b += Math.Min(f.amount, 1);   // 계획할 때는 앞에 한 칸쯤 굴렸다고 어림한다
+        }
         if (theirs != null)
         {
             if (mine.type == 0 && theirs.type == 0 && beats.TryGetValue(mine.detail, out int x) && theirs.detail == x) b += TypeBonus;
@@ -537,6 +569,10 @@ class Run
             case E.Corrode: return (target.rust + target.pendingRust) * f.amount;
             case E.Plating: return 1.5 * f.amount;
             case E.MaxKi: return 5.0 * f.amount;
+            case E.Lifesteal: return Math.Min(f.amount, player.maxHp - player.hp) * wD * 0.7;
+            case E.Tension: return 0.8 * f.amount;
+            case E.Burn: return 1.6 * f.amount;   // n + n/2 + n/4 … ≈ 2n 이지만 늦게 들어온다
+            case E.Execute: return target.hp * 2 <= target.maxHp ? 0.9 * f.amount : 0;
             default: return 0;
         }
     }
@@ -700,7 +736,9 @@ class Run
                 {
                     E.Rust => 1.1 * a, E.RecoverKi => 2.5 * a, E.DrawCard => a, E.Heal => 0.9 * a, E.Strength => 1.6 * a, E.Endurance => 0.8 * a,
                     E.Feeble => 1.3 * a, E.Fragile => 1.3 * a, E.Paralysis => 1.8 * a, E.PowerNextDie => 0.8 * a, E.DestroyNextDie => 3,
-                    E.Overwind => 0.3 * a * c.dice.Count, E.Resonance => 1.2 * a, E.Corrode => 1.5 * a, E.Plating => 1.5 * a, E.OnTheHour => 0.5 * a / 0.55, E.MaxKi => 5 * a, _ => 0
+                    E.Overwind => 0.3 * a * c.dice.Count, E.Resonance => 1.2 * a, E.Corrode => 1.5 * a, E.Plating => 1.5 * a, E.OnTheHour => 0.5 * a / 0.55, E.MaxKi => 5 * a,
+                    E.Lifesteal => 0.7 * a, E.Tension => 0.8 * a, E.Burn => 1.6 * a, E.Execute => 0.4 * a / 0.55, E.LastStand => 0.4 * a / 0.55,
+                    E.Combo => 0.6 * a / 0.55, E.Unopposed => 0.5 * a / 0.55, _ => 0
                 });
             }
         }
@@ -1074,6 +1112,6 @@ static class Program
 
     static readonly string[] det = { "참", "관", "타", "방", "회" };
     static readonly string[] trig = { "적중", "승리", "패배", "사용" };
-    static readonly string[] eff = { "녹", "기력회복", "뽑기", "회복", "힘", "인내", "허약", "취약", "마비", "다음칸+", "칸파괴", "과감기", "울림", "부식x", "철갑", "정각+", "최대기력+" };
+    static readonly string[] eff = { "녹", "기력회복", "뽑기", "회복", "힘", "인내", "허약", "취약", "마비", "다음칸+", "칸파괴", "과감기", "울림", "부식x", "철갑", "정각+", "최대기력+", "흡혈", "장력+", "마무리+", "배수진+", "연쇄+", "빈틈+", "과열" };
     static string Describe(Card c) => string.Join(" | ", c.dice.Select(d => $"{det[d.detail]}{d.min}-{d.max}" + string.Concat(d.fx.Select(f => $" [{trig[f.trigger]}:{eff[f.effect]}{f.amount}{(f.next ? "(다음)" : "")}]"))));
 }

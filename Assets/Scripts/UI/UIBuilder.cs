@@ -71,9 +71,14 @@ public static class UIBuilder
 
         if (border)
         {
-            Outline o = rt.gameObject.AddComponent<Outline>();
-            o.effectColor = PanelBorder;
-            o.effectDistance = new Vector2(UITheme.BorderWidth, -UITheme.BorderWidth);
+            if (Application.isPlaying) UITheme.Border(img, PanelBorder);   // 또렷한 테두리 선 (실행 중에 그리는 그림이라 실행 중에만)
+            else
+            {
+                // 에디터에서 씬에 저장할 때는 Outline으로 — 실행하면 UITheme.StylePanel이 선 테두리로 바꾼다
+                Outline o = rt.gameObject.AddComponent<Outline>();
+                o.effectColor = PanelBorder;
+                o.effectDistance = new Vector2(UITheme.BorderWidth, -UITheme.BorderWidth);
+            }
         }
         return img;
     }

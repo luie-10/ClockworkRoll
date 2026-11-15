@@ -27,6 +27,9 @@ public class HandManager : MonoBehaviour
     public IReadOnlyList<DeckEntry> DiscardPile { get { return discardPile; } }
     public IReadOnlyList<CardInstance> Hand { get { return hand; } }
 
+    /// <summary>이번 전투에서 소멸한 태엽판 수 (소멸 키워드 — 버림패로 가지 않고 사라진다)</summary>
+    public int ExhaustedCount { get; private set; }
+
     /// <summary>전투 시작 시 덱 구성 (기존 손패/더미 전부 초기화)</summary>
     public void BuildDeck(List<DeckEntry> deck)
     {
@@ -43,6 +46,28 @@ public class HandManager : MonoBehaviour
 
         if (deck != null) drawPile.AddRange(deck);
         Shuffle(drawPile);
+        ExhaustedCount = 0;
+
+        // 선천: 섞은 뒤 맨 위로 올려서 첫 손패에 반드시 들어오게 한다 (선천끼리는 섞인 순서 그대로)
+        List<DeckEntry> innate = drawPile.FindAll(e => e != null && e.data != null && e.data.innate);
+        if (innate.Count > 0)
+        {
+            drawPile.RemoveAll(e => e != null && e.data != null && e.data.innate);
+            drawPile.InsertRange(0, innate);
+        }
+    }
+
+    /// <summary>쓴 태엽판을 버림패로 (소멸 키워드가 있으면 이번 전투에서 사라진다). 소멸했으면 true</summary>
+    private bool Discard(DeckEntry entry)
+    {
+        if (entry == null) return false;
+        if (entry.data != null && entry.data.exhaust)
+        {
+            ExhaustedCount++;
+            return true;
+        }
+        discardPile.Add(entry);
+        return false;
     }
 
     /// <summary>손패가 가득 찰 때까지(또는 더미가 빌 때까지) 뽑는다.</summary>
@@ -107,8 +132,7 @@ public class HandManager : MonoBehaviour
 
         hand.Remove(card);
 
-        if (card.entry != null)
-            discardPile.Add(card.entry);
+        Discard(card.entry);
 
         if (card.view != null) Destroy(card.view.gameObject);
     }
@@ -130,10 +154,10 @@ public class HandManager : MonoBehaviour
         CreateView(card);
     }
 
-    /// <summary>응수로 쓴 카드를 버림패로 보낸다.</summary>
-    public void DiscardReserved(CardInstance card)
+    /// <summary>응수로 쓴 카드를 버림패로 보낸다. 소멸 키워드가 있어 사라졌으면 true</summary>
+    public bool DiscardReserved(CardInstance card)
     {
-        if (card != null && card.entry != null) discardPile.Add(card.entry);
+        return card != null && Discard(card.entry);
     }
 
     /// <summary>손패에서 무작위 한 장 (자동 진행 테스트용 — 카드를 쓰지는 않음).</summary>

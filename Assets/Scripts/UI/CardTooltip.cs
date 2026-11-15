@@ -86,6 +86,7 @@ public class CardTooltip : MonoBehaviour
         tip.text.horizontalOverflow = HorizontalWrapMode.Wrap;
         tip.text.lineSpacing = 1.1f;
 
+        UITheme.Elevate(bg, 0.7f);
         UIPop.Ensure(bg.gameObject, 0.95f, 0.14f);
         bg.gameObject.SetActive(false);
         return tip;
@@ -128,6 +129,9 @@ public class CardTooltip : MonoBehaviour
                    $"<color={rarityHex}>{DiceInfo.RarityName(d.rarity)}</color> · <color={UITheme.HexKi}>기력 {d.cost}</color> · <color={UITheme.HexGold}>{TimedAction.LengthOf(d)}칸</color>";
         if (d.requireTension > 0)
             s += $" · <color={UITheme.HexTension}>장력 {d.requireTension}단계 필요</color>";
+
+        if (d.exhaust) s += $"\n<color={UITheme.HexBad}>소멸</color> <color={UITheme.HexMuted}>— 한 번 쓰면 이번 전투에서 사라진다</color>";
+        if (d.innate) s += $"\n<color={UITheme.HexGold}>선천</color> <color={UITheme.HexMuted}>— 전투가 시작될 때 반드시 첫 손패에 들어온다</color>";
 
         if (!string.IsNullOrEmpty(d.cardDescription))
             s += $"\n<color={UITheme.HexMuted}><i>{d.cardDescription}</i></color>";

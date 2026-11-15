@@ -42,7 +42,7 @@ public class CardView : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
     private Canvas sortCanvas;      // 마우스를 올렸을 때 옆 카드들보다 앞에 그리기 위한 Canvas
     private CanvasGroup group;
 
-    private Outline edge;           // 카드 테두리 (등급 색)
+    private Image edge;             // 카드 테두리 선 (등급 색)
     private Text metaText;          // 이름 아래 "1칸 · 주석"
     private Image artImage;         // 이름 아래 그림 (카드 그림이 없으면 자동 일러스트)
     private Color edgeColor = Color.white;
@@ -72,9 +72,9 @@ public class CardView : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
         ApplyLayout();
 
         // 효과 줄이 많아도 판 밖으로 넘치지 않게 글자 크기 자동 맞춤
-        FitText(diceText, 11);
+        FitText(diceText, 12);
         FitText(nameText, 14);
-        FitText(costText, 11);
+        FitText(costText, 12);
     }
 
     /// <summary>
@@ -96,8 +96,8 @@ public class CardView : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
         {
             backgroundImage.color = cardInk;
             backgroundImage.pixelsPerUnitMultiplier = 1.6f;
-            edge = backgroundImage.GetComponent<Outline>();
-            if (edge != null) edge.effectDistance = new Vector2(2f, -2f);
+            edge = UITheme.Border(backgroundImage, edgeColor);
+            UITheme.Elevate(backgroundImage, 0.5f);   // 겹쳐 놓인 카드 사이에 그림자가 져서 한 장씩 구분된다
         }
 
         if (costText != null)
@@ -134,7 +134,7 @@ public class CardView : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
             UITheme.StyleText(nameText, 19, UITheme.TextMain, FontStyle.Bold);
             nameText.alignment = TextAnchor.MiddleLeft;
 
-            metaText = UIBuilder.Label("MetaText", transform, "", 14, UITheme.TextMuted, TextAnchor.MiddleLeft, false);
+            metaText = UIBuilder.Label("MetaText", transform, "", 15, UITheme.TextMuted, TextAnchor.MiddleLeft, false);
             RectTransform m = metaText.rectTransform;
             m.anchorMin = new Vector2(0f, 1f); m.anchorMax = Vector2.one; m.pivot = new Vector2(0f, 1f);
             m.anchoredPosition = new Vector2(40f, -33f);
@@ -233,6 +233,8 @@ public class CardView : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
             string rarityHex = ColorUtility.ToHtmlStringRGB(DiceInfo.RarityColor(d.rarity));
             string meta = $"{TimedAction.LengthOf(d)}칸 · <color=#{rarityHex}>{DiceInfo.RarityName(d.rarity)}</color>";
             if (d.requireTension > 0) meta += $" · <color={UITheme.HexTension}>장력 {d.requireTension}</color>";
+            string keys = DiceInfo.CardKeywords(d);
+            if (keys.Length > 0) meta += $" · <color={UITheme.HexGold}>{keys}</color>";
             metaText.text = meta;
         }
 
@@ -282,8 +284,8 @@ public class CardView : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
         if (edge == null) return;
         Color lit = Color.Lerp(edgeColor, Color.white, 0.35f);
         lit.a = 1f;
-        edge.effectColor = selected ? selectedColor : hovered ? lit : edgeColor;
-        edge.effectDistance = selected || hovered ? new Vector2(3f, -3f) : new Vector2(2f, -2f);
+        edge.color = selected ? selectedColor : hovered ? lit : edgeColor;
+        edge.sprite = ProceduralSprites.Frame(selected || hovered);   // 고르거나 올리면 굵은 선
     }
 
     void Update()

@@ -161,6 +161,23 @@ public class Unit : MonoBehaviour
         else Rust += amount;
     }
 
+    /// <summary>
+    /// 과열 — 라운드가 시작될 때마다 이만큼 피해를 입고, 절반(내림)으로 식는다.
+    /// 녹처럼 라운드를 넘어 남는다 (한 번 크게 붙이면 여러 라운드에 걸쳐 탄다).
+    /// </summary>
+    public int Burn { get; private set; }
+
+    public void AddBurn(int amount)
+    {
+        if (IsAlive && amount > 0) Burn += amount;
+    }
+
+    /// <summary>라운드 시작: 과열이 절반으로 식는다</summary>
+    public void CoolBurn()
+    {
+        Burn /= 2;
+    }
+
     /// <summary>녹이 반영된 주사위 최댓값</summary>
     public int RustedMax(DiceData die)
     {
@@ -190,6 +207,7 @@ public class Unit : MonoBehaviour
     {
         Rust = 0;
         PendingRust = 0;
+        Burn = 0;
         Array.Clear(status, 0, status.Length);
         Array.Clear(pendingStatus, 0, pendingStatus.Length);
     }

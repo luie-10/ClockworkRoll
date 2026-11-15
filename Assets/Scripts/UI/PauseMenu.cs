@@ -58,6 +58,8 @@ public class PauseMenu : MonoBehaviour
         Image window = UIBuilder.Panel("Window", dim.transform, UITheme.Window);
         UIBuilder.Place(window.rectTransform, center, center, center, Vector2.zero, new Vector2(560f, 430f));
 
+        UITheme.Elevate(window, 0.7f);
+
         Text title = UIBuilder.Label("Title", window.transform, "잠시 멈춤", 40, UITheme.Brass, TextAnchor.MiddleCenter);
         title.fontStyle = FontStyle.Bold;
         UIBuilder.Place(title.rectTransform, new Vector2(0f, 1f), Vector2.one, new Vector2(0.5f, 1f), new Vector2(0f, -30f), new Vector2(0f, 56f));

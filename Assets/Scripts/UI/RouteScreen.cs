@@ -1007,8 +1007,7 @@ public class RouteScreen : MonoBehaviour
         Image frame = UIBuilder.Panel("Item " + item.name, choiceRow, UITheme.InkSolid, false);
         frame.rectTransform.sizeDelta = new Vector2(300f, 340f);
         frame.raycastTarget = true;
-        Outline edge = frame.gameObject.AddComponent<Outline>();
-        edge.effectColor = UITheme.Alpha(UITheme.Ki, 0.75f);
+        UITheme.Border(frame, UITheme.Alpha(UITheme.Ki, 0.75f));
 
         // 부품 그림 (IconPainter가 코드로 그린 문양에 황동색을 입힌다)
         if (!string.IsNullOrEmpty(item.icon))
@@ -1021,7 +1020,6 @@ public class RouteScreen : MonoBehaviour
             artImg.preserveAspect = true;
             artImg.raycastTarget = false;
         }
-        edge.effectDistance = new Vector2(2f, -2f);
         Button b = frame.gameObject.AddComponent<Button>();
         b.targetGraphic = frame;
         HoverColors(b);
@@ -1147,10 +1145,8 @@ public class RouteScreen : MonoBehaviour
         Image frame = UIBuilder.Panel("Card " + card.cardName, choiceRow, UITheme.InkSolid, false);
         frame.rectTransform.sizeDelta = new Vector2(260f, 340f);
         frame.raycastTarget = true;
-        Outline edge = frame.gameObject.AddComponent<Outline>();
         Color rarity = DiceInfo.RarityColor(card.rarity);
-        edge.effectColor = UITheme.Alpha(rarity, 0.8f);
-        edge.effectDistance = new Vector2(2f, -2f);
+        UITheme.Border(frame, UITheme.Alpha(rarity, 0.8f));
         Button b = frame.gameObject.AddComponent<Button>();
         b.targetGraphic = frame;
         HoverColors(b);

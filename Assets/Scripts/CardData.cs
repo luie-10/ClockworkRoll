@@ -80,7 +80,14 @@ public enum DiceEffectType
     Corrode,        // 부식: 상대의 녹 x n 만큼 추가 피해
     Plating,        // 철갑: 자신에게 철갑 n (받는 피해 -n)
     OnTheHour,     // 정각: 이 주사위를 3·6·9·12시에 굴리면 위력 +n (발동 시점과 상관없이 늘 적용)
-    MaxKi           // 이번 전투 동안 최대 기력 +n (플레이어만)
+    MaxKi,          // 이번 전투 동안 최대 기력 +n (플레이어만)
+    Lifesteal,      // 흡혈: 적중하면 준 피해만큼 회복 (최대 n)
+    Tension,        // 조임: 장력 +n (플레이어만)
+    Execute,        // 마무리: 상대의 체력이 절반 이하이면 이 칸 위력 +n (굴릴 때 적용)
+    LastStand,      // 배수진: 내 체력이 절반 이하이면 이 칸 위력 +n (굴릴 때 적용)
+    Combo,          // 연쇄: 이번 라운드에 먼저 굴린 내 칸 하나마다 이 칸 위력 +1, 최대 n (굴릴 때 적용)
+    Unopposed,      // 빈틈: 맞서는 상대 칸이 없으면(일방 공격) 이 칸 위력 +n (굴릴 때 적용)
+    Burn            // 과열: 상대에게 과열 n — 라운드가 시작될 때마다 n 피해를 주고 절반으로 식는다
 }
 
 [Serializable]
@@ -123,10 +130,25 @@ public class DiceEffect
             case DiceEffectType.Corrode:        what = $"부식 x{amount}"; break;
             case DiceEffectType.Plating:        what = $"철갑 {amount}"; break;
             case DiceEffectType.OnTheHour:      return $"[정각] 위력 +{amount}";   // 발동 시점이 아니라 굴리는 시각으로 정해진다
+            // 아래 넷도 발동 시점이 아니라 굴리는 순간의 상황으로 정해진다
+            case DiceEffectType.Execute:        return $"[마무리] 위력 +{amount}";
+            case DiceEffectType.LastStand:      return $"[배수진] 위력 +{amount}";
+            case DiceEffectType.Combo:          return $"[연쇄] 위력 최대 +{amount}";
+            case DiceEffectType.Unopposed:      return $"[빈틈] 위력 +{amount}";
+            case DiceEffectType.Lifesteal:      what = $"흡혈 {amount}"; break;
+            case DiceEffectType.Tension:        what = $"장력 +{amount}"; break;
+            case DiceEffectType.Burn:           what = $"과열 {amount}"; break;
             default:                            what = "상대의 다음 칸 파괴"; break;
         }
 
         return nextTurn && IsStatus(effect) ? $"{when} 다음 턴 {what}" : $"{when} {what}";
+    }
+
+    /// <summary>굴리는 순간의 상황으로 위력이 정해지는 효과인가 (발동 시점이 따로 없다)</summary>
+    public static bool IsRollTime(DiceEffectType type)
+    {
+        return type == DiceEffectType.OnTheHour || type == DiceEffectType.Execute || type == DiceEffectType.LastStand
+            || type == DiceEffectType.Combo || type == DiceEffectType.Unopposed;
     }
 
     /// <summary>턴 단위로 남는 상태이상인가 (nextTurn 체크가 의미 있는 효과)</summary>
@@ -165,6 +187,12 @@ public class CardData : ScriptableObject
     [Range(0, 3)]
     [FormerlySerializedAs("requireEmotionLevel")]
     public int requireTension;          // 필요 장력 단계
+
+    [Header("키워드")]
+    [Tooltip("소멸: 한 번 쓰면 이번 전투에서 사라진다 (버림패로 가지 않는다)")]
+    public bool exhaust;
+    [Tooltip("선천: 전투가 시작될 때 반드시 첫 손패에 들어온다")]
+    public bool innate;
 
     [Header("태엽판 능력 설명")]
     [TextArea(3, 8)]

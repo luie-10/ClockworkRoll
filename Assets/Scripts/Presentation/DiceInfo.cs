@@ -113,6 +113,7 @@ public static class DiceInfo
         StringBuilder sb = new StringBuilder();
         if (u.Rust > 0 || u.PendingRust > 0)
             AppendStatus(sb, "녹", "#d98040", u.Rust, u.PendingRust);
+        if (u.Burn > 0) AppendStatus(sb, "과열", "#ff8033", u.Burn, 0);
 
         foreach (StatusType t in (StatusType[])System.Enum.GetValues(typeof(StatusType)))
         {
@@ -149,8 +150,22 @@ public static class DiceInfo
             case DiceEffectType.Corrode:        return "<color=#d98040>부식</color>: 적중하면 상대의 녹(다음 턴 녹 포함) x n 만큼 추가 피해";
             case DiceEffectType.Plating:        return "<color=#9fc4e0>철갑</color>: 이번 라운드 동안 공격에 맞을 때마다 받는 피해 -n";
             case DiceEffectType.OnTheHour:      return "<color=#ffd98a>정각</color>: 3·6·9·12시에 놓이면 이 칸 위력 +n";
+            case DiceEffectType.Lifesteal:      return "<color=#7ddc8c>흡혈</color>: 적중하면 준 피해만큼 체력 회복 (최대 n)";
+            case DiceEffectType.Execute:        return "<color=#ffd98a>마무리</color>: 상대의 체력이 절반 이하이면 이 칸 위력 +n";
+            case DiceEffectType.LastStand:      return "<color=#ff6b6b>배수진</color>: 내 체력이 절반 이하이면 이 칸 위력 +n";
+            case DiceEffectType.Combo:          return "<color=#ffd98a>연쇄</color>: 이번 라운드에 먼저 굴린 내 칸 하나마다 위력 +1 (최대 n) — 늦은 시각에 놓을수록 세다";
+            case DiceEffectType.Unopposed:      return "<color=#ffd98a>빈틈</color>: 맞서는 상대 칸이 없는 시각에 놓이면 이 칸 위력 +n";
+            case DiceEffectType.Burn:           return "<color=#ff8033>과열</color>: 라운드가 시작될 때마다 그만큼 피해를 입고 절반으로 식는다 (철갑으로 못 막는다)";
             default:                            return null;
         }
+    }
+
+    /// <summary>태엽판 자체에 붙은 키워드 (소멸 · 선천). 없으면 빈 문자열. 예: "소멸 · 선천"</summary>
+    public static string CardKeywords(CardData card)
+    {
+        if (card == null) return "";
+        if (card.exhaust && card.innate) return "소멸 · 선천";
+        return card.exhaust ? "소멸" : card.innate ? "선천" : "";
     }
 
     /// <summary>태엽판에 쓰인 효과들의 용어 설명을 중복 없이 모은다 (없으면 빈 문자열).</summary>

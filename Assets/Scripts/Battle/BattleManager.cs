@@ -333,6 +333,12 @@ public class BattleManager : MonoBehaviour
             if (e.IsAlive) e.ActivatePendingStatus();
         }
 
+        // 과열: 라운드가 시작될 때 타오르고 절반으로 식는다 (이걸로 쓰러질 수도 있다)
+        ApplyBurn();
+        if (!playerUnit.IsAlive) { EndBattle(false); return; }
+        if (CheckBattleEnd()) return;
+        diceRolled.Clear();   // [연쇄]는 라운드마다 처음부터 센다
+
         round++;
         ApplyRoundStartTraits();
 
@@ -652,8 +658,8 @@ public class BattleManager : MonoBehaviour
 
         // 주사위 굴림 (없는 쪽은 자동 패배). bonus = 상성·힘·허약 등으로 더해진 값 (머리 위 주사위에 표시)
         int atkBonus = 0, defBonus = 0;
-        int atkRoll = atkDie != null ? ComputeRoll(attacker, atkDie, defDie, hour, out atkBonus) : -1;
-        int defRoll = defDie != null ? ComputeRoll(defender, defDie, atkDie, hour, out defBonus) : -1;
+        int atkRoll = atkDie != null ? ComputeRoll(attacker, defender, atkDie, defDie, hour, out atkBonus) : -1;
+        int defRoll = defDie != null ? ComputeRoll(defender, attacker, defDie, atkDie, hour, out defBonus) : -1;
 
         // 장력: 서로의 칸이 실제로 맞부딪혔다
         if (atkDie != null && defDie != null) AddTension(1);
@@ -824,7 +830,8 @@ public class BattleManager : MonoBehaviour
             if (display != null) display.Hide();
             displays.Remove(a);
         }
-        if (a.owner.isPlayer) handManager.DiscardReserved(a.card);
+        if (a.owner.isPlayer && handManager.DiscardReserved(a.card))
+            Log($"  [{a.card.data.cardName}] 소멸 — 이번 전투에서는 다시 나오지 않는다");
     }
 
     /// <summary>라운드 정리 (12시가 지났거나 전투가 끝남)</summary>
@@ -1059,11 +1066,34 @@ public class BattleManager : MonoBehaviour
         return Random.Range(die.minRoll, max + 1);
     }
 
+    private readonly Dictionary<Unit, int> diceRolled = new Dictionary<Unit, int>();   // 이번 라운드에 굴린 칸 수 ([연쇄]용)
+    private static readonly Color burnColor = new Color(1f, 0.5f, 0.2f);
+
+    /// <summary>과열이 붙은 유닛들이 타오른다 (철갑 · 취약과 무관한 고정 피해) → 과열은 절반으로</summary>
+    private void ApplyBurn()
+    {
+        List<Unit> units = new List<Unit> { playerUnit };
+        units.AddRange(enemies);
+        foreach (Unit u in units)
+        {
+            if (u == null || !u.IsAlive || u.Burn <= 0) continue;
+            int heat = u.Burn;
+            u.TakeDamage(heat);
+            u.CoolBurn();
+            Log($"  과열! {u.unitName}이(가) 타오른다 — 피해 {heat} (남은 과열 {u.Burn})");
+            if (clashFx)
+            {
+                DamagePopup.Spawn(HeadPosition(u) + Vector3.up * 0.4f, $"과열 {heat}", burnColor, 1.1f);
+                ClashSpark.Burst(u.transform.position + Vector3.up * 0.8f, burnColor, 16, 3.5f);
+            }
+        }
+    }
+
     /// <summary>
     /// 주사위를 굴리고 보정을 적용한다. bonus = 기본 굴림에 더해진 총합 (음수 가능).
     /// 순서: 녹(최댓값 감소) → 마비(최솟값 고정) → 힘/허약/인내 → [다음 주사위 위력 +n] → 상성/회피 보정
     /// </summary>
-    private int ComputeRoll(Unit self, DiceData mine, DiceData theirs, int hour, out int bonus)
+    private int ComputeRoll(Unit self, Unit foe, DiceData mine, DiceData theirs, int hour, out int bonus)
     {
         bonus = 0;
         int roll = RollBase(self, mine);
@@ -1100,6 +1130,39 @@ public class BattleManager : MonoBehaviour
                 if (clashFx) StatusPopup(self, $"정각 +{fx.amount}", onTheHourColor);
             }
         }
+
+        // 상황으로 위력이 정해지는 효과: [마무리] · [배수진] · [연쇄] · [빈틈]
+        diceRolled.TryGetValue(self, out int rolledBefore);
+        if (mine.effects != null)
+        {
+            foreach (DiceEffect fx in mine.effects)
+            {
+                if (fx == null || fx.amount <= 0) continue;
+                int gain = 0;
+                string why = null;
+                switch (fx.effect)
+                {
+                    case DiceEffectType.Execute:
+                        if (foe != null && foe.IsAlive && foe.Hp * 2 <= foe.MaxHp) { gain = fx.amount; why = "마무리"; }
+                        break;
+                    case DiceEffectType.LastStand:
+                        if (self.Hp * 2 <= self.MaxHp) { gain = fx.amount; why = "배수진"; }
+                        break;
+                    case DiceEffectType.Combo:
+                        gain = Mathf.Min(fx.amount, rolledBefore);
+                        why = "연쇄";
+                        break;
+                    case DiceEffectType.Unopposed:
+                        if (theirs == null) { gain = fx.amount; why = "빈틈"; }
+                        break;
+                }
+                if (gain <= 0) continue;
+                bonus += gain;
+                Log($"  → {why}! {self.unitName}의 위력 +{gain}");
+                if (clashFx) StatusPopup(self, $"{why} +{gain}", onTheHourColor);
+            }
+        }
+        diceRolled[self] = rolledBefore + 1;
 
         // 적 특성 [정시]: 3·6·9·12시 칸에서 굴리면 위력이 오른다
         if (hour % 3 == 0 && self.trait == EnemyTrait.Punctual && self.traitAmount > 0)
@@ -1372,7 +1435,32 @@ public class BattleManager : MonoBehaviour
                 if (clashFx) StatusPopup(self, $"최대 기력 +{fx.amount}", kiPopupColor);
                 break;
 
+            case DiceEffectType.Lifesteal:
+                // 방금 준 피해만큼 되찾는다 (최대 n)
+                int drained = self.Heal(Mathf.Min(fx.amount, lastDamage));
+                Log($"  {fx.Describe()} → {self.unitName} (+{drained})");
+                if (clashFx && drained > 0) StatusPopup(self, $"흡혈 +{drained}", healPopupColor);
+                break;
+
+            case DiceEffectType.Tension:
+                if (!self.isPlayer) return;   // 장력은 플레이어 자원
+                AddTension(fx.amount);
+                Log($"  {fx.Describe()}");
+                if (clashFx) StatusPopup(self, $"장력 +{fx.amount}", statusBuffColor);
+                break;
+
+            case DiceEffectType.Burn:
+                if (!opponent.IsAlive) return;
+                opponent.AddBurn(fx.amount);
+                Log($"  {fx.Describe()} → {opponent.unitName} (과열 {opponent.Burn})");
+                if (clashFx) StatusPopup(opponent, $"과열 +{fx.amount}", burnColor);
+                break;
+
             case DiceEffectType.OnTheHour:
+            case DiceEffectType.Execute:
+            case DiceEffectType.LastStand:
+            case DiceEffectType.Combo:
+            case DiceEffectType.Unopposed:
                 break;   // 굴릴 때 ComputeRoll에서 적용
         }
     }
