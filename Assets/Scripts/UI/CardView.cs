@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 /// <summary>
 /// 손패에 표시되는 카드 UI 한 장.
-/// - 등급(Paper~EGO)에 따라 배경 색이 달라진다.
+/// - 등급(고철~금단)에 따라 배경 색이 달라진다.
 /// - 적에게서 흡수한 카드(◈)는 보라색 톤과 침식 수치가 표시된다.
 /// - 주사위 줄: ▶ 공격 / ◆ 수비 + 종류 색 + 범위, 효과는 그 아래 └ 줄.
 /// - 마우스를 올리면 카드가 커지며 맨 앞으로 오고, 위에 상세 정보창(CardTooltip)이 뜬다.
@@ -41,9 +41,10 @@ public class CardView : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
 
     private Canvas sortCanvas;      // 마우스를 올렸을 때 옆 카드들보다 앞에 그리기 위한 Canvas
     private CanvasGroup group;
+    private Image dimOverlay;       // 못 쓰는 카드를 덮는 어둠 (투명도로 흐리면 겹친 뒤 카드가 비쳐 지저분하다)
 
     private Image edge;             // 카드 테두리 선 (등급 색)
-    private Text metaText;          // 이름 아래 "1칸 · 주석"
+    private Text metaText;          // 이름 아래 "1칸 · 고철"
     private Image artImage;         // 이름 아래 그림 (카드 그림이 없으면 자동 일러스트)
     private Color edgeColor = Color.white;
 
@@ -72,6 +73,9 @@ public class CardView : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
         ApplyLayout();
 
         // 효과 줄이 많아도 판 밖으로 넘치지 않게 글자 크기 자동 맞춤
+        // 프리팹에 저장된 글자도 게임 글꼴로
+        foreach (Text t in GetComponentsInChildren<Text>(true)) if (UIBuilder.DefaultFont != null) t.font = UIBuilder.DefaultFont;
+
         FitText(diceText, 12);
         FitText(nameText, 14);
         FitText(costText, 12);
@@ -81,7 +85,7 @@ public class CardView : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
     /// 카드 배치 (프리팹 구조는 그대로 두고 자리/색만 잡는다):
     ///   ┌──────────────────┐  테두리 = 등급 색 (흡수 카드는 보라)
     ///  (2) 카드 이름       │  (2) = 왼쪽 위 모서리에 걸친 기력 배지
-    ///   │     1칸 · 주석    │
+    ///   │     1칸 · 고철    │
     ///   │ [   그림    ]     │  cardArt (없으면 Illustrator가 주사위 종류로 그린 문양)
     ///   │ ▶ 참격 2~6        │  주사위 판이 남은 공간을 꽉 채운다
     ///   │  └ [적중시] ...   │
@@ -169,6 +173,19 @@ public class CardView : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
         Outline frame = art.gameObject.AddComponent<Outline>();
         frame.effectColor = UITheme.Alpha(Color.black, 0.8f);
         frame.effectDistance = new Vector2(1f, -1f);
+
+        // 못 쓰는 카드 덮개: 카드 모양 그대로 어둡게 덮는다. 기력 배지는 그 위에 두어 빨간 숫자가 또렷하게 보인다
+        RectTransform dim = UIBuilder.Rect("Dim", transform);
+        UIBuilder.Stretch(dim);
+        dimOverlay = dim.gameObject.AddComponent<Image>();
+        dimOverlay.sprite = UIBuilder.BoxSpriteOrDefault;
+        dimOverlay.type = Image.Type.Sliced;
+        dimOverlay.pixelsPerUnitMultiplier = 1.6f;
+        dimOverlay.color = UITheme.Alpha(UITheme.InkDeep, 1f - unusableAlpha);
+        dimOverlay.raycastTarget = false;
+        dim.gameObject.SetActive(false);
+        if (costText != null && costText.transform.parent != null && costText.transform.parent != transform)
+            costText.transform.parent.SetAsLastSibling();
     }
 
     private static void FitText(Text t, int minSize)
@@ -221,7 +238,7 @@ public class CardView : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
 
         if (nameText != null)
         {
-            nameText.text = absorbed ? $"◈ {d.cardName}" : d.cardName;
+            nameText.text = absorbed ? $"❖ {d.cardName}" : d.cardName;
             nameText.color = absorbed ? absorbedNameColor : UITheme.TextMain;
         }
 
@@ -231,7 +248,7 @@ public class CardView : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
         {
             // 칸 = 시계판에서 차지하는 시간
             string rarityHex = ColorUtility.ToHtmlStringRGB(DiceInfo.RarityColor(d.rarity));
-            string meta = $"{TimedAction.LengthOf(d)}칸 · <color=#{rarityHex}>{DiceInfo.RarityName(d.rarity)}</color>";
+            string meta = $"{DiceInfo.LengthLabel(d)} · <color=#{rarityHex}>{DiceInfo.RarityName(d.rarity)}</color>";
             if (d.requireTension > 0) meta += $" · <color={UITheme.HexTension}>장력 {d.requireTension}</color>";
             string keys = DiceInfo.CardKeywords(d);
             if (keys.Length > 0) meta += $" · <color={UITheme.HexGold}>{keys}</color>";
@@ -255,11 +272,12 @@ public class CardView : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
                     {
                         foreach (DiceEffect fx in die.effects)
                         {
-                            if (fx != null) sb.AppendLine($"<color={UITheme.HexEffect}> └ {fx.Describe()}</color>");
+                            if (fx != null) sb.AppendLine($"<color={UITheme.HexEffect}> ↳ {fx.Describe()}</color>");
                         }
                     }
                 }
             }
+            if (d.instant) sb.AppendLine(DiceInfo.InstantLines(d));
             if (absorbed) sb.AppendLine($"<color={UITheme.HexAbsorb}>침식 {entry.corruption}</color>");
             diceText.text = sb.ToString().TrimEnd('\n', '\r');
         }
@@ -296,11 +314,24 @@ public class CardView : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
 
         // 크기: 마우스 올림 > 선택 > 기본, 부드럽게 따라감 (히트스톱 중에도 움직이도록 unscaled)
         float target = hovered ? hoverScale : selected ? selectedScale : 1f;
-        float s = Mathf.Lerp(transform.localScale.x, target, 1f - Mathf.Exp(-16f * Time.unscaledDeltaTime));   // 빠르게 다가가 부드럽게 멈춘다
+        float s = Mathf.Lerp(transform.localScale.x, target, 1f - Mathf.Exp(-22f * Time.unscaledDeltaTime));   // 빠르게 다가가 부드럽게 멈춘다
         if (Mathf.Abs(s - target) < 0.001f) s = target;
         transform.localScale = new Vector3(s, s, 1f);
 
+        // 고른 카드: 금색 테두리가 숨 쉬듯 밝아졌다 어두워진다 (대상 고르는 중임을 한눈에)
+        if (selected && edge != null)
+            edge.color = Color.Lerp(selectedColor, UITheme.BrassBright, 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 5f));
+
         UpdateUsable();
+
+        // 못 쓰는 카드도 마우스를 올리면 읽을 수 있게 덮개를 걷는다
+        if (dimOverlay != null && dimOverlay.gameObject.activeSelf)
+        {
+            float a = hovered ? 0.15f : 1f - unusableAlpha;
+            Color c = dimOverlay.color;
+            c.a = Mathf.MoveTowards(c.a, a, Time.unscaledDeltaTime * 4f);
+            dimOverlay.color = c;
+        }
     }
 
     /// <summary>지금 낼 수 있는 카드인지 (기력 · 장력)에 따라 흐리게 / 기력 글자 빨갛게.</summary>
@@ -315,12 +346,14 @@ public class CardView : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
         if (state == usableState) return;
         usableState = state;
 
-        if (group != null) group.alpha = usable ? 1f : unusableAlpha;
+        if (group != null) group.alpha = 1f;
+        if (dimOverlay != null) dimOverlay.gameObject.SetActive(!usable);
         if (costText != null) costText.color = usable ? costNormalColor : unusableCostColor;
     }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        if (!hovered) Sfx.Play(SfxId.CardHover, 0.7f, 0.1f);
         hovered = true;
         // 들린 카드 아래쪽 빈자리까지 판정을 늘린다 (카드가 올라가며 마우스가 벗어나 떨리지 않게)
         if (backgroundImage != null) backgroundImage.raycastPadding = new Vector4(0f, -80f, 0f, 0f);
@@ -360,6 +393,7 @@ public class CardView : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        Sfx.Play(SfxId.CardPick);
         if (onClicked != null) onClicked(this);
     }
 }

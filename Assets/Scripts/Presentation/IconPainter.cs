@@ -34,11 +34,15 @@ public class IconPainter
     // 부품 (RunItems) 그림
     public const string ItemSpring = "item-spring", ItemBarrel = "item-barrel", ItemCog = "item-cog", ItemPlate = "item-plate",
                         ItemOilCan = "item-oilcan", ItemMedkit = "item-medkit", ItemWhetstone = "item-whetstone",
-                        ItemCoil = "item-coil", ItemRustOil = "item-rustoil";
+                        ItemCoil = "item-coil", ItemRustOil = "item-rustoil",
+                        ItemSun = "item-sun", ItemMoon = "item-moon", ItemLens = "item-lens", ItemLamp = "item-lamp",
+                        ItemDew = "item-dew", ItemRooster = "item-rooster", ItemOwl = "item-owl", ItemNecklace = "item-necklace",
+                        ItemCrackedLens = "item-cracked-lens", ItemGlove = "item-glove", ItemBoiler = "item-boiler";
 
     public static readonly string[] ItemIcons =
     {
         ItemSpring, ItemBarrel, ItemCog, ItemPlate, ItemOilCan, ItemMedkit, ItemWhetstone, ItemCoil, ItemRustOil,
+        ItemSun, ItemMoon, ItemLens, ItemLamp, ItemDew, ItemRooster, ItemOwl, ItemNecklace, ItemCrackedLens, ItemGlove, ItemBoiler,
     };
 
     public static float[] Draw(string kind, int size)
@@ -67,8 +71,196 @@ public class IconPainter
             case ItemWhetstone: p.Whetstone(); break;
             case ItemCoil:      p.CoilSpring(); break;
             case ItemRustOil:   p.RustOilFlask(); break;
+            case ItemSun:       p.Sun(); break;
+            case ItemMoon:      p.Moon(); break;
+            case ItemLens:      p.Lens(); break;
+            case ItemLamp:      p.OilLamp(); break;
+            case ItemDew:       p.DewBottle(); break;
+            case ItemRooster:   p.Rooster(); break;
+            case ItemOwl:       p.OwlGoggles(); break;
+            case ItemNecklace:  p.CogNecklace(); break;
+            case ItemCrackedLens: p.CrackedLens(); break;
+            case ItemGlove:     p.OilGlove(); break;
+            case ItemBoiler:    p.Boiler(); break;
         }
         return p.Alpha;
+    }
+
+    // ── 등잔: 납작한 기름 접시 + 심지의 불꽃 + 손잡이 ──
+    private void OilLamp()
+    {
+        Fill(Box(-0.05f, -0.42f, 0.62f, 0.2f, 0.18f));                            // 접시 몸통
+        Fill(Poly(0.4f, -0.34f, 0.8f, -0.14f, 0.74f, -0.06f, 0.36f, -0.2f));      // 심지 주둥이
+        Fill(Ring(-0.72f, -0.38f, 0.17f, 0.055f));                                 // 손잡이
+        Fill(Box(-0.05f, -0.7f, 0.36f, 0.08f, 0.03f));                             // 받침
+        Cut(Seg(-0.5f, -0.38f, 0.38f, -0.38f, 0.026f));                            // 띠
+        // 불꽃 (심지 끝에 붙어 위로 타오른다)
+        Fill(Circle(0.74f, 0.04f, 0.16f));
+        Fill(Poly(0.6f, 0.1f, 0.88f, 0.1f, 0.72f, 0.66f));
+        Cut(Circle(0.74f, 0.03f, 0.065f));
+        Cut(Poly(0.68f, 0.06f, 0.8f, 0.06f, 0.74f, 0.28f));
+    }
+
+    // ── 새벽 이슬병: 길쭉한 유리 약병 (반쯤 찬 물 + 물 위의 해) + 병에 맺힌 이슬 ──
+    private void DewBottle()
+    {
+        Fill(Box(-0.2f, -0.24f, 0.32f, 0.6f, 0.26f));      // 길쭉한 몸통
+        Fill(Box(-0.2f, 0.48f, 0.14f, 0.14f, 0.02f));      // 목
+        Fill(Box(-0.2f, 0.7f, 0.21f, 0.09f, 0.03f));       // 마개
+        Cut(Box(-0.2f, -0.24f, 0.21f, 0.49f, 0.18f));      // 유리 속
+        Fill(Box(-0.2f, -0.52f, 0.21f, 0.21f, 0.18f));     // 반쯤 찬 이슬물
+        Fill(Seg(-0.41f, -0.31f, 0.01f, -0.31f, 0.02f));
+        Fill(Circle(-0.2f, -0.06f, 0.11f));                // 물 위로 떠오르는 해
+        for (int i = 0; i < 5; i++)
+        {
+            float a = (float)Math.PI * (0.1f + 0.2f * i);
+            Fill(Seg(-0.2f + (float)Math.Cos(a) * 0.15f, -0.06f + (float)Math.Sin(a) * 0.15f,
+                     -0.2f + (float)Math.Cos(a) * 0.22f, -0.06f + (float)Math.Sin(a) * 0.22f, 0.022f));
+        }
+        Drop(0.42f, 0.2f, 0.13f);                          // 바깥에 맺힌 이슬
+        Drop(0.62f, -0.46f, 0.1f);
+    }
+
+    // ── 수탉 태엽 인형: 볏 · 부리 · 턱살이 달린 머리와 몸통 + 등의 태엽 열쇠 ──
+    private void Rooster()
+    {
+        Fill(Circle(-0.05f, -0.32f, 0.46f));                                       // 몸통
+        Fill(Circle(0.26f, 0.22f, 0.26f));                                         // 머리
+        Fill(Seg(0.12f, -0.02f, 0.2f, 0.12f, 0.17f));                              // 목
+        Fill(Circle(0.14f, 0.52f, 0.1f));                                          // 볏
+        Fill(Circle(0.3f, 0.56f, 0.11f));
+        Fill(Circle(0.45f, 0.5f, 0.09f));
+        Fill(Poly(0.48f, 0.28f, 0.76f, 0.2f, 0.48f, 0.12f));                       // 부리
+        Fill(Circle(0.42f, 0.0f, 0.075f));                                         // 턱살
+        Cut(Circle(0.3f, 0.26f, 0.055f));                                          // 눈
+        Fill(Poly(-0.44f, -0.12f, -0.86f, 0.32f, -0.7f, -0.02f, -0.92f, 0.06f, -0.5f, -0.36f));   // 꽁지
+        Cut(Seg(-0.32f, -0.42f, 0.14f, -0.42f, 0.03f));                            // 날개 선
+        Fill(Seg(-0.18f, -0.78f, -0.18f, -0.92f, 0.045f));                         // 다리 + 받침
+        Fill(Seg(0.08f, -0.78f, 0.08f, -0.92f, 0.045f));
+        Fill(Box(-0.05f, -0.94f, 0.36f, 0.05f, 0.02f));
+        // 등의 태엽 열쇠
+        Cut(Seg(-0.3f, -0.12f, -0.52f, 0.12f, 0.1f));
+        Fill(Seg(-0.3f, -0.12f, -0.52f, 0.12f, 0.04f));
+        Fill(Ring(-0.6f, 0.2f, 0.1f, 0.04f));
+    }
+
+    // ── 올빼미 렌즈: 두 눈 고글 + 귀깃 + 부리 (밤을 보는 눈) ──
+    private void OwlGoggles()
+    {
+        Fill(Poly(-0.72f, 0.3f, -0.52f, 0.78f, -0.34f, 0.4f));                    // 귀깃
+        Fill(Poly(0.72f, 0.3f, 0.52f, 0.78f, 0.34f, 0.4f));
+        Fill(Circle(-0.4f, 0.02f, 0.4f));                                          // 렌즈 테
+        Fill(Circle(0.4f, 0.02f, 0.4f));
+        Cut(Circle(-0.4f, 0.02f, 0.28f));                                          // 유리
+        Cut(Circle(0.4f, 0.02f, 0.28f));
+        Fill(Circle(-0.4f, 0.02f, 0.12f));                                         // 눈동자
+        Fill(Circle(0.4f, 0.02f, 0.12f));
+        Cut(Circle(-0.36f, 0.07f, 0.04f));                                         // 눈빛
+        Cut(Circle(0.44f, 0.07f, 0.04f));
+        Fill(Poly(-0.1f, -0.3f, 0.1f, -0.3f, 0f, -0.56f));                         // 부리
+        Fill(Seg(-0.86f, 0.02f, -0.96f, 0.02f, 0.05f));                            // 끈
+        Fill(Seg(0.86f, 0.02f, 0.96f, 0.02f, 0.05f));
+    }
+
+    // ── 톱니 목걸이: 늘어진 사슬 + 아래에 매달린 작은 톱니 ──
+    private void CogNecklace()
+    {
+        for (int i = 0; i <= 10; i++)                       // 사슬: 위로 벌어진 호를 따라 고리
+        {
+            float a = (float)Math.PI * (1.08f + 0.84f * i / 10f);
+            float x = (float)Math.Cos(a) * 0.78f, y = 0.42f + (float)Math.Sin(a) * 0.62f;
+            Fill(Ring(x, y + 0.1f, 0.065f, 0.026f));
+        }
+        Fill(Seg(0f, -0.14f, 0f, -0.3f, 0.035f));           // 고리 → 톱니
+        // 톱니 (가운데 아래)
+        for (int i = 0; i < 8; i++)
+        {
+            Transform(0f, -0.58f, i * 45f);
+            Fill(Box(0f, 0.3f, 0.07f, 0.09f, 0.02f));
+        }
+        Reset();
+        Fill(Circle(0f, -0.58f, 0.3f));
+        Cut(Circle(0f, -0.58f, 0.1f));
+        Cut(Ring(0f, -0.58f, 0.2f, 0.022f));
+    }
+
+    // ── 금 간 돋보기: 유리가 찬 렌즈 + 번개처럼 갈라진 금 + 손잡이 ──
+    private void CrackedLens()
+    {
+        Fill(Circle(-0.14f, 0.14f, 0.58f));                                        // 렌즈 (테 + 유리)
+        Cut(Ring(-0.14f, 0.14f, 0.46f, 0.025f));                                   // 테와 유리 사이
+        Cut(Seg(-0.52f, 0.5f, -0.24f, 0.22f, 0.032f));                            // 금
+        Cut(Seg(-0.24f, 0.22f, -0.3f, 0.02f, 0.032f));
+        Cut(Seg(-0.3f, 0.02f, 0.04f, -0.2f, 0.032f));
+        Cut(Seg(-0.24f, 0.22f, 0.1f, 0.34f, 0.026f));
+        Fill(Seg(0.3f, -0.3f, 0.82f, -0.82f, 0.1f));                               // 손잡이
+        Fill(Box(0.3f, -0.3f, 0.12f, 0.06f, 0.02f), 0f);
+    }
+
+    // ── 기름 먹인 장갑: 손가락 넷 + 엄지 + 손목 띠 + 떨어지는 기름 ──
+    private void OilGlove()
+    {
+        Fill(Box(-0.1f, -0.16f, 0.4f, 0.36f, 0.14f));                             // 손바닥
+        Fill(Seg(-0.4f, 0.08f, -0.42f, 0.52f, 0.1f));                              // 손가락
+        Fill(Seg(-0.18f, 0.12f, -0.18f, 0.72f, 0.1f));
+        Fill(Seg(0.04f, 0.12f, 0.06f, 0.66f, 0.1f));
+        Fill(Seg(0.24f, 0.08f, 0.28f, 0.46f, 0.09f));
+        Fill(Seg(0.24f, -0.22f, 0.56f, 0.04f, 0.1f));                              // 엄지
+        Fill(Box(-0.1f, -0.66f, 0.44f, 0.14f, 0.04f));                             // 손목 띠
+        Cut(Seg(-0.5f, -0.66f, 0.3f, -0.66f, 0.026f));
+        Cut(Seg(-0.29f, 0.2f, -0.29f, 0.0f, 0.02f));                               // 손가락 사이 주름
+        Cut(Seg(-0.07f, 0.2f, -0.07f, 0.0f, 0.02f));
+        Cut(Seg(0.15f, 0.2f, 0.15f, 0.0f, 0.02f));
+        Drop(0.74f, -0.72f, 0.1f);                                                 // 기름 방울
+    }
+
+    // ── 달군 보일러: 리벳 박힌 통 + 압력계 + 아래의 불꽃 + 증기 ──
+    private void Boiler()
+    {
+        Fill(Box(-0.08f, -0.08f, 0.52f, 0.5f, 0.2f));                             // 통
+        Cut(Seg(-0.52f, 0.18f, 0.36f, 0.18f, 0.026f));                             // 이음매
+        Cut(Seg(-0.52f, -0.34f, 0.36f, -0.34f, 0.026f));
+        for (int i = 0; i < 4; i++) Cut(Circle(-0.4f + i * 0.21f, 0.3f, 0.035f)); // 리벳
+        Fill(Circle(0.5f, 0.52f, 0.22f));                                          // 압력계
+        Cut(Circle(0.5f, 0.52f, 0.14f));
+        Fill(Seg(0.5f, 0.52f, 0.58f, 0.62f, 0.025f));
+        Fill(Seg(0.3f, 0.38f, 0.4f, 0.44f, 0.05f));
+        // 아래의 불꽃 셋
+        Fill(Poly(-0.52f, -0.96f, -0.28f, -0.96f, -0.4f, -0.64f));
+        Fill(Poly(-0.21f, -0.96f, 0.05f, -0.96f, -0.08f, -0.6f));
+        Fill(Poly(0.12f, -0.96f, 0.36f, -0.96f, 0.24f, -0.64f));
+        // 증기
+        Fill(Seg(-0.3f, 0.5f, -0.34f, 0.68f, 0.045f));
+        Fill(Seg(-0.34f, 0.68f, -0.26f, 0.84f, 0.045f));
+    }
+
+    // ── 해: 둥근 해 + 여덟 갈래 빛살 (아침 부품) ──
+    private void Sun()
+    {
+        Fill(Circle(0f, 0f, 0.4f));
+        for (int i = 0; i < 8; i++)
+        {
+            float a = i * (float)Math.PI / 4f;
+            float c = (float)Math.Cos(a), s = (float)Math.Sin(a);
+            Fill(Seg(c * 0.56f, s * 0.56f, c * 0.86f, s * 0.86f, 0.06f));
+        }
+    }
+
+    // ── 달: 초승달 + 작은 별 (밤 부품) ──
+    private void Moon()
+    {
+        Fill(Circle(-0.08f, 0f, 0.72f));
+        Cut(Circle(0.26f, 0.16f, 0.6f));
+        Fill(Circle(0.56f, -0.42f, 0.09f));
+        Fill(Circle(0.7f, 0.5f, 0.06f));
+    }
+
+    // ── 렌즈: 둥근 렌즈테 + 손잡이 + 반짝임 ──
+    private void Lens()
+    {
+        Fill(Ring(-0.14f, 0.14f, 0.5f, 0.08f));
+        Fill(Seg(0.24f, -0.24f, 0.78f, -0.78f, 0.1f));
+        Fill(Seg(-0.4f, 0.3f, -0.26f, 0.46f, 0.045f));
     }
 
     // ─────────────────────────── 부품 그림 ───────────────────────────

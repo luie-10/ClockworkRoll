@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c432b655cc2ee62408eb86f1bf1d0dbc, type: 3}
+  m_Name: "\uB179\uC2A8 \uC218\uB3C4\uC0AC"
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyData
+  enemyName: "\uB179\uC2A8 \uC218\uB3C4\uC0AC"
+  nicknames:
+  - "\uCE68\uBB35\uC758 \uC624\uB3C4"
+  - "\uAE30\uB984 \uC131\uC790"
+  - "\uC885 \uCE58\uB294 \uBCA0\uB124"
+  - "\uD68C\uC0C9 \uD615\uC81C"
+  maxHp: 44
+  resistance:
+    slash: 0
+    thrust: 1
+    blunt: 0
+  sprite: {fileID: 21300000, guid: 793432b31df3e35418789cf8cdfc7e5e, type: 3}
+  spriteHeight: 2
+  poses:
+    slash: {fileID: 21300000, guid: da285a81e9c5f524380111edfff70710, type: 3}
+    thrust: {fileID: 21300000, guid: b9d80cffa698a4b4281ab43ce13e65eb, type: 3}
+    blunt: {fileID: 21300000, guid: 9aa3c94d17f6c8d408ff33617a2b912b, type: 3}
+    guard: {fileID: 21300000, guid: 1bbae9b1677c85a488285311bf0b01a9, type: 3}
+    evade: {fileID: 21300000, guid: c06ed20f6708f744cb2fa0185f825307, type: 3}
+    hit: {fileID: 21300000, guid: 9e5c66eba12abbf4e965f8c44d6cf880, type: 3}
+    down: {fileID: 0}
+  modelPrefab: {fileID: 0}
+  tintColor: {r: 0.6, g: 0.45, b: 0.35, a: 1}
+  actionsPerRound: 1
+  behavior: 5
+  trait: 12
+  traitAmount: 2
+  extraTraits: []
+  deck:
+  - {fileID: 11400000, guid: dc318972962e4cfcd3f17f3412d32d9e, type: 2}
+  - {fileID: 11400000, guid: 09bbcdc4c2a65769f6c71ceba714f950, type: 2}
+  - {fileID: 11400000, guid: 09bbcdc4c2a65769f6c71ceba714f950, type: 2}
+  - {fileID: 11400000, guid: dc318972962e4cfcd3f17f3412d32d9e, type: 2}
+  barks:
+  - "\uB179\uB3C4 \uC2DC\uAC04\uC758 \uC77C\uBD80\uB2E4."
+  - "\uBA48\uCD98 \uC885\uC744 \uC704\uD558\uC5EC."
+  attackBarks:
+  - "\uCC38\uD68C\uD558\uB77C."
+  hurtBarks:
+  - "\uC2DC\uD5D8\uC774\uB85C\uB2E4\u2026"
+  deathBarks:
+  - "\uC885\uC774\u2026 \uC6B8\uB9B0\uB2E4\u2026"

@@ -165,12 +165,13 @@ public class SewerBackdrop : StageBackdrop
         }
 
         // 천장 배수구에서 내려오는 빛 + 벽 전등
-        for (float z = 3f; z < 30f; z += 12f)
+        for (float z = 1f; z < 30f; z += 12f)   // 아치 갈빗대(z = -2, 4, 10 …) 사이 — 갈빗대와 겹치지 않게
         {
-            Block("Grate", new Vector3(-1.5f, WallH + Width + 0.05f, z), new Vector3(1.6f, 0.1f, 1.6f), MakeEmissive(new Color(0.8f, 0.85f, 0.9f), 1.2f), root);
+            // 천장 맨 위 판(안쪽 면 = WallH + Width + 0.0) 바로 아래에 붙인다 — 판 속에 묻히면 면이 겹쳐 깜빡인다
+            Block("Grate", new Vector3(0f, WallH + Width - 0.08f, z), new Vector3(1.6f, 0.06f, 1.6f), MakeEmissive(new Color(0.8f, 0.85f, 0.9f), 1.2f), root);
             GameObject shaft = new GameObject("GrateLight");
             shaft.transform.SetParent(root, false);
-            shaft.transform.localPosition = new Vector3(-1.5f, WallH + Width - 0.3f, z);
+            shaft.transform.localPosition = new Vector3(0f, WallH + Width - 0.3f, z);
             shaft.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
             Light s = shaft.AddComponent<Light>();
             s.type = LightType.Spot;
@@ -178,12 +179,12 @@ public class SewerBackdrop : StageBackdrop
             s.spotAngle = 35f;
             s.range = 14f;
             s.intensity = Variant == 2 ? 2.6f : 1.8f;
-            MakeMotes(root, "ShaftDust", new Vector3(-1.5f, 5f, z), new Vector3(1.4f, 6f, 1.4f), 6f, new Color(0.9f, 0.9f, 0.85f, 0.35f), 0.05f, 0f, 5f);
+            MakeMotes(root, "ShaftDust", new Vector3(0f, 5f, z), new Vector3(1.4f, 6f, 1.4f), 6f, new Color(0.9f, 0.9f, 0.85f, 0.35f), 0.05f, 0f, 5f);
         }
         for (int i = 0; i < 4; i++)
         {
             int side = i % 2 == 0 ? -1 : 1;
-            float z = 1f + i * 7f;
+            float z = 1f + i * 6f;   // 갈빗대 사이 (z = 1, 7, 13, 19)
             Material bulb = MakeEmissive(lampColor, 2.2f);
             Block("LampCage", new Vector3(side * (Width - 0.25f), 3.1f, z), new Vector3(0.4f, 0.5f, 0.4f), iron, root);
             Block("LampBulb", new Vector3(side * (Width - 0.45f), 3.05f, z), new Vector3(0.25f, 0.3f, 0.25f), bulb, root);

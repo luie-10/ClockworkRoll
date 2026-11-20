@@ -15,7 +15,7 @@ using UnityEngine;
 public class BattleHUD : MonoBehaviour
 {
     [Tooltip("나타나고 사라지는 시간(초)")]
-    public float fadeTime = 0.35f;
+    public float fadeTime = 0.2f;
 
     private CanvasGroup group;
     private bool lastShown = true;

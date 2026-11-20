@@ -92,6 +92,14 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 875cf63b7628db3f9b9912b88a7630d0, type: 2}
   - {fileID: 11400000, guid: 53d1e8c028eed34c6a456a8859e47462, type: 2}
   - {fileID: 11400000, guid: fdcad4a3da9db616b12fde5ef8bc0420, type: 2}
+  - {fileID: 11400000, guid: 56928db2b436392d068c89afbd21c16c, type: 2}
+  - {fileID: 11400000, guid: 19f7241669527dc56aa7dbe76d970390, type: 2}
   routeElites:
   - {fileID: 11400000, guid: 5c39a32d3df057f7f0660a48566b2e35, type: 2}
   - {fileID: 11400000, guid: 9f7845c0b37d364adb96590aef2f7cf9, type: 2}
+  - {fileID: 11400000, guid: 3523f72b62ec1ba24c01dfa0ae6979fd, type: 2}
+  routeBackdrops:
+  - 2
+  - 3
+  - 8
+  - 7

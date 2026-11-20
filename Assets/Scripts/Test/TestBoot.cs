@@ -54,7 +54,7 @@ public class TestBoot : MonoBehaviour
         CreateTestStory();
         SetupCamera();
 
-        Debug.Log("[TestBoot] 준비 완료 — 흐름: 인트로 대사 → 전투(기력/상성/감정) → 승리 시 흡수(◈) → 아웃트로 → 클리어 로그");
+        Debug.Log("[TestBoot] 준비 완료 — 흐름: 인트로 대사 → 전투(기력/상성/감정) → 승리 시 흡수(❖) → 아웃트로 → 클리어 로그");
     }
 
     // ─────────────────────────── 자동 진행 (autoPlay) ───────────────────────────
@@ -320,24 +320,24 @@ public class TestBoot : MonoBehaviour
         // 2) 적 — 쥐 태엽판 6장 (적이 쓰는 카드 = 승리 시 흡수되는 카드). 녹 스킬 테스트용
         CardData bite = MakeCard("물어뜯기", 1, new[] {
             Rust(MakeDice("참격", DiceType.Attack, DiceDetail.Slash, 1, 4), DiceTrigger.OnHit, 1, true),
-            MakeDice("타격", DiceType.Attack, DiceDetail.Blunt, 1, 4) }, 0, CardRarity.Paper);
+            MakeDice("타격", DiceType.Attack, DiceDetail.Blunt, 1, 4) }, 0, CardRarity.Scrap);
         CardData alleyRush = MakeCard("골목 돌파", 1, new[] {
-            Rust(MakeDice("관통", DiceType.Attack, DiceDetail.Thrust, 1, 8), DiceTrigger.OnHit, 1, true) }, 0, CardRarity.Stone);
+            Rust(MakeDice("관통", DiceType.Attack, DiceDetail.Thrust, 1, 8), DiceTrigger.OnHit, 1, true) }, 0, CardRarity.Handmade);
         CardData scram = MakeCard("튀어", 1, new[] {
             MakeDice("회피", DiceType.Defense, DiceDetail.Evade, 1, 6),
             MakeDice("회피", DiceType.Defense, DiceDetail.Evade, 1, 6),
-            MakeDice("참격", DiceType.Attack, DiceDetail.Slash, 1, 4) }, 0, CardRarity.Stone);
+            MakeDice("참격", DiceType.Attack, DiceDetail.Slash, 1, 4) }, 0, CardRarity.Handmade);
         CardData survival = MakeCard("쥐의 생존법", 2, new[] {
             MakeDice("가드", DiceType.Defense, DiceDetail.Guard, 1, 6),
             Rust(MakeDice("참격", DiceType.Attack, DiceDetail.Slash, 3, 4), DiceTrigger.OnHit, 1, true),
-            MakeDice("회피", DiceType.Defense, DiceDetail.Evade, 1, 7) }, 0, CardRarity.Paper);
+            MakeDice("회피", DiceType.Defense, DiceDetail.Evade, 1, 7) }, 0, CardRarity.Scrap);
         CardData dirtyHit = MakeCard("더러운 타격", 2, new[] {
             Rust(MakeDice("타격", DiceType.Attack, DiceDetail.Blunt, 3, 7), DiceTrigger.OnClashWin, 2, false),
-            MakeDice("가드", DiceType.Defense, DiceDetail.Guard, 1, 3) }, 0, CardRarity.Iron);
+            MakeDice("가드", DiceType.Defense, DiceDetail.Guard, 1, 3) }, 0, CardRarity.Precision);
         CardData gut = MakeCard("내장담기", 3, new[] {
             Rust(MakeDice("참격", DiceType.Attack, DiceDetail.Slash, 3, 6), DiceTrigger.OnHit, 1, true),
             Rust(MakeDice("참격", DiceType.Attack, DiceDetail.Slash, 3, 5), DiceTrigger.OnHit, 1, true),
-            MakeDice("가드", DiceType.Defense, DiceDetail.Guard, 1, 4) }, 0, CardRarity.Iron);
+            MakeDice("가드", DiceType.Defense, DiceDetail.Guard, 1, 4) }, 0, CardRarity.Precision);
 
         EnemyData enemyA = ScriptableObject.CreateInstance<EnemyData>();
         enemyA.enemyName = "쥐 A";
@@ -368,13 +368,13 @@ public class TestBoot : MonoBehaviour
         chapter.introLines = new List<DialogueLine>
         {
             new DialogueLine { speaker = "안내 (테스트)", text = "핵심 시스템 테스트 무대다. 클릭 또는 Space로 대사를 넘긴다." },
-            new DialogueLine { speaker = "안내 (테스트)", text = "전투에서 이기면 적의 태엽판이 ◈ 흡수된다. 사용할 때 침식을 조심하자." },
+            new DialogueLine { speaker = "안내 (테스트)", text = "전투에서 이기면 적의 태엽판이 ❖ 흡수된다. 사용할 때 침식을 조심하자." },
         };
         chapter.battle = stage;
         chapter.outroLines = new List<DialogueLine>
         {
             new DialogueLine { speaker = "안내 (테스트)", text = "무대 클리어. 적의 태엽판이 덱에 흡수되었다." },
-            new DialogueLine { speaker = "안내 (테스트)", text = "◈ 카드를 사용해 침식 발동을 확인해 보자. 이 대사가 끝나면 클리어 로그가 찍힌다." },
+            new DialogueLine { speaker = "안내 (테스트)", text = "❖ 카드를 사용해 침식 발동을 확인해 보자. 이 대사가 끝나면 클리어 로그가 찍힌다." },
         };
         chapter.rewardCards = new List<CardData> { emotionBlade };
 
@@ -417,7 +417,7 @@ public class TestBoot : MonoBehaviour
     }
 
     private static CardData MakeCard(string cardName, int cost, DiceData[] dice, int requireEmotion = 0,
-                                     CardRarity rarity = CardRarity.Paper)
+                                     CardRarity rarity = CardRarity.Scrap)
     {
         CardData card = ScriptableObject.CreateInstance<CardData>();
         card.cardName = cardName;

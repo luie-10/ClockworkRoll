@@ -12,9 +12,9 @@ public class EnemySpawnInfo
 
 /// <summary>
 /// 전투 무대 1개의 데이터
-/// Project 창 우클릭 → Create → Ruina → Battle Stage 로 에셋 생성
+/// Project 창 우클릭 → Create → ClockworkRoll → Battle Stage 로 에셋 생성
 /// </summary>
-[CreateAssetMenu(fileName = "NewStage", menuName = "Ruina/Battle Stage", order = 4)]
+[CreateAssetMenu(fileName = "NewStage", menuName = "ClockworkRoll/Battle Stage", order = 4)]
 public class BattleStageData : ScriptableObject
 {
     public string stageName;   // 무대 이름 (예: "1막 2층 4부 후반 무대")

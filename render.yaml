@@ -1,0 +1,22 @@
+# Render 블루프린트 — 무한 모드 랭킹 서버 (Server/ 폴더의 Dockerfile로 짓는다)
+# Render 대시보드 → New → Blueprint → 이 저장소를 고르면 아래 설정대로 만들어진다.
+services:
+  - type: web
+    name: clockworkroll-ranking
+    runtime: docker
+    rootDir: Server
+    dockerfilePath: ./Dockerfile
+    region: singapore          # 한국에서 가장 가까운 Render 지역
+    plan: starter              # 기록을 남길 디스크는 유료 플랜에서만 붙는다 (free는 재시작 때 기록이 지워진다)
+    healthCheckPath: /api/health
+    envVars:
+      - key: MIN_LOOP_SECONDS
+        value: "60"
+      - key: TRUST_PROXY
+        value: "1"
+      - key: DATA_DIR
+        value: /data
+    disk:
+      name: ranking-data
+      mountPath: /data
+      sizeGB: 1

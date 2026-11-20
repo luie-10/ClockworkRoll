@@ -82,20 +82,29 @@ public class VictoryScreen : MonoBehaviour
         bannerText.text = "승리!";
         RectTransform banner = bannerText.rectTransform;
         banner.anchoredPosition = new Vector2(0f, 0f);
-        for (float t = 0f; t < 0.5f; t += Time.unscaledDeltaTime)
+        // 클릭 · Enter · Space를 누르면 연출을 건너뛴다
+        bool skip = false;
+        for (float t = 0f; t < 0.35f && !skip; t += Time.unscaledDeltaTime)
         {
-            float k = t / 0.5f;
-            banner.localScale = Vector3.one * Mathf.Lerp(2.2f, 1f, 1f - Mathf.Pow(1f - k, 3f));
+            float k = t / 0.35f;
+            banner.localScale = Vector3.one * Mathf.Lerp(1.8f, 1f, 1f - Mathf.Pow(1f - k, 3f));
             bannerText.color = UITheme.Alpha(UITheme.BrassBright, k);
             yield return null;
+            skip = SkipPressed();
         }
         banner.localScale = Vector3.one;
-        yield return new WaitForSecondsRealtime(0.9f);
+        bannerText.color = UITheme.BrassBright;
+        for (float t = 0f; t < 0.45f && !skip; t += Time.unscaledDeltaTime)
+        {
+            yield return null;
+            skip = SkipPressed();
+        }
 
         // 2) 위로 올라가며 흡수 고르기 화면으로
-        for (float t = 0f; t < 0.3f; t += Time.unscaledDeltaTime)
+        for (float t = 0f; t < 0.2f && !skip; t += Time.unscaledDeltaTime)
         {
-            banner.anchoredPosition = new Vector2(0f, Mathf.Lerp(0f, 300f, t / 0.3f));
+            float k = t / 0.2f;
+            banner.anchoredPosition = new Vector2(0f, Mathf.Lerp(0f, 300f, 1f - (1f - k) * (1f - k)));
             yield return null;
         }
         banner.anchoredPosition = new Vector2(0f, 300f);
@@ -103,19 +112,29 @@ public class VictoryScreen : MonoBehaviour
         if (pickCount <= 0)
         {
             subText.text = "삼킬 기억이 없다.";
-            yield return new WaitForSecondsRealtime(2.2f);
+            yield return null;
+            for (float t = 0f; t < 1.2f && !SkipPressed(); t += Time.unscaledDeltaTime) yield return null;
         }
         else
         {
             subText.text = pickCount > 1
-                ? $"쓰러뜨린 적의 기억을 삼킨다 — <color={UITheme.HexGold}>최대 {pickCount}장</color> 고르기"
-                : $"쓰러뜨린 적의 기억을 삼킨다 — <color={UITheme.HexGold}>{pickCount}장</color> 고르기";
+                ? $"쓰러뜨린 적의 기억을 삼킨다: <color={UITheme.HexGold}>최대 {pickCount}장</color> 고르기"
+                : $"쓰러뜨린 적의 기억을 삼킨다: <color={UITheme.HexGold}>{pickCount}장</color> 고르기";
             BuildCards(ownedSources);
             cardScroll.gameObject.SetActive(true);
             scroll.verticalNormalizedPosition = 1f;   // 맨 위부터
             confirmButton.gameObject.SetActive(true);
             RefreshPicks();
-            while (!confirmed) yield return null;
+            while (!confirmed)
+            {
+                yield return null;
+                // Enter = 확정 (버튼이 켜져 있을 때만)
+                if (!TutorialCoach.IsOpen && (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)) && confirmButton.interactable)
+                {
+                    Sfx.Play(SfxId.Click);
+                    confirmed = true;
+                }
+            }
         }
 
         root.gameObject.SetActive(false);
@@ -124,6 +143,13 @@ public class VictoryScreen : MonoBehaviour
     }
 
     // ─────────────────────────── 카드 고르기 ───────────────────────────
+
+    private static bool SkipPressed()
+    {
+        if (TutorialCoach.IsOpen) return false;   // 설명 상자의 [알겠어] 클릭이 연출까지 넘기지 않게
+        return Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)
+            || Input.GetKeyDown(KeyCode.Space);
+    }
 
     private void BuildCards(ICollection<string> ownedSources)
     {
@@ -147,9 +173,9 @@ public class VictoryScreen : MonoBehaviour
             bool again = ownedSources != null && ownedSources.Contains(card.cardName);
             string text =
                 $"<size=26><b>{card.cardName}</b></size>\n" +
-                $"<color={rarityHex}>{DiceInfo.RarityName(card.rarity)}</color> · <color={UITheme.HexKi}>기력 {card.cost}</color> · <color={UITheme.HexGold}>{TimedAction.LengthOf(card)}칸</color>\n\n" +
+                $"<color={rarityHex}>{DiceInfo.RarityName(card.rarity)}</color> · <color={UITheme.HexKi}>기력 {card.cost}</color> · <color={UITheme.HexGold}>{DiceInfo.LengthLabel(card)}</color>\n\n" +
                 DiceInfo.Detail(card) +
-                (again ? $"\n\n<color={UITheme.HexAbsorb}>이미 삼킨 기억 — 침식 +1</color>" : $"\n\n<color={UITheme.HexAbsorb}>◈ 흡수 · 침식 1</color>");
+                (again ? $"\n\n<color={UITheme.HexAbsorb}>이미 삼킨 기억 (침식 +1)</color>" : $"\n\n<color={UITheme.HexAbsorb}>❖ 흡수 · 침식 1</color>");
 
             Text label = UIBuilder.Label("Text", frame.transform, text, 19, UITheme.TextMain, TextAnchor.UpperLeft);
             UIBuilder.Stretch(label.rectTransform, 14f);

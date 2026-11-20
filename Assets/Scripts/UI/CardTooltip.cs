@@ -87,7 +87,7 @@ public class CardTooltip : MonoBehaviour
         tip.text.lineSpacing = 1.1f;
 
         UITheme.Elevate(bg, 0.7f);
-        UIPop.Ensure(bg.gameObject, 0.95f, 0.14f);
+        UIPop.Ensure(bg.gameObject, 0.96f, 0.1f);
         bg.gameObject.SetActive(false);
         return tip;
     }
@@ -125,8 +125,8 @@ public class CardTooltip : MonoBehaviour
         bool absorbed = entry != null && entry.absorbed;
 
         string rarityHex = "#" + ColorUtility.ToHtmlStringRGB(DiceInfo.RarityColor(d.rarity));
-        string s = $"<size=26><b>{(absorbed ? "◈ " : "")}{d.cardName}</b></size>   " +
-                   $"<color={rarityHex}>{DiceInfo.RarityName(d.rarity)}</color> · <color={UITheme.HexKi}>기력 {d.cost}</color> · <color={UITheme.HexGold}>{TimedAction.LengthOf(d)}칸</color>";
+        string s = $"<size=26><b>{(absorbed ? "❖ " : "")}{d.cardName}</b></size>   " +
+                   $"<color={rarityHex}>{DiceInfo.RarityName(d.rarity)}</color> · <color={UITheme.HexKi}>기력 {d.cost}</color> · <color={UITheme.HexGold}>{DiceInfo.LengthLabel(d)}</color>";
         if (d.requireTension > 0)
             s += $" · <color={UITheme.HexTension}>장력 {d.requireTension}단계 필요</color>";
 
@@ -137,10 +137,10 @@ public class CardTooltip : MonoBehaviour
             s += $"\n<color={UITheme.HexMuted}><i>{d.cardDescription}</i></color>";
 
         string detail = DiceInfo.Detail(d);
-        if (detail.Length > 0) s += $"\n<color={UITheme.HexBrass}>─ 칸 ─</color>\n" + detail;
+        if (detail.Length > 0) s += $"\n<color={UITheme.HexBrass}>― 칸 ―</color>\n" + detail;
 
         string keywords = DiceInfo.Keywords(d);
-        if (keywords.Length > 0) s += $"\n<color={UITheme.HexBrass}>─ 용어 ─</color>\n<size=18>" + keywords + "</size>";
+        if (keywords.Length > 0) s += $"\n<color={UITheme.HexBrass}>― 용어 ―</color>\n<size=18>" + keywords + "</size>";
 
         if (absorbed)
             s += $"\n<color={UITheme.HexAbsorb}>흡수한 기억 · 침식 {entry.corruption} — 쓸 때마다 기억이 새어 나와 나를 해칠 수 있다</color>";

@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c003ed42cc88e314487d92d5af1e7bb6, type: 3}
+  m_Name: "증기 사냥터"
+  m_EditorClassIdentifier: Assembly-CSharp::BattleStageData
+  stageName: "증기 사냥터"
+  backdrop: 0
+  backdropVariant: -1
+  enemies:
+  - enemy: {fileID: 11400000, guid: 774a967d973f52967710ba477317dcfa, type: 2}
+    spawnPosition: {x: 2.8, y: 0, z: 1.6}
+  - enemy: {fileID: 11400000, guid: 774a967d973f52967710ba477317dcfa, type: 2}
+    spawnPosition: {x: 4.6, y: 0, z: 0}
+  - enemy: {fileID: 11400000, guid: 6b502b5ff2b4242c3374b9c319e94e6c, type: 2}
+    spawnPosition: {x: 3.2, y: 0, z: -1.6}
+  deckOverride: []

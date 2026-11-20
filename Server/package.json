@@ -1,0 +1,8 @@
+{
+  "name": "clockwork-roll-ranking",
+  "version": "1.0.0",
+  "private": true,
+  "description": "CLOCKWORK ROLL 무한 모드 랭킹 서버 (의존성 없음)",
+  "main": "ranking-server.js",
+  "scripts": { "start": "node ranking-server.js" }
+}

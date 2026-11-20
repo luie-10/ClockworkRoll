@@ -22,7 +22,7 @@ public class HandFan : MonoBehaviour
     public float selectedLift = 30f;
     [Tooltip("마우스를 올린 카드 옆 카드가 비켜나는 거리")]
     public float neighborPush = 50f;
-    public float followSpeed = 14f;
+    public float followSpeed = 18f;
     [Tooltip("시계가 도는 동안(내 차례가 아닐 때) 손패가 내려가는 거리 — 카드 윗부분만 남아 싸움을 가리지 않는다")]
     public float tuckDrop = 205f;
 
@@ -55,6 +55,7 @@ public class HandFan : MonoBehaviour
         int n = cards.Count;
         float step = n > 1 ? Mathf.Min(stepDegrees, maxSpreadDegrees / (n - 1)) : 0f;
         float k = 1f - Mathf.Exp(-followSpeed * Time.unscaledDeltaTime);
+        float kFast = 1f - Mathf.Exp(-followSpeed * 1.7f * Time.unscaledDeltaTime);   // 마우스를 올린 카드는 더 빨리 솟는다
 
         for (int i = 0; i < n; i++)
         {
@@ -83,8 +84,9 @@ public class HandFan : MonoBehaviour
 
             if (tucked) pos.y -= tuckDrop;
 
-            rt.anchoredPosition = Vector2.Lerp(rt.anchoredPosition, pos, k);
-            rt.localRotation = Quaternion.Slerp(rt.localRotation, Quaternion.Euler(0f, 0f, tilt), k);
+            float ki = i == hovered ? kFast : k;
+            rt.anchoredPosition = Vector2.Lerp(rt.anchoredPosition, pos, ki);
+            rt.localRotation = Quaternion.Slerp(rt.localRotation, Quaternion.Euler(0f, 0f, tilt), ki);
         }
     }
 }

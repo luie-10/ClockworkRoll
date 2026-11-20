@@ -74,6 +74,8 @@ public class RouteScreen : MonoBehaviour
     private BattleStageData fightStage;
     private List<BattleStageData> fightGroups = new List<BattleStageData>(), eliteGroups = new List<BattleStageData>();
     private BattleStageData lastGroup;
+    private List<BackdropType> backdropPool = new List<BackdropType>();   // 이 챕터 지도의 전투 배경들
+    private BackdropType? lastBackdrop;
     private readonly List<MapNode> reachable = new List<MapNode>();
 
     private static readonly Color fightColor = UITheme.Enemy;
@@ -93,19 +95,25 @@ public class RouteScreen : MonoBehaviour
     /// </summary>
     /// resumeSeed / resumePath = 이어하기: 저장해 둔 씨앗으로 같은 지도를 다시 만들고, 지나온 칸까지 걸어 둔다.
     public static void Play(int rows, BattleStageData fightStage, List<BattleStageData> fights, List<BattleStageData> elites,
-                            string bossName, Action onDone, int resumeSeed = 0, List<int> resumePath = null)
+                            string bossName, Action onDone, int resumeSeed = 0, List<int> resumePath = null, List<BackdropType> backdrops = null)
     {
         if (instance == null) instance = Create();
         instance.fightGroups = fights ?? new List<BattleStageData>();
         instance.eliteGroups = elites ?? new List<BattleStageData>();
         instance.lastGroup = null;
+        instance.backdropPool = backdrops != null ? new List<BackdropType>(backdrops) : new List<BackdropType>();
+        instance.lastBackdrop = null;
         instance.StartCoroutine(instance.Walk(rows, fightStage, bossName, onDone, resumeSeed, resumePath));
     }
 
     private int mapSeed;                                     // 이 지도를 만든 씨앗 (저장용)
     private readonly List<int> walked = new List<int>();     // 지나온 칸 (층 * 100 + 열)
+    private readonly HashSet<string> seenEvents = new HashSet<string>();   // 이번 지도에서 본 이벤트 (제목)
 
     /// <summary>테스트 자동 진행용: 지금 화면에서 기본 선택(갈 수 있는 첫 칸 / 첫 선택지 / 계속)을 고른다</summary>
+    /// <summary>자동 진행이 지도에서 전투 칸을 먼저 고르게 한다 (홍보영상 촬영)</summary>
+    public static bool PreferFight;
+
     public static void AutoPick()
     {
         if (instance == null || !IsOpen || instance.autoAction == null) return;
@@ -119,6 +127,7 @@ public class RouteScreen : MonoBehaviour
         IsOpen = true;
         fightStage = stage;
         current = null;
+        seenEvents.Clear();
         root.gameObject.SetActive(true);
 
         // 지도는 씨앗 하나로 정해진다 — 씨앗을 저장해 두면 이어할 때 똑같은 지도가 나온다 (다른 무작위에는 영향 없게 되돌린다)
@@ -161,17 +170,20 @@ public class RouteScreen : MonoBehaviour
                 b.onClick.RemoveAllListeners();
                 b.onClick.AddListener(() => chosen = node);
             }
-            autoAction = () => chosen = reachable[0];
+            autoAction = () => chosen = PreferFight
+                ? (reachable.Find(r => r.type == NodeType.Fight || r.type == NodeType.Elite) ?? reachable[0])
+                : reachable[0];
             while (chosen == null) yield return null;
             foreach (MapNode n in reachable) n.view.GetComponent<Button>().onClick.RemoveAllListeners();
 
             if (chosen == boss) break;
 
             chosen.visited = true;
+            Sfx.Play(SfxId.MapStep);
             current = chosen;
             walked.Add(chosen.row * 100 + chosen.col);
             RefreshMap();
-            yield return new WaitForSecondsRealtime(0.25f);   // 고른 칸에 불이 들어오는 걸 잠깐 보여준다
+            yield return new WaitForSecondsRealtime(0.15f);   // 고른 칸에 불이 들어오는 걸 잠깐 보여준다
 
             SetMapMode(false);
             switch (chosen.type)
@@ -262,16 +274,18 @@ public class RouteScreen : MonoBehaviour
         for (int tries = 0; tries < 8; tries++)
         {
             int roll = UnityEngine.Random.Range(0, 100);
-            NodeType t = roll < 40 ? NodeType.Fight
-                       : roll < 64 ? NodeType.Event
-                       : roll < 74 ? NodeType.Elite
-                       : roll < 84 ? NodeType.Rest
-                       : roll < 92 ? NodeType.Remove
+            // 전투 38 · 이벤트 32 · 강적 8 · 휴식 9 · 수거상 7 · 보물 6
+            NodeType t = roll < 38 ? NodeType.Fight
+                       : roll < 70 ? NodeType.Event
+                       : roll < 78 ? NodeType.Elite
+                       : roll < 87 ? NodeType.Rest
+                       : roll < 94 ? NodeType.Remove
                        : NodeType.Treasure;
 
             if ((t == NodeType.Elite || t == NodeType.Rest) && row < 2) continue;
             if (t == NodeType.Rest && row == rowCount - 2) continue;   // 바로 위가 휴식이니 연달아 쉬지 않게
-            if (t != NodeType.Fight && parents.Exists(p => p.type == t)) continue;
+            // 전투 · 이벤트는 연달아 나와도 된다 (이벤트는 매번 내용이 다르다)
+            if (t != NodeType.Fight && t != NodeType.Event && parents.Exists(p => p.type == t)) continue;
             return t;
         }
         return NodeType.Fight;
@@ -314,9 +328,7 @@ public class RouteScreen : MonoBehaviour
 
         // 출발점
         Image startDot = Circle("Start", mapArea, start, 46f, UITheme.InkSolid);
-        Outline startRing = startDot.gameObject.AddComponent<Outline>();
-        startRing.effectColor = walkedColor;
-        startRing.effectDistance = new Vector2(1.5f, -1.5f);
+        Ring(startDot.transform, walkedColor);
         Icon(startDot.transform, IconPainter.Start, walkedColor, 0.2f);
 
         foreach (List<MapNode> row in rows)
@@ -355,9 +367,7 @@ public class RouteScreen : MonoBehaviour
         Color accent = TypeColor(n.type);
         Image bg = Circle($"Node {n.row} {n.col} {n.type}", parent, n.pos, NodeSize, UITheme.InkSolid);
         bg.raycastTarget = true;
-        Outline ring = bg.gameObject.AddComponent<Outline>();
-        ring.effectColor = accent;
-        ring.effectDistance = new Vector2(2f, -2f);
+        Ring(bg.transform, accent);
 
         n.icon = Icon(bg.transform, TypeIcon(n.type), accent, 0.17f);
 
@@ -372,9 +382,7 @@ public class RouteScreen : MonoBehaviour
     {
         Image bg = Circle("Node Boss", mapArea, boss.pos, 96f, UITheme.Alpha(UITheme.BrassDeep, 1f));
         bg.raycastTarget = true;
-        Outline ring = bg.gameObject.AddComponent<Outline>();
-        ring.effectColor = UITheme.Brass;
-        ring.effectDistance = new Vector2(3f, -3f);
+        Ring(bg.transform, UITheme.Brass);
         Icon(bg.transform, IconPainter.Boss, UITheme.Brass, 0.2f);
 
         Text name = UIBuilder.Label("Name", bg.transform, bossName, 22, UITheme.Brass, TextAnchor.MiddleLeft);
@@ -384,7 +392,10 @@ public class RouteScreen : MonoBehaviour
         Button b = bg.gameObject.AddComponent<Button>();
         b.targetGraphic = bg;
         HoverColors(b);
-        bg.gameObject.AddComponent<RouteNodeHover>().Setup(this, bossName, "다음 챕터 전투. 여기에 들어서면 지도를 떠난다.");
+        bool endless = GameManager.Instance != null && GameManager.Instance.IsEndless;
+        bg.gameObject.AddComponent<RouteNodeHover>().Setup(this, bossName, endless
+            ? "정체를 알 수 없는 보스. 쓰러뜨리면 다음 회차로 넘어가고, 적이 더 강해진다."
+            : "다음 챕터 전투. 여기에 들어서면 지도를 떠난다.");
         return bg;
     }
 
@@ -396,6 +407,18 @@ public class RouteScreen : MonoBehaviour
         rt.sizeDelta = new Vector2(size, size);
         Image img = rt.gameObject.AddComponent<Image>();
         img.sprite = ProceduralSprites.Circle();
+        img.color = color;
+        img.raycastTarget = false;
+        return img;
+    }
+
+    /// <summary>원 칸에 고른 굵기의 테두리를 두른다 (Outline 컴포넌트는 원에서 테가 울퉁불퉁해진다)</summary>
+    private static Image Ring(Transform circle, Color color)
+    {
+        RectTransform rt = UIBuilder.Rect("Ring", circle);
+        UIBuilder.Stretch(rt);
+        Image img = rt.gameObject.AddComponent<Image>();
+        img.sprite = ProceduralSprites.Ring();
         img.color = color;
         img.raycastTarget = false;
         return img;
@@ -450,16 +473,20 @@ public class RouteScreen : MonoBehaviour
     private Text mapTitle, mapSub, hoverText;
 
     /// <summary>칸에 마우스를 올리면 아래쪽에 이름/설명 (RouteNodeHover가 부름)</summary>
-    public void ShowHover(string name, string desc)
+    public void ShowHover(string name, string desc, Transform node = null)
     {
         hoverName = name;
         hoverDesc = desc;
+        hoveredNode = node;
     }
 
-    public void HideHover(string name)
+    public void HideHover(string name, Transform node = null)
     {
         if (hoverName == name) hoverName = null;
+        if (node == null || hoveredNode == node) hoveredNode = null;
     }
+
+    private Transform hoveredNode;   // 마우스를 올린 칸 (갈 수 있는 칸이면 또렷하게 커진다)
 
     private void SetMapMode(bool map)
     {
@@ -469,6 +496,7 @@ public class RouteScreen : MonoBehaviour
             c.gameObject.SetActive(!map);
         if (map) gridArea.gameObject.SetActive(false);
         hoverName = null;
+        hoveredNode = null;
     }
 
     // ─────────────────────────── 칸 종류 ───────────────────────────
@@ -521,7 +549,7 @@ public class RouteScreen : MonoBehaviour
         {
             case NodeType.Fight:    return "전투";
             case NodeType.Elite:    return "강적";
-            case NodeType.Rest:     return "휴식 — 꺼지지 않은 가로등";
+            case NodeType.Rest:     return "휴식: 꺼지지 않은 가로등";
             case NodeType.Remove:   return "고철 수거상";
             case NodeType.Treasure: return "떠내려온 궤짝";
             default:                return "알 수 없는 골목";
@@ -566,13 +594,14 @@ public class RouteScreen : MonoBehaviour
             if (fightStage == null || fightStage.enemies.Count == 0) yield break;
             stage = ScriptableObject.CreateInstance<BattleStageData>();
             temporary = true;
-            stage.stageName = fightStage.stageName + (elite ? " — 강적" : " — 잔당");
+            stage.stageName = fightStage.stageName + (elite ? " (강적)" : " (잔당)");
             stage.backdrop = fightStage.backdrop;
             if (elite) stage.enemies.AddRange(fightStage.enemies);
             else stage.enemies.Add(fightStage.enemies[UnityEngine.Random.Range(0, fightStage.enemies.Count)]);
         }
 
         bool won = false;
+        BattleManager.NextBackdrop = PickBackdrop();   // 챕터마다 다른 배경 (방금 본 배경은 피한다)
         GameManager.Instance.StartRouteBattle(stage, () => won = true);
         while (LoadingScreen.IsOpen && !LoadingScreen.Covered) yield return null;   // 로딩 화면이 다 덮은 뒤에 지도를 내린다 (그 사이 지난 전투 무대가 비치지 않게)
         root.gameObject.SetActive(false);
@@ -581,6 +610,17 @@ public class RouteScreen : MonoBehaviour
         if (temporary) Destroy(stage);
 
         if (elite) yield return PickNewCard("강적을 쓰러뜨렸다", "쓰러진 적의 품에서 젖지 않은 태엽판이 나온다. 한 장을 챙긴다.");
+    }
+
+    /// <summary>이 챕터 지도의 전투 배경 하나 (방금 본 배경은 되도록 피한다). 목록이 비었으면 null = 무대 배경 그대로</summary>
+    private BackdropType? PickBackdrop()
+    {
+        if (backdropPool == null || backdropPool.Count == 0) return null;
+        List<BackdropType> pool = new List<BackdropType>(backdropPool);
+        if (pool.Count > 1 && lastBackdrop.HasValue) pool.Remove(lastBackdrop.Value);
+        BackdropType pick = pool[UnityEngine.Random.Range(0, pool.Count)];
+        lastBackdrop = pick;
+        return pick;
     }
 
     /// <summary>휴식: 체력을 회복하거나, 마른 자리에서 태엽판 하나를 손봐서 버린다 (둘 중 하나)</summary>
@@ -596,7 +636,7 @@ public class RouteScreen : MonoBehaviour
 
             Clear();
             titleText.text = title;
-            subText.text = "휴식 — 하나를 고른다";
+            subText.text = "휴식: 하나를 고른다";
             bodyText.text = "비를 피할 처마 밑, 가로등 하나가 아직 켜져 있다. 여기만은 물이 닿지 않아 바닥이 말라 있다.";
             AddButton($"태엽을 쉬게 한다  →  <color={UITheme.HexGood}>체력 +{amount}</color>", false, () => choice = 1, true, 560f);
             AddButton(canRemove ? "마른 자리에서 태엽판을 손본다  →  덱에서 1장 버리기"
@@ -645,7 +685,11 @@ public class RouteScreen : MonoBehaviour
     private IEnumerator Event()
     {
         List<RouteEvent> events = Events().FindAll(e => e.available == null || e.available());
-        RouteEvent ev = events[UnityEngine.Random.Range(0, events.Count)];
+        // 이번 지도에서 이미 본 이벤트는 되도록 다시 나오지 않게 (다 봤으면 처음부터)
+        List<RouteEvent> fresh = events.FindAll(e => !seenEvents.Contains(e.title));
+        if (fresh.Count == 0) { seenEvents.Clear(); fresh = events; }
+        RouteEvent ev = fresh[UnityEngine.Random.Range(0, fresh.Count)];
+        seenEvents.Add(ev.title);
 
         EventOption chosen = null;
         Clear();
@@ -716,7 +760,7 @@ public class RouteScreen : MonoBehaviour
         };
         bench.options.Add(new EventOption
         {
-            label = "◈ 흡수한 태엽판 1장을 정화한다  →  침식이 사라진다",
+            label = "❖ 흡수한 태엽판 1장을 정화한다  →  침식이 사라진다",
             available = () => Deck.Exists(e => e.absorbed),
             run = Purify,
         });
@@ -770,7 +814,7 @@ public class RouteScreen : MonoBehaviour
         };
         oilSlick.options.Add(new EventOption
         {
-            label = "◈ 흡수한 태엽판에 기름을 먹인다  →  1장 정화",
+            label = "❖ 흡수한 태엽판에 기름을 먹인다  →  1장 정화",
             available = () => Deck.Exists(e => e.absorbed),
             run = Purify,
         });
@@ -800,6 +844,144 @@ public class RouteScreen : MonoBehaviour
         });
         rustPool.options.Add(new EventOption { label = "지나간다", run = Nothing });
         list.Add(rustPool);
+
+        RouteEvent watch = new RouteEvent
+        {
+            title = "멈춘 회중시계",
+            body = "물이 빠진 계단참에 회중시계 하나가 멈춰 있다. 태엽을 감으면 다시 갈 것 같지만, 태엽 끝이 날카롭게 벼려져 있다.",
+        };
+        watch.options.Add(new EventOption
+        {
+            label = $"태엽을 끝까지 감는다  <color={UITheme.HexBad}>체력 -7</color>  →  <color={UITheme.HexGood}>최대 체력 +6</color>",
+            available = () => Player != null && Player.Hp > 7,
+            run = WindWatch,
+        });
+        watch.options.Add(new EventOption { label = "주머니에 넣지 않고 지나간다", run = Nothing });
+        list.Add(watch);
+
+        RouteEvent tinker = new RouteEvent
+        {
+            title = "떠돌이 수리공",
+            body = "삐걱거리는 손수레를 끄는 수리공이 길을 막는다. \"고칠 게 있으면 말하라고. 값은 기름 대신 피 몇 방울이면 돼.\"",
+        };
+        tinker.options.Add(new EventOption
+        {
+            label = $"부품을 맞춘다  <color={UITheme.HexBad}>체력 -6</color>  →  부품 3개 중 1개",
+            available = () => Player != null && Player.Hp > 6 && UnownedItems().Count > 0,
+            run = TinkerItem,
+        });
+        tinker.options.Add(new EventOption
+        {
+            label = "태엽판 1장을 맡긴다  →  덱에서 삭제",
+            available = () => Deck.Count > MinDeckSize,
+            run = () => Remove("떠돌이 수리공", "수리공에게 넘길 태엽판을 고른다. \"이건 내가 쓸모 있게 써 주지.\""),
+        });
+        tinker.options.Add(new EventOption { label = "고개를 젓는다", run = Nothing });
+        list.Add(tinker);
+
+        RouteEvent bell = new RouteEvent
+        {
+            title = "가라앉은 종",
+            body = "무너진 종탑의 종이 물속에 반쯤 잠겨 물살에 낮게 웅웅거린다. 녹슨 망치가 종 옆에 걸려 있다.",
+        };
+        bell.options.Add(new EventOption
+        {
+            label = $"종을 친다  →  반반 확률로 태엽판 3장 중 1장 / <color={UITheme.HexBad}>체력 -8</color>",
+            available = () => Player != null && Player.Hp > 8,
+            run = RingBell,
+        });
+        bell.options.Add(new EventOption
+        {
+            label = $"울림에 귀를 기울인다  →  <color={UITheme.HexGood}>체력 +7</color>",
+            run = () => HealBy(7, "낮은 울림이 물결을 따라 번진다. 어지럽던 태엽 소리가 그 박자에 맞춰 차분해진다."),
+        });
+        list.Add(bell);
+
+        RouteEvent puppet = new RouteEvent
+        {
+            title = "태엽 인형극",
+            body = "무너진 광장에서 태엽 인형들이 관객도 없이 극을 이어 간다. 인형 하나가 무대에서 내려와 손을 내민다. 맞바꾸자는 몸짓이다.",
+        };
+        puppet.options.Add(new EventOption
+        {
+            label = "태엽판 1장을 내준다  →  태엽판 3장 중 1장",
+            available = () => Deck.Count > MinDeckSize,
+            run = PuppetTrade,
+        });
+        puppet.options.Add(new EventOption
+        {
+            label = $"끝까지 관람한다  →  <color={UITheme.HexGood}>체력 +5</color>",
+            run = () => HealBy(5, "막이 내리자 인형들이 일제히 고개를 숙인다. 박수 칠 사람은 나 하나뿐이다."),
+        });
+        list.Add(puppet);
+
+        RouteEvent diary = new RouteEvent
+        {
+            title = "떠내려온 일기장",
+            body = "물에 불은 일기장이 발치에 걸린다. 마지막 장에는 '물이 차오르던 밤, 종지기는 종을 멈추지 않았다'고 적혀 있다.",
+        };
+        diary.options.Add(new EventOption
+        {
+            label = $"끝까지 읽는다  →  <color={UITheme.HexGood}>체력 +6</color>",
+            run = () => HealBy(6, "누군가도 이 물속을 버텼다. 그 사실 하나가 이상하게 힘이 된다."),
+        });
+        diary.options.Add(new EventOption
+        {
+            label = $"마른 장을 뜯어 관절을 감싼다  →  <color={UITheme.HexGood}>최대 체력 +3</color>",
+            run = () => GainMaxHp(3, "종이를 겹겹이 감아 물이 스미던 관절을 막는다. 미안한 마음에 일기장을 품에 넣는다."),
+        });
+        list.Add(diary);
+
+        RouteEvent scale = new RouteEvent
+        {
+            title = "기울어진 저울",
+            body = "광장 가운데 커다란 저울이 한쪽으로 기울어 있다. 빈 접시에는 '올린 무게만큼 돌려준다'고 새겨져 있다.",
+            available = () => UnownedItems().Count > 0,
+        };
+        scale.options.Add(new EventOption
+        {
+            label = $"몸의 태엽을 올린다  <color={UITheme.HexBad}>최대 체력 -5</color>  →  부품 3개 중 1개",
+            available = () => Player != null && Player.MaxHp > 25,
+            run = ScaleTrade,
+        });
+        scale.options.Add(new EventOption { label = "아무것도 올리지 않는다", run = Nothing });
+        list.Add(scale);
+
+        RouteEvent shadow = new RouteEvent
+        {
+            title = "웅덩이 속 그림자",
+            body = "웅덩이에 비친 내 그림자가 혼자 일어선다. 내 태엽판을 그대로 흉내 내며 칼끝을 겨눈다.",
+        };
+        shadow.options.Add(new EventOption
+        {
+            label = $"맞선다  →  <color={UITheme.HexEnemy}>강적 전투</color>  (이기면 태엽판 3장 중 1장)",
+            run = () => Fight(true),
+        });
+        shadow.options.Add(new EventOption
+        {
+            label = $"물을 흐려 그림자를 지운다  →  <color={UITheme.HexBad}>체력 -4</color>",
+            run = BlurShadow,
+        });
+        list.Add(shadow);
+
+        RouteEvent cistern = new RouteEvent
+        {
+            title = "빗물 저수조",
+            body = "지붕 위 저수조에 맑은 빗물이 고여 있다. 녹물이 섞이지 않은 물은 이 마을에서 드물다.",
+        };
+        int drink = Player != null ? Mathf.Max(1, Player.MaxHp / 4) : 10;
+        cistern.options.Add(new EventOption
+        {
+            label = $"실컷 마신다  →  <color={UITheme.HexGood}>체력 +{drink}</color>",
+            run = () => HealBy(drink, "차갑고 맑은 물이 목을 타고 내려간다. 녹 맛이 나지 않는 물이 얼마 만인지."),
+        });
+        cistern.options.Add(new EventOption
+        {
+            label = "❖ 흡수한 태엽판을 씻는다  →  1장 정화",
+            available = () => Deck.Exists(e => e.absorbed),
+            run = Purify,
+        });
+        list.Add(cistern);
 
         return list;
     }
@@ -855,12 +1037,12 @@ public class RouteScreen : MonoBehaviour
     private IEnumerator Purify()
     {
         DeckEntry picked = null;
-        yield return PickDeckEntry(titleText.text, "정화할 ◈ 태엽판을 고른다. 다시는 침식이 일어나지 않는다.",
+        yield return PickDeckEntry(titleText.text, "정화할 ❖ 태엽판을 고른다. 다시는 침식이 일어나지 않는다.",
             e => e.absorbed, "이 태엽판을 정화한다", null, e => picked = e);
 
         picked.absorbed = false;
         picked.corruption = 0;
-        yield return Message("시계공의 작업대", $"[{picked.data.cardName}]의 ◈ 표식이 지워졌다. 이제 온전히 내 것이다.");
+        yield return Message(titleText.text, $"[{picked.data.cardName}]의 ❖ 표식이 지워졌다. 이제 온전히 내 것이다.");   // 여러 이벤트가 같이 쓴다
     }
 
     /// <summary>보상 풀에서 녹을 다루는 태엽판 (녹 · 부식 효과)</summary>
@@ -885,6 +1067,66 @@ public class RouteScreen : MonoBehaviour
     {
         LoseHp(3);
         yield return PickNewCard("물에 잠긴 예배당", $"자물쇠가 손가락을 긁으며 열린다. <color={UITheme.HexBad}>체력 -3</color>\n안에 젖은 태엽판들이 들어 있다. 한 장을 챙긴다.");
+    }
+
+    private IEnumerator GainMaxHp(int amount, string text)
+    {
+        if (Player != null) Player.ChangeMaxHp(amount);
+        yield return Message(titleText.text, $"{text}\n\n<color={UITheme.HexGood}>최대 체력 +{amount}</color>   ·   " +
+                                             $"<color={UITheme.HexMuted}>체력 {Player.Hp}/{Player.MaxHp}</color>");
+    }
+
+    private IEnumerator WindWatch()
+    {
+        int lost = LoseHp(7);
+        Player.ChangeMaxHp(6);
+        yield return Message(titleText.text, "태엽이 손가락 끝을 물어뜯는다. 끝까지 감자 째깍, 하고 초침이 다시 돈다. 그 박자가 가슴속 태엽에 옮아 붙는다.\n\n" +
+                                             $"<color={UITheme.HexBad}>체력 -{lost}</color>   ·   <color={UITheme.HexGood}>최대 체력 +6</color>   ·   " +
+                                             $"<color={UITheme.HexMuted}>체력 {Player.Hp}/{Player.MaxHp}</color>");
+    }
+
+    private IEnumerator TinkerItem()
+    {
+        int lost = LoseHp(6);
+        yield return PickItem(titleText.text, $"수리공이 바늘로 손등을 찔러 기름 대신 피를 받아 간다. <color={UITheme.HexBad}>체력 -{lost}</color>\n손수레에서 부품 몇 개를 꺼내 보인다. 하나를 고른다.");
+    }
+
+    private IEnumerator RingBell()
+    {
+        if (UnityEngine.Random.value < 0.5f)
+        {
+            yield return PickNewCard(titleText.text, "데엥. 물속에서 울린 종소리에 바닥의 진흙이 들썩이고, 묻혀 있던 태엽판들이 떠오른다. 한 장을 건진다.");
+        }
+        else
+        {
+            int lost = LoseHp(8);
+            yield return Message(titleText.text, "데엥. 종소리가 물을 타고 되돌아와 온몸의 태엽을 흔든다. 이가 딱딱 부딪친다.\n\n" +
+                                                 $"<color={UITheme.HexBad}>체력 -{lost}</color>");
+        }
+    }
+
+    private IEnumerator PuppetTrade()
+    {
+        DeckEntry given = null;
+        yield return PickDeckEntry(titleText.text, "인형에게 건넬 태엽판을 고른다. 인형은 받은 만큼 돌려준다고 한다.",
+            null, "이 태엽판을 내준다", "그만둔다", e => given = e);
+        if (given == null) yield break;
+
+        Deck.Remove(given);
+        yield return PickNewCard(titleText.text, $"인형이 [{given.data.cardName}]을(를) 품에 안고 꾸벅 인사한다.\n그리고 무대 뒤에서 태엽판 몇 장을 꺼내 펼쳐 보인다.");
+    }
+
+    private IEnumerator ScaleTrade()
+    {
+        Player.ChangeMaxHp(-5);
+        yield return PickItem(titleText.text, $"가슴속 태엽 한 가닥을 풀어 접시에 올리자 저울이 반대쪽으로 기운다. <color={UITheme.HexBad}>최대 체력 -5</color>\n반대쪽 접시에서 부품들이 굴러 나온다. 하나를 고른다.");
+    }
+
+    private IEnumerator BlurShadow()
+    {
+        int lost = LoseHp(4);
+        yield return Message(titleText.text, "웅덩이를 마구 휘저었다. 그림자는 흩어졌지만, 물속에 숨어 있던 쇠붙이에 손을 베였다.\n\n" +
+                                             $"<color={UITheme.HexBad}>체력 -{lost}</color>");
     }
 
     // ─────────────────────────── 고르기 화면 ───────────────────────────
@@ -997,6 +1239,7 @@ public class RouteScreen : MonoBehaviour
         if (picked != null)
         {
             GameManager.Instance.GainItem(picked);
+            Sfx.Play(SfxId.Treasure, 1f, 0f);
             yield return Message(title, $"<color={UITheme.HexBrass}>[{picked.name}]</color>을(를) 몸에 달았다.\n\n{picked.description}\n\n" +
                                         $"<color={UITheme.HexMuted}>체력 {Player.Hp}/{Player.MaxHp}</color>   ·   <color={UITheme.HexKi}>최대 기력 {GameManager.Instance.MaxKi}</color>");
         }
@@ -1097,11 +1340,15 @@ public class RouteScreen : MonoBehaviour
             ? $"<b><color={UITheme.HexBrass}>{hoverName}</color></b>   {hoverDesc}"
             : $"<color={UITheme.HexDim}>밝게 빛나는 칸으로만 갈 수 있다 · 칸에 마우스를 올리면 설명</color>";
 
-        // 지금 갈 수 있는 칸은 숨 쉬듯 커졌다 작아진다
-        float pulse = 1f + 0.08f * (0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 4f));
+        // 지금 갈 수 있는 칸은 은은하게 숨 쉬고, 마우스를 올린 칸은 또렷하게 커진다
+        float pulse = 1f + 0.05f * (0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 4f));
+        float k = 1f - Mathf.Exp(-22f * Time.unscaledDeltaTime);
         foreach (MapNode n in reachable)
         {
-            if (n.view != null) n.view.rectTransform.localScale = Vector3.one * pulse;
+            if (n.view == null) continue;
+            float target = n.view.transform == hoveredNode ? 1.2f : pulse;
+            float s = Mathf.Lerp(n.view.rectTransform.localScale.x, target, k);
+            n.view.rectTransform.localScale = new Vector3(s, s, 1f);
         }
     }
 
@@ -1155,7 +1402,7 @@ public class RouteScreen : MonoBehaviour
         string rarityHex = "#" + ColorUtility.ToHtmlStringRGB(rarity);
         string text =
             $"<size=26><b>{card.cardName}</b></size>\n" +
-            $"<color={rarityHex}>{DiceInfo.RarityName(card.rarity)}</color> · <color={UITheme.HexKi}>기력 {card.cost}</color> · <color={UITheme.HexGold}>{TimedAction.LengthOf(card)}칸</color>\n\n" +
+            $"<color={rarityHex}>{DiceInfo.RarityName(card.rarity)}</color> · <color={UITheme.HexKi}>기력 {card.cost}</color> · <color={UITheme.HexGold}>{DiceInfo.LengthLabel(card)}</color>\n\n" +
             DiceInfo.Detail(card);
         Text label = UIBuilder.Label("Text", frame.transform, text, 19, UITheme.TextMain, TextAnchor.UpperLeft);
         UIBuilder.Stretch(label.rectTransform, 16f);
@@ -1182,7 +1429,7 @@ public class RouteScreen : MonoBehaviour
         band.raycastTarget = false;
         UIBuilder.Place(band.rectTransform, Vector2.zero, new Vector2(0f, 1f), new Vector2(0f, 0.5f), new Vector2(6f, 0f), new Vector2(5f, -14f));
 
-        string name = e.absorbed ? $"<color={UITheme.HexAbsorb}>◈ {e.data.cardName}</color>  <size=14><color={UITheme.HexAbsorb}>침식 {e.corruption}</color></size>" : e.data.cardName;
+        string name = e.absorbed ? $"<color={UITheme.HexAbsorb}>❖ {e.data.cardName}</color>  <size=14><color={UITheme.HexAbsorb}>침식 {e.corruption}</color></size>" : e.data.cardName;
         Text t = UIBuilder.Label("Text", tile.transform,
             $"<b>{name}</b>\n<size=15><color={UITheme.HexKi}>기력 {e.data.cost}</color>  {DiceInfo.Summary(e.data)}</size>",
             19, UITheme.TextMain, TextAnchor.MiddleLeft);
@@ -1302,6 +1549,12 @@ public class RouteScreen : MonoBehaviour
 
         BuildMapLayer(screen, dim.rectTransform);
 
+        // 지도 ↔ 사건 화면이 바뀔 때 툭 튀지 않고 빠르게 스며 나온다
+        UIPop.Ensure(screen.mapLayer.gameObject, 1f, 0.15f);
+        foreach (Component c in new Component[] { screen.titleText, screen.subText, screen.bodyText, screen.buttonRow })
+            UIPop.Ensure(c.gameObject, 1f, 0.15f);
+        UIPop.Ensure(screen.choiceRow.gameObject, 0.97f, 0.15f);
+
         dim.gameObject.SetActive(false);
         return screen;
     }
@@ -1317,7 +1570,8 @@ public class RouteScreen : MonoBehaviour
         screen.mapTitle.fontStyle = FontStyle.Bold;
         UIBuilder.Place(screen.mapTitle.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(60f, -36f), new Vector2(500f, 60f));
         screen.mapSub = UIBuilder.Label("Sub", screen.mapLayer, "", 22, UITheme.TextMuted, TextAnchor.MiddleLeft);
-        UIBuilder.Place(screen.mapSub.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(62f, -96f), new Vector2(500f, 32f));
+        UIBuilder.Place(screen.mapSub.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(62f, -96f), new Vector2(820f, 32f));
+        screen.mapSub.supportRichText = true;
 
         // 지도판 (위아래로 긴 먹색 판, 테두리 황동)
         Image board = UIBuilder.Panel("Board", screen.mapLayer, UITheme.Alpha(UITheme.InkSolid, 0.94f));
@@ -1337,9 +1591,7 @@ public class RouteScreen : MonoBehaviour
         {
             Vector2 pos = new Vector2(-70f, 120f - i * 50f);
             Image dot = Circle("Key", legend.rectTransform, pos, 42f, UITheme.InkSolid);
-            Outline ring = dot.gameObject.AddComponent<Outline>();
-            ring.effectColor = TypeColor(order[i]);
-            ring.effectDistance = new Vector2(1.5f, -1.5f);
+            Ring(dot.transform, TypeColor(order[i]));
             Icon(dot.transform, TypeIcon(order[i]), TypeColor(order[i]), 0.17f);
             string label = order[i] == NodeType.Rest ? "휴식" : order[i] == NodeType.Event ? "이벤트" : TypeName(order[i]);
             Text t = UIBuilder.Label("Label", legend.transform, label, 20, UITheme.TextMain, TextAnchor.MiddleLeft);
@@ -1373,7 +1625,7 @@ public class RouteNodeHover : MonoBehaviour, UnityEngine.EventSystems.IPointerEn
         this.desc = desc;
     }
 
-    public void OnPointerEnter(UnityEngine.EventSystems.PointerEventData e) { if (screen != null) screen.ShowHover(title, desc); }
+    public void OnPointerEnter(UnityEngine.EventSystems.PointerEventData e) { if (screen != null) screen.ShowHover(title, desc, transform); }
 
-    public void OnPointerExit(UnityEngine.EventSystems.PointerEventData e) { if (screen != null) screen.HideHover(title); }
+    public void OnPointerExit(UnityEngine.EventSystems.PointerEventData e) { if (screen != null) screen.HideHover(title, transform); }
 }

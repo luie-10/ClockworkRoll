@@ -235,7 +235,7 @@ public class WorkshopBackdrop : StageBackdrop
         // 흩어진 부품: 작은 톱니 · 나사 · 회중시계
         for (int i = 0; i < 9; i++)
         {
-            Vector3 p = b + new Vector3(-1.4f + (float)rng.NextDouble() * 2.4f, 1.15f, -0.5f + (float)rng.NextDouble() * 1f);
+            Vector3 p = b + new Vector3(-1.4f + (float)rng.NextDouble() * 2.4f, 1.15f + i * 0.006f, -0.5f + (float)rng.NextDouble() * 1f);
             float s = 0.1f + (float)rng.NextDouble() * 0.2f;
             Cylinder("Part", p, new Vector3(s, 0.02f, s), Vector3.zero, rng.NextDouble() < 0.6 ? brass : iron, root);
         }
@@ -267,7 +267,7 @@ public class WorkshopBackdrop : StageBackdrop
     {
         for (int i = 0; i < 6; i++)
         {
-            Vector3 p = new Vector3(-8f + (float)rng.NextDouble() * 16f, 0.02f, 4f + (float)rng.NextDouble() * 4f);
+            Vector3 p = new Vector3(-8f + (float)rng.NextDouble() * 16f, 0.02f + i * 0.007f, 4f + (float)rng.NextDouble() * 4f);   // 서로 포개져도 면이 겹치지 않게 높이를 조금씩
             float s = 0.3f + (float)rng.NextDouble() * 0.6f;
             Cylinder("FloorGear", p, new Vector3(s, 0.02f, s), Vector3.zero, rng.NextDouble() < 0.5 ? brass : iron, root);
         }

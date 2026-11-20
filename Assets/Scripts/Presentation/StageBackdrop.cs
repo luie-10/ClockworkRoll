@@ -8,7 +8,12 @@ public enum BackdropType
     ClockTower,   // 태엽 장치 (톱니바퀴 + 큰 시계)
     FloodedStreet,// 물에 잠긴 거리 (발목까지 찬 물 + 멀리 종탑)
     Sewer,        // 하수도 (둥근 천장 터널 + 수로)
-    Workshop      // 시계공의 공방 (벽 가득한 시계 + 작업대)
+    Workshop,     // 시계공의 공방 (벽 가득한 시계 + 작업대)
+    Rooftops,     // 지붕 위 (옥상 + 멀리 이어진 지붕들 + 달)
+    Foundry,      // 주조소 (쇳물 도랑 + 도가니 + 플라이휠)
+    Station,      // 멈춘 기차역 (승강장 + 선 객차 + 역 시계)
+    Garden,       // 태엽 정원 (온실 뼈대 + 태엽 꽃 + 분수)
+    Market        // 밤 장터 (좌판 + 줄무늬 차양 + 등롱 줄)
 }
 
 /// <summary>
@@ -33,6 +38,11 @@ public abstract class StageBackdrop : MonoBehaviour
         { BackdropType.FloodedStreet, typeof(FloodedStreetBackdrop) },
         { BackdropType.Sewer, typeof(SewerBackdrop) },
         { BackdropType.Workshop, typeof(WorkshopBackdrop) },
+        { BackdropType.Rooftops, typeof(RooftopsBackdrop) },
+        { BackdropType.Foundry, typeof(FoundryBackdrop) },
+        { BackdropType.Station, typeof(StationBackdrop) },
+        { BackdropType.Garden, typeof(GardenBackdrop) },
+        { BackdropType.Market, typeof(MarketBackdrop) },
     };
 
     /// <summary>지금 화면에 보이는 배경</summary>
@@ -351,8 +361,8 @@ public abstract class StageBackdrop : MonoBehaviour
 
         for (int y = 0; y < size; y++)
         {
-            int b = y / bandH;
-            int ly = y % bandH;
+            int b = Mathf.Min(bands - 1, y / bandH);   // 256이 띠 수로 나눠떨어지지 않으면 남는 몇 줄은 마지막 띠로 (넘치면 IndexOutOfRange)
+            int ly = y - b * bandH;
             for (int x = 0; x < size; x++)
             {
                 float v = tone[b] * (0.85f + grain * Mathf.PerlinNoise(x * 0.02f + b * 3.1f, y * 0.35f));

@@ -35,6 +35,9 @@ MonoBehaviour:
   behavior: 5
   trait: 6
   traitAmount: 1
+  extraTraits:
+  - trait: 12
+    amount: 2
   deck:
   - {fileID: 11400000, guid: 60fb7e29dc5488b4f58a214d48ddd058, type: 2}
   - {fileID: 11400000, guid: d6eddaad42be87bc2c026bd889a21601, type: 2}

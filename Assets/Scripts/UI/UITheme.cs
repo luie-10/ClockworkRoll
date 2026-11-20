@@ -238,8 +238,12 @@ public static class UITheme
     {
         if (root == null) return;
 
-        // 0) 모든 글자의 두꺼운 외곽선 → 옅은 그림자
-        foreach (Text t in root.GetComponentsInChildren<Text>(true)) SoftShadow(t);
+        // 0) 씬에 저장된 글자도 게임 글꼴로 + 두꺼운 외곽선 → 옅은 그림자
+        foreach (Text t in root.GetComponentsInChildren<Text>(true))
+        {
+            if (UIBuilder.DefaultFont != null) t.font = UIBuilder.DefaultFont;
+            SoftShadow(t);
+        }
 
         // 1) 상단 가운데: 무대 이름 + 단계 표시
         Image banner = FindImage(root, "StageBanner");
@@ -261,7 +265,7 @@ public static class UITheme
         if (res != null)
         {
             StylePanel(res, Ink, BrassLine);
-            Place(res.rectTransform, Vector2.zero, new Vector2(24f, 20f), new Vector2(210f, 76f));
+            Place(res.rectTransform, Vector2.zero, new Vector2(24f, 20f), new Vector2(250f, 64f));   // 기력 구슬 · 장력 게이지가 들어갈 폭
             res.rectTransform.SetAsLastSibling();   // 손패 받침대의 그늘에 덮이지 않게
 
             Text ki = FindText(res.transform, "KiText");

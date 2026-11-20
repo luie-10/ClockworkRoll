@@ -133,6 +133,10 @@ public class DamagePopup : MonoBehaviour
     {
         if (builtinFont != null) return builtinFont;
 
+        // UI와 같은 게임 글꼴 (머리 위 숫자 · 이름표 · 말풍선도 같은 글꼴로)
+        builtinFont = UIBuilder.DefaultFont;
+        if (builtinFont != null) return builtinFont;
+
         // 유니티 버전에 따라 내장 폰트 이름이 다르다 (2022+ : LegacyRuntime.ttf)
         try { builtinFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf"); } catch { }
         if (builtinFont == null)

@@ -13,9 +13,9 @@ public class DialogueLine
 
 /// <summary>
 /// 챕터 1개 = 인트로 대사 + 전투 무대(선택) + 아웃트로 대사 + 보상 카드
-/// Project 창 우클릭 → Create → Ruina → Chapter 로 에셋 생성
+/// Project 창 우클릭 → Create → ClockworkRoll → Chapter 로 에셋 생성
 /// </summary>
-[CreateAssetMenu(fileName = "NewChapter", menuName = "Ruina/Chapter", order = 2)]
+[CreateAssetMenu(fileName = "NewChapter", menuName = "ClockworkRoll/Chapter", order = 2)]
 public class ChapterData : ScriptableObject
 {
     public string chapterTitle;   // 챕터 제목 (예: "1막 2층. 환영의 꿈")
@@ -37,4 +37,7 @@ public class ChapterData : ScriptableObject
     public List<BattleStageData> routeFights = new List<BattleStageData>();
     [Tooltip("'강' 칸 — 무작위로 하나 (이기면 태엽판 3장 중 1장)")]
     public List<BattleStageData> routeElites = new List<BattleStageData>();
+
+    [Tooltip("이 챕터 지도의 전투에서 쓸 3D 배경들 (전 · 강 칸마다 하나씩, 되도록 겹치지 않게). 비워 두면 적 무리 무대의 배경을 그대로 쓴다")]
+    public List<BackdropType> routeBackdrops = new List<BackdropType>();
 }

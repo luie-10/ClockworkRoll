@@ -1,0 +1,16 @@
+name = "clockworkroll-ranking"
+main = "src/index.js"
+compatibility_date = "2025-06-01"
+
+[vars]
+MIN_LOOP_SECONDS = "60"
+
+# database_id는 `npx wrangler d1 create clockworkroll-ranking` 이 알려 주는 값으로 바꾼다
+[[d1_databases]]
+binding = "DB"
+database_name = "clockworkroll-ranking"
+database_id = "84534fa8-ab07-4a9e-af16-0328f36b1e97"
+
+# 매시간 24시간 지난 판을 치운다
+[triggers]
+crons = ["17 * * * *"]

@@ -1,0 +1,50 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 64319ab3dd94be547b66c1346fc27ddd, type: 3}
+  m_Name: "\uC0C8\uBCBD \uC885"
+  m_EditorClassIdentifier: Assembly-CSharp::CardData
+  cardName: "\uC0C8\uBCBD \uC885"
+  cardArt: {fileID: 21300000, guid: 4201f0c264970e544bf1f190c62fceed, type: 3}
+  rarity: 2
+  cost: 2
+  requireTension: 0
+  exhaust: 0
+  innate: 0
+  cardDescription: "\uC7A0\uB4E0 \uB9C8\uC744\uC744 \uAE68\uC6B0\uB294 \uC885\uC18C\uB9AC.
+    \uB35C \uAE6C \uC801\uC5D0\uAC8C\uB294 \uB354 \uD06C\uAC8C \uC6B8\uB9B0\uB2E4."
+  diceList:
+  - diceName: 
+    diceType: 0
+    diceDetail: 2
+    minRoll: 4
+    maxRoll: 8
+    diceEffectDescription: 
+    effects:
+    - trigger: 0
+      effect: 24
+      amount: 3
+      nextTurn: 0
+    - trigger: 0
+      effect: 6
+      amount: 2
+      nextTurn: 1
+  - diceName: 
+    diceType: 0
+    diceDetail: 2
+    minRoll: 3
+    maxRoll: 6
+    diceEffectDescription: 
+    effects:
+    - trigger: 0
+      effect: 15
+      amount: 2
+      nextTurn: 0

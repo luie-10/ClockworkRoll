@@ -67,7 +67,7 @@ namespace RuinaTest
         {
             Log("=== 인트로 대사 ===");
             yield return Say("안내", "단독 테스트다. 기력·타입 상성·동점 무효·흡수·침식을 여기서 확인한다.");
-            yield return Say("안내", "전투에서 승리하면 적의 책장이 ◈ 흡수되고, 사용 시 침식이 발동할 수 있다.");
+            yield return Say("안내", "전투에서 승리하면 적의 책장이 ❖ 흡수되고, 사용 시 침식이 발동할 수 있다.");
 
             yield return BattleRoutine();
 
@@ -80,7 +80,7 @@ namespace RuinaTest
             Log("=== 승리! 적의 책장을 흡수한다 ===");
             AbsorbSpoils();
 
-            yield return Say("안내", "아웃트로. 흡수된 책장(◈)은 다음 전투의 손패에 등장한다.");
+            yield return Say("안내", "아웃트로. 흡수된 책장(❖)은 다음 전투의 손패에 등장한다.");
 
             Log("=== 클리어! 테스트 완료 ===");
         }
@@ -121,7 +121,7 @@ namespace RuinaTest
                 // ── 내 턴 ──
                 ki = Mathf.Min(ki + kiPerTurn, 20);
                 Refill();
-                Log($"── 내 턴 (기력 {ki}, 손패 {hand.Count}장) ──");
+                Log($"―― 내 턴 (기력 {ki}, 손패 {hand.Count}장) ――");
 
                 int actions = 3;
                 while (actions > 0)
@@ -141,7 +141,7 @@ namespace RuinaTest
                 if (AllDead(enemies)) yield break;
 
                 // ── 적의 턴 ──
-                Log("── 적의 턴 ──");
+                Log("―― 적의 턴 ――");
                 foreach (TUnit enemy in enemies)
                 {
                     if (!enemy.IsAlive) continue;
@@ -307,7 +307,7 @@ namespace RuinaTest
                         copy.absorbed = true;
                         copy.corruption = 1;
                         owned.Add(copy);
-                        Log($"흡수: ◈ [{card.name}] → 내 덱에 합류 (침식 1)");
+                        Log($"흡수: ❖ [{card.name}] → 내 덱에 합류 (침식 1)");
                     }
                 }
             }

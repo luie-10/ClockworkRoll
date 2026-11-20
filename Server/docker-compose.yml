@@ -1,0 +1,20 @@
+# docker compose up -d  →  랭킹 서버 + Caddy(HTTPS). Caddyfile의 도메인을 바꿔서 쓴다.
+services:
+  ranking:
+    build: .
+    restart: unless-stopped
+    environment:
+      - RANK_SECRET=${RANK_SECRET:-}
+      - MIN_LOOP_SECONDS=60
+    volumes:
+      - ranking-data:/data
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    volumes:
+      - caddy-data:/data
+    command: caddy reverse-proxy --from ${RANK_DOMAIN:-rank.example.com} --to ranking:8787
+volumes:
+  ranking-data:
+  caddy-data:

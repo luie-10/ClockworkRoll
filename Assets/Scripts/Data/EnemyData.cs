@@ -3,9 +3,9 @@ using UnityEngine;
 
 /// <summary>
 /// 적 1종의 데이터
-/// Project 창 우클릭 → Create → Ruina → Enemy Data 로 에셋 생성
+/// Project 창 우클릭 → Create → ClockworkRoll → Enemy Data 로 에셋 생성
 /// </summary>
-[CreateAssetMenu(fileName = "NewEnemy", menuName = "Ruina/Enemy Data", order = 3)]
+[CreateAssetMenu(fileName = "NewEnemy", menuName = "ClockworkRoll/Enemy Data", order = 3)]
 public class EnemyData : ScriptableObject
 {
     [Tooltip("종류 이름 (예: 골목 쥐) — 머리 위에 별명 옆에 작게 표시")]
@@ -43,6 +43,8 @@ public class EnemyData : ScriptableObject
     [Tooltip("특성의 수치 n (특성마다 뜻이 다르다 — 철갑 n, 회복 n, 피해 n ...)")]
     [Min(0)]
     public int traitAmount = 1;
+    [Tooltip("추가 특성 — 위의 특성과 함께 걸린다 (보스 · 강적용)")]
+    public List<EnemyTraitEntry> extraTraits = new List<EnemyTraitEntry>();
 
     [Header("이 적이 사용하는 태엽판(카드) 목록")]
     public List<CardData> deck = new List<CardData>();
@@ -56,6 +58,14 @@ public class EnemyData : ScriptableObject
     public List<string> hurtBarks = new List<string>();
     [Tooltip("쓰러질 때")]
     public List<string> deathBarks = new List<string>();
+}
+
+/// <summary>특성 하나와 그 수치 n</summary>
+[System.Serializable]
+public class EnemyTraitEntry
+{
+    public EnemyTrait trait;
+    [Min(0)] public int amount = 1;
 }
 
 /// <summary>
@@ -88,7 +98,14 @@ public enum EnemyTrait
     Punctual,   // 정시: 3·6·9·12시 칸에서 굴리면 위력 +n
     Counter,    // 반격: 수비 칸으로 합을 이기면 상대에게 피해 n
     Leech,      // 흡혈: 공격이 적중하면 체력 n 회복
-    Volatile    // 폭발: 쓰러질 때 상대에게 피해 n
+    Volatile,   // 폭발: 쓰러질 때 상대에게 피해 n
+    Thorns,     // 가시: 공격에 맞을 때마다 공격한 쪽에게 피해 n
+    Enrage,     // 분노: 체력이 절반 이하면 모든 칸 위력 +n
+    Guardian,   // 수호: 라운드 시작 시 가장 다친 동료(없으면 자신)에게 철갑 n
+    Nocturnal,  // 야행: 7~12시(밤) 칸에서 굴리면 위력 +n
+    Martyr,     // 순교: 쓰러질 때 살아 있는 동료 모두 힘 n
+    Ambush,     // 매복: 맞서는 칸이 없으면(일방 공격) 위력 +n
+    Hex         // 저주: 라운드 시작 시 상대에게 허약 n
 }
 
 /// <summary>행동 유형 / 특성의 표시용 이름과 설명 (정보창)</summary>
@@ -138,6 +155,13 @@ public static class EnemyTypeInfo
             case EnemyTrait.Counter:  return "반격";
             case EnemyTrait.Leech:    return "흡혈";
             case EnemyTrait.Volatile: return "폭발";
+            case EnemyTrait.Thorns:   return "가시";
+            case EnemyTrait.Enrage:   return "분노";
+            case EnemyTrait.Guardian: return "수호";
+            case EnemyTrait.Nocturnal:return "야행";
+            case EnemyTrait.Martyr:   return "순교";
+            case EnemyTrait.Ambush:   return "매복";
+            case EnemyTrait.Hex:      return "저주";
             default:                  return "";
         }
     }
@@ -155,6 +179,13 @@ public static class EnemyTypeInfo
             case EnemyTrait.Counter:  return $"수비 칸으로 합을 이기면 상대에게 피해 {n}";
             case EnemyTrait.Leech:    return $"공격이 적중하면 체력 {n} 회복";
             case EnemyTrait.Volatile: return $"쓰러질 때 상대에게 피해 {n}";
+            case EnemyTrait.Thorns:   return $"공격에 맞으면 공격한 쪽에게 피해 {n}";
+            case EnemyTrait.Enrage:   return $"체력이 절반 이하면 모든 칸 위력 +{n}";
+            case EnemyTrait.Guardian: return $"라운드마다 가장 다친 동료에게 철갑 {n}";
+            case EnemyTrait.Nocturnal:return $"밤(7~12시) 칸의 위력 +{n}";
+            case EnemyTrait.Martyr:   return $"쓰러질 때 동료 모두 힘 {n}";
+            case EnemyTrait.Ambush:   return $"맞서는 칸이 없으면 위력 +{n}";
+            case EnemyTrait.Hex:      return $"라운드마다 상대에게 허약 {n}";
             default:                  return "";
         }
     }

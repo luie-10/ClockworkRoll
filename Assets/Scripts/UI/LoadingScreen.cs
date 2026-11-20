@@ -27,7 +27,7 @@ public class LoadingScreen : MonoBehaviour
         public float minTime;
     }
 
-    private const float FadeIn = 0.22f, FadeOut = 0.32f;
+    private const float FadeIn = 0.15f, FadeOut = 0.2f;
     private const float WorkBudget = 0.008f;   // 한 프레임에 work에 쓰는 시간(초) — 톱니가 끊기지 않게
 
     private static readonly string[] tips =
@@ -37,7 +37,7 @@ public class LoadingScreen : MonoBehaviour
         "참격은 관통에, 관통은 타격에, 타격은 참격에 강하다. 앞서면 굴림 +2.",
         "회피는 공격 칸을 상대로 굴림 +2.",
         "합이 이어질수록 장력이 오른다. 장력 단계만큼 더 많은 기억을 삼킬 수 있다.",
-        "◈ 흡수한 태엽판은 쓸 때마다 침식이 일어날 수 있다.",
+        "❖ 흡수한 태엽판은 쓸 때마다 침식이 일어날 수 있다.",
         "체력은 전투가 끝나도 돌아오지 않는다. 가로등 아래에서 쉬어 가자.",
         "녹이 슬면 칸의 최댓값이 깎인다. 굴릴 때마다 1씩 벗겨진다.",
         "적을 클릭하면 그 적의 다음 행동에 맞부딪히는 시각에 태엽판이 놓인다.",

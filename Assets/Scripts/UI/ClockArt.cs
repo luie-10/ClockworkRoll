@@ -20,23 +20,25 @@ public static class ClockArt
 
     private static Sprite face, hand, hub, ring, glow, socket, token;
 
-    public static Sprite Face { get { return face != null ? face : face = Make("ClockFace", PaintFace(512), 512, 512, new Vector2(0.5f, 0.5f)); } }
-    public static Sprite Hand { get { return hand != null ? hand : hand = Make("ClockHand", PaintHand(HandW, HandH), HandW, HandH, new Vector2(0.5f, HandPivot)); } }
-    public static Sprite Hub { get { return hub != null ? hub : hub = Make("ClockHub", PaintHub(64), 64, 64, new Vector2(0.5f, 0.5f)); } }
-    public static Sprite Ring { get { return ring != null ? ring : ring = Make("ClockRing", PaintRing(128, 0.86f, 0.97f, 0.015f), 128, 128, new Vector2(0.5f, 0.5f)); } }
-    public static Sprite Glow { get { return glow != null ? glow : glow = Make("ClockGlow", PaintRing(128, 0.6f, 0.78f, 0.2f), 128, 128, new Vector2(0.5f, 0.5f)); } }
-    public static Sprite Socket { get { return socket != null ? socket : socket = Make("ClockSocket", PaintDisc(128, 0.62f, 1f), 128, 128, new Vector2(0.5f, 0.5f)); } }
-    public static Sprite Token { get { return token != null ? token : token = Make("ClockToken", PaintDisc(64, 1f, 0.8f), 64, 64, new Vector2(0.5f, 0.5f)); } }
+    public static Sprite Face { get { return face != null ? face : face = Make("ClockFace", PaintFace(512), 512, 512, new Vector2(0.5f, 0.5f), 4, 3); } }
+    public static Sprite Hand { get { return hand != null ? hand : hand = Make("ClockHand", PaintHand(HandW, HandH), HandW, HandH, new Vector2(0.5f, HandPivot), 4); } }
+    public static Sprite Hub { get { return hub != null ? hub : hub = Make("ClockHub", PaintHub(64), 64, 64, new Vector2(0.5f, 0.5f), 4); } }
+    public static Sprite Ring { get { return ring != null ? ring : ring = Make("ClockRing", PaintRing(128, 0.86f, 0.97f, 0.015f), 128, 128, new Vector2(0.5f, 0.5f), 8); } }
+    public static Sprite Glow { get { return glow != null ? glow : glow = Make("ClockGlow", PaintRing(128, 0.6f, 0.78f, 0.2f), 128, 128, new Vector2(0.5f, 0.5f), 8, 4); } }
+    public static Sprite Socket { get { return socket != null ? socket : socket = Make("ClockSocket", PaintDisc(128, 0.62f, 1f), 128, 128, new Vector2(0.5f, 0.5f), 8); } }
+    public static Sprite Token { get { return token != null ? token : token = Make("ClockToken", PaintDisc(64, 1f, 0.8f), 64, 64, new Vector2(0.5f, 0.5f), 4); } }
 
     public const int HandW = 48, HandH = 288;
     public const float HandPivot = 48f / HandH;   // 축의 높이 (그 아래는 균형추 꼬리)
 
-    private static Sprite Make(string name, Color[] px, int w, int h, Vector2 pivot)
+    /// <summary>block · alphaLevels = 픽셀 UI로 바꿀 때 뭉칠 칸 크기 · 투명도 단계 (PixelStyle)</summary>
+    private static Sprite Make(string name, Color[] px, int w, int h, Vector2 pivot, int block, int alphaLevels = 1)
     {
         Texture2D tex = new Texture2D(w, h, TextureFormat.RGBA32, false) { name = name, wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
         tex.hideFlags = HideFlags.HideAndDontSave;
         tex.SetPixels(px);
         tex.Apply();
+        PixelStyle.Register(tex, block, alphaLevels);
         Sprite s = Sprite.Create(tex, new Rect(0, 0, w, h), pivot, 100f);
         s.name = name;
         return s;

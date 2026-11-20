@@ -58,7 +58,7 @@ public class GameManager : MonoBehaviour
     [Tooltip("시작 화면의 큰 제목")]
     public string gameTitle = "CLOCKWORK ROLL";
     [Tooltip("시작 화면 제목 아래 한 줄 소개")]
-    public string titleTagline = "멈춘 종탑 때문에 물에 잠긴 시계 마을 — 떠다니는 기억을 삼키며 종탑으로";
+    public string titleTagline = "종탑이 멈추자 마을이 물에 잠겼다. 떠다니는 기억을 삼키며 종탑으로 올라가자";
 
     [Header("침식(흡수 카드 부작용) 설정")]
     [Tooltip("침식 1인 흡수 카드를 사용할 때 발동 확률")]
@@ -80,6 +80,34 @@ public class GameManager : MonoBehaviour
 
     /// <summary>상태가 바뀔 때마다 호출 (UI 갱신용으로 구독)</summary>
     public event Action<GameState> OnStateChanged;
+
+    // ─────────────────────────── 모드 (스토리 / 무한) ───────────────────────────
+
+    public enum RunMode { Story, Endless }
+
+    /// <summary>지금 판의 모드. 씬을 다시 불러도(다시 시작) 남는다 — 시작 화면에서 고른다</summary>
+    public static RunMode Mode { get; private set; } = RunMode.Story;
+    public bool IsEndless { get { return Mode == RunMode.Endless; } }
+
+    [Header("무한 모드 (스토리 없이 지도 → ??? 보스를 끝없이 되풀이)")]
+    [Tooltip("회차가 하나 오를 때마다 적 체력 배율 +")]
+    public float endlessHpPerLoop = 0.25f;
+    [Tooltip("회차가 이만큼 오를 때마다 적의 모든 칸 위력 +1")]
+    [Min(1)] public int endlessPowerEvery = 2;
+    [Tooltip("보스는 같은 회차의 잡몹보다 체력 배율을 이만큼 더")]
+    public float endlessBossHpBonus = 0.2f;
+    [Tooltip("보스를 쓰러뜨린 뒤 회복하는 체력 비율")]
+    public float endlessLoopHealRatio = 0.3f;
+
+    [Tooltip("무한 모드 랭킹 서버 주소 (Server/ranking-server.js). 비우면 랭킹을 쓰지 않는다")]
+    public string rankingServerUrl = "https://clockworkroll-ranking.clockworkroll-ranking-worker.workers.dev";
+
+    /// <summary>무한 모드 회차 (1부터)</summary>
+    public int EndlessLoop { get; private set; }
+
+    private const string EndlessBestKey = "endless.best";
+    /// <summary>무한 모드 최고 기록 (보스까지 쓰러뜨린 회차)</summary>
+    public static int EndlessBest { get { try { return PlayerPrefs.GetInt(EndlessBestKey, 0); } catch { return 0; } } }
 
     void Awake()
     {
@@ -104,7 +132,7 @@ public class GameManager : MonoBehaviour
         {
             chapters = new List<ChapterData>(story.chapters);
             startingDeck = new List<CardData>(story.startingDeck);
-            Debug.Log($"── 스토리: {story.storyTitle} ──");
+            Debug.Log($"―― 스토리: {story.storyTitle} ――");
         }
 
         MaxKi = startingMaxKi;
@@ -119,6 +147,10 @@ public class GameManager : MonoBehaviour
 
         BattleManager.DressUnit(playerUnit);   // 그림이 비어 있으면 자동 일러스트 (스토리 장면부터 보이게)
         PauseMenu.Ensure();                    // 오른쪽 위 [메뉴] — 저장하고 나가기
+        Ranking.ServerUrl = rankingServerUrl;
+        GameStatePanel.ExtraLine = null;      // 지난 판(무한 모드)의 랭킹 줄이 남지 않게
+        UIScale.Ensure();                      // 화면 배율 (멈춤 메뉴 · Ctrl + '+' / '-')
+        TutorialCoach.Ensure();                // 처음 하는 사람에게 규칙을 장면마다 하나씩
 
         // 시작 화면 → 로딩 → 첫 챕터. '다시 시작'으로 씬을 다시 불렀으면 시작 화면 없이 바로 덮고 들어간다
         bool restarted = skipTitleOnce;
@@ -127,9 +159,12 @@ public class GameManager : MonoBehaviour
         {
             // 저장이 있으면 시작 화면에 '이어하기'가 생긴다
             SaveData save = SaveSystem.Load(StoryKey);
-            TitleScreen.Show(gameTitle, story != null ? story.storyTitle : "", titleTagline, () => BeginGame(false),
+            int best = EndlessBest;
+            TitleScreen.Show(gameTitle, story != null ? story.storyTitle : "", titleTagline, () => { Mode = RunMode.Story; BeginGame(false); },
                              save != null ? DescribeSave(save) : null,
-                             save != null ? (Action)(() => { resume = save; BeginGame(false); }) : null);
+                             save != null ? (Action)(() => { Mode = RunMode.Story; resume = save; BeginGame(false); }) : null,
+                             () => { Mode = RunMode.Endless; BeginGame(false); },
+                             best > 0 ? $"최고 기록 {best}회차" : "점점 강해지는 적 · 정체를 알 수 없는 보스");
         }
         else
             BeginGame(restarted);
@@ -143,7 +178,7 @@ public class GameManager : MonoBehaviour
     {
         Action start = StartRun;
         if (!showLoadingScreen) { start(); return; }
-        LoadingScreen.Play(story != null ? story.storyTitle : gameTitle, resume != null ? "멈춰 둔 태엽을 다시 감는 중…" : "태엽을 감는 중…",
+        LoadingScreen.Play(IsEndless ? "무한 모드" : story != null ? story.storyTitle : gameTitle, IsEndless ? "끝나지 않는 태엽을 감는 중…" : resume != null ? "멈춰 둔 태엽을 다시 감는 중…" : "태엽을 감는 중…",
                            Prewarm(), start, 1.6f, coverInstantly);
     }
 
@@ -152,6 +187,7 @@ public class GameManager : MonoBehaviour
     {
         SaveData save = resume;
         resume = null;
+        if (IsEndless) { StartEndless(); return; }
         if (save != null && Restore(save)) return;
         NextChapter();
     }
@@ -191,12 +227,14 @@ public class GameManager : MonoBehaviour
     /// <summary>전투로 들어간다 — 로딩 화면이 다 덮은 뒤에 배경과 적을 바꾼다 (끄면 바로)</summary>
     private void EnterBattle(BattleStageData stage, string caption)
     {
+        if (IsEndless) ApplyEndlessBoost(endlessBossBattle);
         Action begin = () =>
         {
             SetState(GameState.Battle);
             battleManager.StartBattle(stage, playerUnit);
         };
-        if (showLoadingScreen) LoadingScreen.Play(stage.stageName, caption, null, begin, 0.9f);
+        string title = IsEndless && endlessBossBattle ? BattleManager.HiddenName : stage.stageName;   // 무한 모드 보스는 정체를 숨긴다
+        if (showLoadingScreen) LoadingScreen.Play(title, caption, null, begin, 0.9f);
         else begin();
     }
 
@@ -211,11 +249,11 @@ public class GameManager : MonoBehaviour
         {
             SetState(GameState.Clear);
             SaveSystem.Delete();   // 끝까지 갔다 — 이어할 것이 없다
-            Debug.Log("── 모든 챕터 클리어! 게임 클리어 ──");
+            Debug.Log("―― 모든 챕터 클리어! 게임 클리어 ――");
             return;
         }
 
-        Debug.Log($"── [{ChapterIndex + 1}] {chapters[ChapterIndex].chapterTitle} ──");
+        Debug.Log($"―― [{ChapterIndex + 1}] {chapters[ChapterIndex].chapterTitle} ――");
         SaveCheckpoint(false, 0, null);   // 챕터의 첫 장면 = 이어하기 지점
         PlayChapterIntro();
     }
@@ -276,6 +314,7 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public void OnBattleWon(List<CardData> absorbed = null)
     {
+        if (IsEndless) { OnEndlessWon(absorbed); return; }
         ChapterData chapter = chapters[ChapterIndex];
 
         // 1) 고른 적의 태엽판을 흡수한다 (덱 오염 = 이 게임의 핵심 트레이드오프)
@@ -304,7 +343,7 @@ public class GameManager : MonoBehaviour
         if (chapter.battle != null && playerUnit != null && chapterClearHealRatio > 0f)
         {
             int healed = playerUnit.Heal(Mathf.CeilToInt(playerUnit.MaxHp * chapterClearHealRatio));
-            if (healed > 0) Debug.Log($"챕터 클리어 — 체력 +{healed}");
+            if (healed > 0) Debug.Log($"챕터 클리어! 체력 +{healed}");
         }
 
         // 2) 기존 보상 카드 지급 (침식 없는 순수 획득)
@@ -339,7 +378,7 @@ public class GameManager : MonoBehaviour
         {
             SetState(GameState.Route);
             ChapterData here = chapters[ChapterIndex];
-            RouteScreen.Play(routeRows, here.battle, here.routeFights, here.routeElites, next.battle.stageName, NextChapter);
+            RouteScreen.Play(routeRows, here.battle, here.routeFights, here.routeElites, next.battle.stageName, NextChapter, backdrops: here.routeBackdrops);
         }
         else
         {
@@ -362,8 +401,12 @@ public class GameManager : MonoBehaviour
     private Action routeBattleWon;   // 지도 위 전투 중이면 이긴 뒤 지도로 돌아갈 콜백
 
     /// <summary>지도의 전투 칸: 챕터 진행과 별개로 전투를 하고, 이기면 onWon (지도로 복귀). 지면 평소처럼 패배.</summary>
+    /// <summary>다음 지도 전투를 이 무대로 바꿔 친다 (홍보영상 촬영 — 한 번 쓰고 비운다)</summary>
+    public static BattleStageData StageOverride;
+
     public void StartRouteBattle(BattleStageData stage, Action onWon)
     {
+        if (StageOverride != null) { stage = StageOverride; StageOverride = null; }
         routeBattleWon = onWon;
         EnterBattle(stage, "갈래길");
     }
@@ -426,6 +469,12 @@ public class GameManager : MonoBehaviour
     public void OnBattleLost()
     {
         SetState(GameState.GameOver);
+        if (IsEndless)
+        {
+            Debug.Log($"무한 모드 {EndlessLoop}회차에서 쓰러졌다 (최고 기록 {EndlessBest}회차)");
+            EndEndlessRun();
+            return;   // 무한 모드는 저장을 쓰지 않는다 (스토리 저장을 지우지 않게)
+        }
         SaveSystem.Delete();   // 쓰러진 판은 이어할 수 없다 (처음부터 다시)
         Debug.Log("패배했습니다. 재시작 버튼 등으로 RestartScene()을 호출하세요.");
     }
@@ -451,16 +500,16 @@ public class GameManager : MonoBehaviour
             if (existing != null)
             {
                 existing.corruption++;
-                Debug.Log($"태엽판 [{card.cardName}] 재흡수 — 침식이 깊어진다 ({existing.corruption})");
+                Debug.Log($"태엽판 [{card.cardName}] 재흡수. 침식이 깊어진다 ({existing.corruption})");
             }
             else
             {
                 CardData clone = Instantiate(card);
-                clone.name = card.cardName + " ◈";
+                clone.name = card.cardName + " ❖";
                 // ◈ 표식은 CardView가 붙이므로 cardName은 원본 그대로 둔다 (◈◈ 중복 방지)
 
                 OwnedDeck.Add(new DeckEntry(clone, true, 1, card.cardName));
-                Debug.Log($"적의 태엽판 흡수: [{card.cardName}] ◈ (침식 1)");
+                Debug.Log($"적의 태엽판 흡수: [{card.cardName}] ❖ (침식 1)");
             }
         }
     }
@@ -505,6 +554,7 @@ public class GameManager : MonoBehaviour
 
     private void SaveCheckpoint(bool onRoute, int routeSeed, List<int> routePath)
     {
+        if (IsEndless) return;   // 무한 모드는 한 번에 끝까지 (스토리 저장을 덮어쓰지 않는다)
         if (playerUnit == null || OwnedDeck == null || ChapterIndex < 0 || ChapterIndex >= chapters.Count) return;
 
         SaveData s = new SaveData
@@ -555,7 +605,7 @@ public class GameManager : MonoBehaviour
             if (sc.absorbed)
             {
                 CardData clone = Instantiate(card);
-                clone.name = card.cardName + " ◈";
+                clone.name = card.cardName + " ❖";
                 deck.Add(new DeckEntry(clone, true, Mathf.Max(1, sc.corruption), sc.sourceName));
             }
             else deck.Add(new DeckEntry(card, false, 0));
@@ -574,7 +624,7 @@ public class GameManager : MonoBehaviour
             if (item != null && !OwnedItems.Contains(item)) OwnedItems.Add(item);
         }
 
-        Debug.Log($"── 이어하기: {DescribeSave(s)} ──");
+        Debug.Log($"―― 이어하기: {DescribeSave(s)} ――");
 
         if (s.onRoute)
         {
@@ -583,7 +633,7 @@ public class GameManager : MonoBehaviour
             if (here != null && here.battle != null && next != null && routeRows > 0)
             {
                 SetState(GameState.Route);
-                RouteScreen.Play(routeRows, here.battle, here.routeFights, here.routeElites, next.battle.stageName, NextChapter, s.routeSeed, s.routePath);
+                RouteScreen.Play(routeRows, here.battle, here.routeFights, here.routeElites, next.battle.stageName, NextChapter, s.routeSeed, s.routePath, here.routeBackdrops);
                 return true;
             }
         }
@@ -630,6 +680,114 @@ public class GameManager : MonoBehaviour
         skipTitleOnce = false;
         UnityEngine.SceneManagement.SceneManager.LoadScene(
             UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex);
+    }
+
+    // ─────────────────────────── 무한 모드 ───────────────────────────
+    // 스토리 대사 없이: 지도(모든 챕터의 적 무리 · 모든 배경) → 꼭대기의 ??? 보스 → 다음 회차 … 를 끝없이.
+    // 회차마다 적의 체력 배율 · 칸 위력이 오른다. 보스는 챕터 보스 중 하나가 무작위로 나오고, 이름은 ???로 감춘다.
+
+    private bool endlessBossBattle;          // 지금 들어가는 전투가 회차의 보스인가
+    private BattleStageData lastEndlessBoss;
+
+    private void StartEndless()
+    {
+        EndlessLoop = 0;
+        lastEndlessBoss = null;
+        if (!string.IsNullOrEmpty(rankingServerUrl)) Ranking.BeginRun();   // 서버에 판을 연다 (기록은 이 판의 회차 통과로만 오른다)
+        ChapterIndex = Mathf.Max(0, chapters.FindIndex(c => c != null && c.battle != null));
+        NextEndlessLoop();
+    }
+
+    private void NextEndlessLoop()
+    {
+        EndlessLoop++;
+        Debug.Log($"―― 무한 모드 {EndlessLoop}회차 ――");
+
+        List<BattleStageData> fights = new List<BattleStageData>(), elites = new List<BattleStageData>();
+        foreach (ChapterData ch in chapters)
+        {
+            if (ch == null) continue;
+            if (ch.routeFights != null) foreach (BattleStageData st in ch.routeFights) if (st != null && !fights.Contains(st)) fights.Add(st);
+            if (ch.routeElites != null) foreach (BattleStageData st in ch.routeElites) if (st != null && !elites.Contains(st)) elites.Add(st);
+        }
+        List<BackdropType> backdrops = new List<BackdropType>((BackdropType[])Enum.GetValues(typeof(BackdropType)));
+
+        BattleStageData fallback = PickEndlessBoss(false);   // 적 무리 목록이 비었을 때 지도 전투가 데려올 적
+        SetState(GameState.Route);
+        RouteScreen.Play(routeRows, fallback, fights, elites, $"{EndlessLoop}회차 · {BattleManager.HiddenName}", EndlessBoss, backdrops: backdrops);
+    }
+
+    /// <summary>챕터 보스 무대 중 하나 (방금 나온 보스는 되도록 피한다)</summary>
+    private BattleStageData PickEndlessBoss(bool remember)
+    {
+        List<BattleStageData> bosses = new List<BattleStageData>();
+        foreach (ChapterData ch in chapters) if (ch != null && ch.battle != null && !bosses.Contains(ch.battle)) bosses.Add(ch.battle);
+        if (bosses.Count == 0) return null;
+        if (bosses.Count > 1 && lastEndlessBoss != null) bosses.Remove(lastEndlessBoss);
+        BattleStageData pick = bosses[UnityEngine.Random.Range(0, bosses.Count)];
+        if (remember) lastEndlessBoss = pick;
+        return pick;
+    }
+
+    /// <summary>지도 꼭대기: 정체를 숨긴 보스와 싸운다 (배경도 무작위)</summary>
+    private void EndlessBoss()
+    {
+        BattleStageData boss = PickEndlessBoss(true);
+        if (boss == null) { NextEndlessLoop(); return; }
+        endlessBossBattle = true;
+        BattleManager.NextBackdrop = (BackdropType)UnityEngine.Random.Range(0, Enum.GetValues(typeof(BackdropType)).Length);
+        EnterBattle(boss, $"{EndlessLoop}회차 보스: 정체 불명");
+    }
+
+    /// <summary>쓰러졌을 때: 서버의 판을 닫고 순위를 패배 화면에 덧붙인다</summary>
+    private void EndEndlessRun()
+    {
+        if (string.IsNullOrEmpty(rankingServerUrl)) return;
+        GameStatePanel.ExtraLine = $"<color={UITheme.HexMuted}>랭킹 서버에 기록을 올리는 중…</color>";
+        Ranking.EndRun(r =>
+        {
+            GameStatePanel.ExtraLine = r == null
+                ? $"<color={UITheme.HexMuted}>랭킹 서버에 닿지 못했다 (기록은 이 기기에만 남는다)</color>"
+                : r.rank > 0
+                    ? $"<color={UITheme.HexGold}>{Ranking.PlayerName}</color>  랭킹 <color={UITheme.HexGold}>{r.rank}위</color> / {r.total}명  (내 최고 {r.best}회차)"
+                    : $"<color={UITheme.HexMuted}>보스를 한 번 넘기면 랭킹에 이름이 오른다</color>";
+        });
+    }
+
+    /// <summary>회차에 맞춰 다음 전투의 적을 강화한다 (EnterBattle이 부른다)</summary>
+    private void ApplyEndlessBoost(bool boss)
+    {
+        int tier = Mathf.Max(0, EndlessLoop - 1);
+        BattleManager.NextEnemyHpScale = 1f + endlessHpPerLoop * tier + (boss ? endlessBossHpBonus : 0f);
+        BattleManager.NextEnemyPower = tier / Mathf.Max(1, endlessPowerEvery) + (boss && tier > 0 ? 1 : 0);
+        BattleManager.NextHideIdentity = boss;
+        // 3회차부터 적마다 무작위 특성이 붙는다 (2회차마다 하나씩, 최대 3개 · 수치는 4회차마다 +1)
+        BattleManager.NextExtraTraits = Mathf.Min(3, tier / 2 + (boss && tier >= 2 ? 1 : 0));
+        BattleManager.NextExtraTraitAmount = 1 + tier / 4;
+    }
+
+    /// <summary>무한 모드에서 이겼을 때: 지도 전투면 지도로, 보스면 기록 · 회복하고 다음 회차</summary>
+    private void OnEndlessWon(List<CardData> absorbed)
+    {
+        if (absorbed != null && absorbed.Count > 0) AbsorbCards(absorbed);
+        foreach (RunItem item in OwnedItems)
+            if (item != null && item.onBattleWon != null) item.onBattleWon(this);
+
+        if (routeBattleWon != null)
+        {
+            Action back = routeBattleWon;
+            routeBattleWon = null;
+            SetState(GameState.Route);
+            back();
+            return;
+        }
+
+        endlessBossBattle = false;
+        if (lastEndlessBoss != null) Debug.Log($"{EndlessLoop}회차 보스의 정체: {lastEndlessBoss.stageName}");
+        if (EndlessLoop > EndlessBest) { try { PlayerPrefs.SetInt(EndlessBestKey, EndlessLoop); PlayerPrefs.Save(); } catch { } }
+        if (!string.IsNullOrEmpty(rankingServerUrl)) Ranking.Checkpoint(EndlessLoop);   // 보스를 넘길 때마다 서명해서 올린다 (도중에 꺼도 기록이 남게)
+        if (playerUnit != null && endlessLoopHealRatio > 0f) playerUnit.Heal(Mathf.CeilToInt(playerUnit.MaxHp * endlessLoopHealRatio));
+        NextEndlessLoop();
     }
 
     // ─────────────────────────── 기타 ───────────────────────────

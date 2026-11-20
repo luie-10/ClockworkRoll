@@ -26,7 +26,7 @@ public class TitleScreen : MonoBehaviour
     private RectTransform gearA, gearB, gearC, hourHand, minuteHand, secondHand;
     private Text hintText;
     private Button startButton;
-    private Action onStart, onContinue;
+    private Action onStart, onContinue, onEndless;
     private bool closing;
     private float shownAt;
 
@@ -34,11 +34,14 @@ public class TitleScreen : MonoBehaviour
 
     /// <summary>title = 큰 제목, subtitle = 그 아래 이야기 이름, tagline = 한 줄 소개</summary>
     /// continueInfo / onContinue = 저장이 있을 때: '이어하기' 버튼과 그 아래 한 줄 (어디까지 왔는가)
-    public static void Show(string title, string subtitle, string tagline, Action onStart, string continueInfo = null, Action onContinue = null)
+    /// onEndless / endlessInfo = 무한 모드 버튼과 그 아래 한 줄 (최고 기록). 비우면 버튼이 없다
+    public static void Show(string title, string subtitle, string tagline, Action onStart, string continueInfo = null, Action onContinue = null,
+                            Action onEndless = null, string endlessInfo = null)
     {
-        if (instance == null) instance = Create(title, subtitle, tagline, onContinue != null ? continueInfo ?? "" : null);
+        if (instance == null) instance = Create(title, subtitle, tagline, onContinue != null ? continueInfo ?? "" : null, onEndless != null ? endlessInfo ?? "" : null);
         instance.onStart = onStart;
         instance.onContinue = onContinue;
+        instance.onEndless = onEndless;
         instance.closing = false;
         instance.shownAt = Time.unscaledTime;
         instance.group.alpha = 0f;
@@ -64,16 +67,24 @@ public class TitleScreen : MonoBehaviour
         Begin();
     }
 
+    /// <summary>무한 모드로 시작 (버튼)</summary>
+    public static void Endless()
+    {
+        if (instance == null || !IsOpen || instance.closing || instance.onEndless == null) return;
+        instance.onStart = instance.onEndless;
+        Begin();
+    }
+
     private IEnumerator Close()
     {
         yield return null;   // 누른 Enter · Space가 같은 프레임에 첫 대사까지 넘기지 않게
         if (onStart != null) onStart();
 
         // 로딩 화면이 위에서 덮는 동안은 그대로 있다가 걷힌다 (둘이 같이 흐려지면 뒤의 장면이 비친다)
-        for (float t = 0f; t < 0.35f; t += Time.unscaledDeltaTime) yield return null;
+        for (float t = 0f; t < 0.2f; t += Time.unscaledDeltaTime) yield return null;
         while (group.alpha > 0f)
         {
-            group.alpha = Mathf.MoveTowards(group.alpha, 0f, Time.unscaledDeltaTime / 0.3f);
+            group.alpha = Mathf.MoveTowards(group.alpha, 0f, Time.unscaledDeltaTime / 0.2f);
             yield return null;
         }
 
@@ -86,9 +97,9 @@ public class TitleScreen : MonoBehaviour
         float dt = Time.unscaledDeltaTime;
         if (!closing)
         {
-            group.alpha = Mathf.MoveTowards(group.alpha, 1f, dt / 0.6f);
+            group.alpha = Mathf.MoveTowards(group.alpha, 1f, dt / 0.35f);
             // 뜨자마자 눌린 키로 넘어가지 않게 잠깐 기다린 뒤부터 받는다
-            if (Time.unscaledTime - shownAt > 0.4f &&
+            if (Time.unscaledTime - shownAt > 0.25f && !RankingPanel.IsOpen && !CompendiumPanel.IsOpen &&
                 (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter) || Input.GetKeyDown(KeyCode.Space)))
             {
                 if (onContinue != null) Continue();
@@ -117,7 +128,7 @@ public class TitleScreen : MonoBehaviour
 
     // ─────────────────────────── 생성 ───────────────────────────
 
-    private static TitleScreen Create(string title, string subtitle, string tagline, string continueInfo)
+    private static TitleScreen Create(string title, string subtitle, string tagline, string continueInfo, string endlessInfo)
     {
         GameObject go = new GameObject("TitleScreenCanvas");
         Canvas canvas = go.AddComponent<Canvas>();
@@ -170,53 +181,81 @@ public class TitleScreen : MonoBehaviour
         Text big = UIBuilder.Label("Title", bg.transform, title, 112, UITheme.Brass, TextAnchor.MiddleCenter);
         big.fontStyle = FontStyle.Bold;
         big.horizontalOverflow = HorizontalWrapMode.Overflow;
-        UIBuilder.Place(big.rectTransform, center, center, center, new Vector2(0f, 190f), new Vector2(1700f, 150f));
+        UIBuilder.Place(big.rectTransform, center, center, center, new Vector2(0f, 230f), new Vector2(1700f, 150f));
 
         Image rule = UIBuilder.Panel("Rule", bg.transform, UITheme.Alpha(UITheme.Brass, 0.7f), false);
         rule.sprite = null;
         rule.raycastTarget = false;
-        UIBuilder.Place(rule.rectTransform, center, center, center, new Vector2(0f, 104f), new Vector2(520f, 2f));
-        RectTransform bell = Emblem(bg.transform, IconPainter.Boss, center, new Vector2(0f, 104f), 46f, UITheme.Brass, 128);
+        UIBuilder.Place(rule.rectTransform, center, center, center, new Vector2(0f, 144f), new Vector2(520f, 2f));
+        RectTransform bell = Emblem(bg.transform, IconPainter.Boss, center, new Vector2(0f, 144f), 46f, UITheme.Brass, 128);
         Image bellBack = UIBuilder.Panel("BellBack", bg.transform, UITheme.Backdrop, false);   // 줄이 종 뒤로 지나가지 않게
         bellBack.sprite = ProceduralSprites.Circle();
         bellBack.type = Image.Type.Simple;
         bellBack.raycastTarget = false;
-        UIBuilder.Place(bellBack.rectTransform, center, center, center, new Vector2(0f, 104f), new Vector2(76f, 76f));
+        UIBuilder.Place(bellBack.rectTransform, center, center, center, new Vector2(0f, 144f), new Vector2(76f, 76f));
         bell.SetAsLastSibling();
 
         Text sub = UIBuilder.Label("Subtitle", bg.transform, subtitle, 44, UITheme.TextMain, TextAnchor.MiddleCenter);
-        UIBuilder.Place(sub.rectTransform, center, center, center, new Vector2(0f, 30f), new Vector2(1400f, 60f));
+        UIBuilder.Place(sub.rectTransform, center, center, center, new Vector2(0f, 70f), new Vector2(1400f, 60f));
 
         Text line = UIBuilder.Label("Tagline", bg.transform, tagline, 24, UITheme.TextMuted, TextAnchor.MiddleCenter);
-        UIBuilder.Place(line.rectTransform, center, center, center, new Vector2(0f, -28f), new Vector2(1400f, 36f));
+        UIBuilder.Place(line.rectTransform, center, center, center, new Vector2(0f, 12f), new Vector2(1400f, 36f));
 
-        // 버튼: 저장이 있으면 [이어하기]가 주 버튼이 되고 [새로 시작]은 그 아래로 내려간다
+        // 버튼 배치: [이어하기]는 위 가운데 (저장이 있을 때만),
+        //           그 아래 왼쪽 [스토리 모드] · 오른쪽 [무한 모드] 나란히 — 무한 모드 밑에 [랭킹], 맨 아래 가운데 [끝내기]
         bool hasSave = continueInfo != null;
-        float y = -170f;
+        bool hasEndless = endlessInfo != null;
+        float y = hasSave ? -88f : -120f;
         if (hasSave)
         {
             Button resume = UIBuilder.Button("ContinueButton", bg.transform, "이어하기", UITheme.BrassFill, 30);
             UITheme.StyleButton(resume, true, 30);
-            UIBuilder.Place((RectTransform)resume.transform, center, center, center, new Vector2(0f, y), new Vector2(340f, 80f));
+            UIBuilder.Place((RectTransform)resume.transform, center, center, center, new Vector2(0f, y), new Vector2(360f, 76f));
             resume.onClick.AddListener(Continue);
 
             Text info = UIBuilder.Label("ContinueInfo", bg.transform, continueInfo, 19, UITheme.TextMuted, TextAnchor.MiddleCenter);
-            UIBuilder.Place(info.rectTransform, center, center, center, new Vector2(0f, y - 58f), new Vector2(900f, 28f));
-            y -= 126f;
+            UIBuilder.Place(info.rectTransform, center, center, center, new Vector2(0f, y - 54f), new Vector2(900f, 28f));
+            y -= 140f;
         }
 
-        screen.startButton = UIBuilder.Button("StartButton", bg.transform, hasSave ? "새로 시작" : "시작하기", UITheme.BrassFill, hasSave ? 24 : 30);
-        UITheme.StyleButton(screen.startButton, !hasSave, hasSave ? 24 : 30);
-        UIBuilder.Place((RectTransform)screen.startButton.transform, center, center, center, new Vector2(0f, y), new Vector2(340f, hasSave ? 62f : 80f));
+        const float colX = 220f;
+        float storyX = hasEndless ? -colX : 0f;
+        screen.startButton = UIBuilder.Button("StartButton", bg.transform, hasSave ? "스토리 새로 시작" : "스토리 모드", UITheme.BrassFill, 28);
+        UITheme.StyleButton(screen.startButton, !hasSave, 28);
+        UIBuilder.Place((RectTransform)screen.startButton.transform, center, center, center, new Vector2(storyX, y), new Vector2(380f, 76f));
         screen.startButton.onClick.AddListener(Begin);
-        y -= hasSave ? 74f : 92f;
+        Text storyInfo = UIBuilder.Label("StoryInfo", bg.transform, hasSave ? "저장해 둔 판은 지워진다" : "물에 잠긴 시계 마을의 이야기를 따라간다", 18, UITheme.TextMuted, TextAnchor.MiddleCenter);
+        UIBuilder.Place(storyInfo.rectTransform, center, center, center, new Vector2(storyX, y - 54f), new Vector2(420f, 26f));
 
-        Button quit = UIBuilder.Button("QuitButton", bg.transform, "끝내기", UITheme.InkSolid, 24);
-        UITheme.StyleButton(quit, false, 24);
-        UIBuilder.Place((RectTransform)quit.transform, center, center, center, new Vector2(0f, y), new Vector2(340f, 62f));
+        // 사전: 모든 태엽판과 적 (스토리 모드 밑 — 무한 모드 밑의 [랭킹 보기]와 나란히)
+        Button dex = UIBuilder.Button("CompendiumButton", bg.transform, "태엽판 · 적 사전", UITheme.InkSolid, 20);
+        UITheme.StyleButton(dex, false, 20);
+        UIBuilder.Place((RectTransform)dex.transform, center, center, center, new Vector2(storyX, y - 104f), new Vector2(240f, 46f));
+        dex.onClick.AddListener(() => CompendiumPanel.Open(bg.transform));
+
+        // 무한 모드: 스토리 없이 지도와 ??? 보스를 끝없이 (회차마다 적이 강해진다)
+        if (hasEndless)
+        {
+            Button endless = UIBuilder.Button("EndlessButton", bg.transform, "무한 모드", UITheme.BrassFill, 28);
+            UITheme.StyleButton(endless, !hasSave, 28);
+            UIBuilder.Place((RectTransform)endless.transform, center, center, center, new Vector2(colX, y), new Vector2(380f, 76f));
+            endless.onClick.AddListener(Endless);
+            Text info = UIBuilder.Label("EndlessInfo", bg.transform, endlessInfo, 18, UITheme.TextMuted, TextAnchor.MiddleCenter);
+            UIBuilder.Place(info.rectTransform, center, center, center, new Vector2(colX, y - 54f), new Vector2(420f, 26f));
+
+            Button rank = UIBuilder.Button("RankingButton", bg.transform, "랭킹 보기", UITheme.InkSolid, 20);
+            UITheme.StyleButton(rank, false, 20);
+            UIBuilder.Place((RectTransform)rank.transform, center, center, center, new Vector2(colX, y - 104f), new Vector2(220f, 46f));
+            rank.onClick.AddListener(() => RankingPanel.Open(bg.transform));
+        }
+        y -= 196f;
+
+        Button quit = UIBuilder.Button("QuitButton", bg.transform, "끝내기", UITheme.InkSolid, 22);
+        UITheme.StyleButton(quit, false, 22);
+        UIBuilder.Place((RectTransform)quit.transform, center, center, center, new Vector2(0f, y), new Vector2(240f, 54f));
         quit.onClick.AddListener(Quit);
 
-        screen.hintText = UIBuilder.Label("Hint", bg.transform, hasSave ? "Enter · Space 로 이어하기  ·  새로 시작하면 저장해 둔 판은 지워진다" : "Enter · Space 로 시작", 20, UITheme.TextMuted, TextAnchor.MiddleCenter);
+        screen.hintText = UIBuilder.Label("Hint", bg.transform, hasSave ? "Enter · Space 로 이어하기" : "Enter · Space 로 스토리 모드 시작", 20, UITheme.TextMuted, TextAnchor.MiddleCenter);
         UIBuilder.Place(screen.hintText.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 56f), new Vector2(800f, 30f));
 
         Text version = UIBuilder.Label("Version", bg.transform, "v" + Application.version, 18, UITheme.TextDim, TextAnchor.LowerRight);

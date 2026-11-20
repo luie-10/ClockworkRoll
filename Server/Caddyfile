@@ -1,0 +1,5 @@
+# 자기 서버(VPS)에 공개할 때: 도메인을 이 서버 IP로 연결한 뒤 `caddy run` — HTTPS 인증서를 자동으로 받는다.
+# 랭킹 서버는 TRUST_PROXY=1 로 켜 둔다 (접속 주소별 횟수 제한이 실제 주소로 걸리게).
+rank.example.com {
+	reverse_proxy 127.0.0.1:8787
+}

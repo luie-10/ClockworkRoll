@@ -5,7 +5,7 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 
 /// <summary>
-/// 메뉴 'Ruina/일러스트 굽기' — 그림이 비어 있는 곳을 자동 일러스트(Illustrator)로 그려
+/// 메뉴 'ClockworkRoll/일러스트 굽기' — 그림이 비어 있는 곳을 자동 일러스트(Illustrator)로 그려
 /// PNG로 저장하고 에셋에 연결한다. 이미 그림이 들어 있는 곳은 건드리지 않는다.
 ///
 ///   태엽판(CardData.cardArt)        → Assets/Art/Generated/Cards/이름.png
@@ -19,14 +19,14 @@ public static class IllustrationBaker
 {
     private const string Root = "Assets/Art/Generated";
 
-    [MenuItem("Ruina/일러스트 굽기 (빈 그림 채우기)")]
+    [MenuItem("ClockworkRoll/일러스트 굽기 (빈 그림 채우기)")]
     public static void BakeEmpty() { BakeAll(false); }
 
     /// <summary>
     /// 이미 구운 자동 그림(Generated 폴더에 있는 것)까지 새 그림으로 다시 그린다 — 그리는 방식이 바뀌었을 때.
     /// 같은 파일에 덮어쓰므로 에셋 연결은 그대로. 직접 그려 넣은 그림(Generated 밖)은 건드리지 않는다.
     /// </summary>
-    [MenuItem("Ruina/일러스트 다시 굽기 (자동 그림을 새로 그리기)")]
+    [MenuItem("ClockworkRoll/일러스트 다시 굽기 (자동 그림을 새로 그리기)")]
     public static void Rebake() { BakeAll(true); }
 
     public static void BakeAll(bool redrawGenerated)

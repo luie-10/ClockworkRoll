@@ -13,7 +13,7 @@ using UnityEngine;
 ///
 /// 같은 대상이면 같은 그림 (이름으로 시드를 정함) · 한 번 그린 것은 캐시.
 /// 직접 그린 그림을 에셋에 넣으면 그쪽이 우선이다 (CardData.cardArt / EnemyData.sprite / 대사 초상화).
-/// 에디터 메뉴 'Ruina/일러스트 굽기'로 PNG로 저장해 에셋에 연결할 수도 있다.
+/// 에디터 메뉴 'ClockworkRoll/일러스트 굽기'로 PNG로 저장해 에셋에 연결할 수도 있다.
 /// </summary>
 public static class Illustrator
 {

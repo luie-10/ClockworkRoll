@@ -74,7 +74,7 @@ public class UnitTooltip : MonoBehaviour
         tip.text.lineSpacing = 1.1f;
 
         UITheme.Elevate(bg, 0.7f);
-        UIPop.Ensure(bg.gameObject, 0.95f, 0.14f);
+        UIPop.Ensure(bg.gameObject, 0.96f, 0.1f);
         bg.gameObject.SetActive(false);
         return tip;
     }
@@ -120,11 +120,11 @@ public class UnitTooltip : MonoBehaviour
         {
             if (u.behavior != EnemyBehavior.Random)
                 s += $"\n<color={UITheme.HexTension}>{EnemyTypeInfo.Name(u.behavior)}</color>  <color={UITheme.HexMuted}>{EnemyTypeInfo.Describe(u.behavior)}</color>";
-            if (u.trait != EnemyTrait.None && u.traitAmount > 0)
-                s += $"\n<color={UITheme.HexGold}>{EnemyTypeInfo.Name(u.trait)}</color>  <color={UITheme.HexMuted}>{EnemyTypeInfo.Describe(u.trait, u.traitAmount)}</color>";
+            foreach (EnemyTraitEntry t in u.AllTraits())
+                s += $"\n<color={UITheme.HexGold}>{EnemyTypeInfo.Name(t.trait)}</color>  <color={UITheme.HexMuted}>{EnemyTypeInfo.Describe(t.trait, t.amount)}</color>";
         }
 
-        s += $"\n<color={UITheme.HexBrass}>─ 내성 (받는 피해) ─</color>";
+        s += $"\n<color={UITheme.HexBrass}>― 내성 (받는 피해) ―</color>";
         s += ResistLine(DiceDetail.Slash, u);
         s += ResistLine(DiceDetail.Thrust, u);
         s += ResistLine(DiceDetail.Blunt, u);
@@ -132,7 +132,7 @@ public class UnitTooltip : MonoBehaviour
         List<TimedAction> actions = BattleManager.Instance != null ? BattleManager.Instance.GetActionsOf(u) : new List<TimedAction>();
         if (actions.Count > 0)
         {
-            s += $"\n<color={UITheme.HexBrass}>─ 시계판 위의 행동 ─</color>";
+            s += $"\n<color={UITheme.HexBrass}>― 시계판 위의 행동 ―</color>";
             HashSet<CardData> shown = new HashSet<CardData>();
             foreach (TimedAction a in actions)
             {

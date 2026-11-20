@@ -6,11 +6,11 @@ using UnityEngine.Serialization;
 #region 1. 카드를 구성하는 열거형 (Enums)
 public enum CardRarity
 {
-    Paper,      // 일반 (종이)
-    Stone,      // 고급 (돌)
-    Iron,       // 희귀 (철)
-    Gold,       // 예술
-    EGO         // E.G.O
+    Scrap,      // 고철: 주워 온 그대로
+    Handmade,   // 수제: 손으로 다시 맞춘 것
+    Precision,  // 정밀: 톱니 하나까지 깎아 맞춘 것 (컷인)
+    Masterwork, // 걸작: 장인이 이름을 새긴 것 (컷인 + 레터박스)
+    Forbidden   // 금단: 만들면 안 되는 태엽
 }
 
 public enum DiceType
@@ -87,7 +87,19 @@ public enum DiceEffectType
     LastStand,      // 배수진: 내 체력이 절반 이하이면 이 칸 위력 +n (굴릴 때 적용)
     Combo,          // 연쇄: 이번 라운드에 먼저 굴린 내 칸 하나마다 이 칸 위력 +1, 최대 n (굴릴 때 적용)
     Unopposed,      // 빈틈: 맞서는 상대 칸이 없으면(일방 공격) 이 칸 위력 +n (굴릴 때 적용)
-    Burn            // 과열: 상대에게 과열 n — 라운드가 시작될 때마다 n 피해를 주고 절반으로 식는다
+    Burn,           // 과열: 상대에게 과열 n — 라운드가 시작될 때마다 n 피해를 주고 절반으로 식는다
+    Dawn,           // 아침: 시계판 1~6시에 굴리면 이 칸 위력 +n (굴릴 때 적용)
+    Dusk,           // 밤: 시계판 7~12시에 굴리면 이 칸 위력 +n (굴릴 때 적용)
+    // ── 도박 ──
+    Gamble,         // 도박: 굴릴 때 반반 — 위력 +n 또는 -n (굴릴 때 적용)
+    Jackpot,        // 대박: 굴린 눈이 최댓값이면 위력 +n (굴릴 때 적용)
+    DoubleOrNothing,// 모 아니면 도: 굴릴 때 반반 — 굴린 눈이 두 배 또는 0 (굴릴 때 적용)
+    CoinFlip,       // 동전 던지기: 앞면이면 상대에게 피해 n, 뒷면이면 자신에게 피해 n/2 (체력 1은 남는다)
+    Roulette,       // 룰렛: 여섯 칸 중 하나 — 기력 · 뽑기 · 힘 · 회복 (좋음) / 녹 · 마비 (나쁨). 수치 n
+    AllIn,          // 올인: [사용시] 남은 기력을 모두 태워 기력 1당 이 태엽판 모든 칸 위력 +n (플레이어만)
+    // ── 즉발 태엽판용 ──
+    Damage,         // 피해: 상대에게 피해 n (취약 · 철갑 적용)
+    DamageAll       // 광역 피해: 모든 적에게 피해 n
 }
 
 [Serializable]
@@ -135,6 +147,16 @@ public class DiceEffect
             case DiceEffectType.LastStand:      return $"[배수진] 위력 +{amount}";
             case DiceEffectType.Combo:          return $"[연쇄] 위력 최대 +{amount}";
             case DiceEffectType.Unopposed:      return $"[빈틈] 위력 +{amount}";
+            case DiceEffectType.Dawn:           return $"[아침] 위력 +{amount}";
+            case DiceEffectType.Dusk:           return $"[밤] 위력 +{amount}";
+            case DiceEffectType.Gamble:         return $"[도박] 위력 ±{amount}";
+            case DiceEffectType.Jackpot:        return $"[대박] 최댓값이면 위력 +{amount}";
+            case DiceEffectType.DoubleOrNothing:return "[모 아니면 도] 두 배 또는 0";
+            case DiceEffectType.CoinFlip:       what = $"동전 던지기 {amount}"; break;
+            case DiceEffectType.Roulette:       what = $"룰렛 {amount}"; break;
+            case DiceEffectType.AllIn:          what = $"올인 (기력 1당 위력 +{amount})"; break;
+            case DiceEffectType.Damage:         what = $"피해 {amount}"; break;
+            case DiceEffectType.DamageAll:      what = $"모든 적에게 피해 {amount}"; break;
             case DiceEffectType.Lifesteal:      what = $"흡혈 {amount}"; break;
             case DiceEffectType.Tension:        what = $"장력 +{amount}"; break;
             case DiceEffectType.Burn:           what = $"과열 {amount}"; break;
@@ -148,7 +170,9 @@ public class DiceEffect
     public static bool IsRollTime(DiceEffectType type)
     {
         return type == DiceEffectType.OnTheHour || type == DiceEffectType.Execute || type == DiceEffectType.LastStand
-            || type == DiceEffectType.Combo || type == DiceEffectType.Unopposed;
+            || type == DiceEffectType.Combo || type == DiceEffectType.Unopposed
+            || type == DiceEffectType.Dawn || type == DiceEffectType.Dusk
+            || type == DiceEffectType.Gamble || type == DiceEffectType.Jackpot || type == DiceEffectType.DoubleOrNothing;
     }
 
     /// <summary>턴 단위로 남는 상태이상인가 (nextTurn 체크가 의미 있는 효과)</summary>
@@ -172,7 +196,7 @@ public class DiceEffect
 #endregion
 
 #region 3. 전투 태엽판 스크립터블 오브젝트 (유니티 에셋 생성용)
-[CreateAssetMenu(fileName = "NewCardData", menuName = "Ruina/Card Data", order = 1)]
+[CreateAssetMenu(fileName = "NewCardData", menuName = "ClockworkRoll/Card Data", order = 1)]
 public class CardData : ScriptableObject
 {
     [Header("기본 정보")]
@@ -193,6 +217,12 @@ public class CardData : ScriptableObject
     public bool exhaust;
     [Tooltip("선천: 전투가 시작될 때 반드시 첫 손패에 들어온다")]
     public bool innate;
+
+    [Header("즉발 (시계판에 놓지 않고 누르는 즉시 쓴다)")]
+    [Tooltip("즉발: 손패에서 누르면 바로 기력을 내고 아래 효과가 발동한다. 칸(주사위)이 없다")]
+    public bool instant;
+    [Tooltip("즉발 효과 — 발동 시점은 무시하고 쓰는 순간 모두 발동 (대상 = 지정한 적)")]
+    public List<DiceEffect> instantEffects = new List<DiceEffect>();
 
     [Header("태엽판 능력 설명")]
     [TextArea(3, 8)]

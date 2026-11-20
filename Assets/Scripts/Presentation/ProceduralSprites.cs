@@ -21,6 +21,7 @@ public static class ProceduralSprites
         if (roundedBox == null)
         {
             Texture2D tex = RoundedBoxTexture();
+            PixelStyle.Register(tex, () => PixelFilter.Box(BoxSize, 4, 2, 0));   // 픽셀 UI: 모서리를 계단으로 따낸 판
             // 100px = 1유닛 → 월드에서 테두리 0.14유닛. UI는 Pixels Per Unit Multiplier로 조절
             roundedBox = Sprite.Create(tex, new Rect(0, 0, BoxSize, BoxSize), new Vector2(0.5f, 0.5f), 100f, 0,
                 SpriteMeshType.FullRect, new Vector4(BoxCorner + 2, BoxCorner + 2, BoxCorner + 2, BoxCorner + 2));
@@ -48,10 +49,45 @@ public static class ProceduralSprites
             }
             tex.SetPixels(px);
             tex.Apply();
+            PixelStyle.Register(tex, 8);
             circle = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f);
             circle.name = "Circle";
         }
         return circle;
+    }
+
+    private static Sprite ring;
+
+    /// <summary>
+    /// 속이 빈 원 테두리 (Circle과 같은 크기 · 같은 가장자리). Outline 컴포넌트로 원에 테를 두르면
+    /// 그림을 네 방향으로 어긋나게 겹쳐 그려 테가 울퉁불퉁해지는데, 이건 굵기가 고르다.
+    /// </summary>
+    public static Sprite Ring()
+    {
+        if (ring == null)
+        {
+            const int size = 128;
+            const float thick = 7f;   // 지름 64로 그리면 화면에서 약 3.5px
+            Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            tex.wrapMode = TextureWrapMode.Clamp;
+            Color[] px = new Color[size * size];
+            float r = size * 0.5f;
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    float d = Vector2.Distance(new Vector2(x + 0.5f, y + 0.5f), new Vector2(r, r));
+                    float a = Mathf.Clamp01(r - d) * Mathf.Clamp01(d - (r - thick) + 0.5f);
+                    px[y * size + x] = new Color(1f, 1f, 1f, a);
+                }
+            }
+            tex.SetPixels(px);
+            tex.Apply();
+            PixelStyle.Register(tex, 4);
+            ring = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f);
+            ring.name = "Ring";
+        }
+        return ring;
     }
 
     /// <summary>아래는 불투명, 위로 갈수록 투명해지는 세로 그러데이션 (손패 받침대 그늘 등)</summary>
@@ -68,6 +104,7 @@ public static class ProceduralSprites
                 tex.SetPixel(0, y, new Color(1f, 1f, 1f, a * a * (3f - 2f * a)));   // smoothstep: 경계가 보이지 않게
             }
             tex.Apply();
+            PixelStyle.Register(tex, 8, 6);
             verticalFade = Sprite.Create(tex, new Rect(0, 0, 1, h), new Vector2(0.5f, 0.5f), 100f);
             verticalFade.name = "VerticalFade";
         }
@@ -88,6 +125,7 @@ public static class ProceduralSprites
                 tex.SetPixel(x, 0, new Color(1f, 1f, 1f, a * a));
             }
             tex.Apply();
+            PixelStyle.Register(tex, 8, 6);   // 픽셀 UI: 그러데이션을 띠로
             horizontalFade = Sprite.Create(tex, new Rect(0, 0, w, 1), new Vector2(0.5f, 0.5f), 100f);
             horizontalFade.name = "HorizontalFade";
         }
@@ -122,6 +160,7 @@ public static class ProceduralSprites
                 }
             }
             tex.Apply();
+            PixelStyle.Register(tex, () => PixelFilter.Bevel(BoxSize, 4, 2));
             bevel = Sprite.Create(tex, new Rect(0, 0, BoxSize, BoxSize), new Vector2(0.5f, 0.5f), 100f, 0,
                 SpriteMeshType.FullRect, new Vector4(BoxCorner + 2, BoxCorner + 2, BoxCorner + 2, BoxCorner + 2));
             bevel.name = "Bevel";
@@ -157,6 +196,7 @@ public static class ProceduralSprites
             }
         }
         tex.Apply();
+        PixelStyle.Register(tex, () => PixelFilter.Box(BoxSize, 4, 2, bold ? 2 : 1));   // 픽셀 UI: 한 칸(굵으면 두 칸) 테두리
         Sprite s = Sprite.Create(tex, new Rect(0, 0, BoxSize, BoxSize), new Vector2(0.5f, 0.5f), 100f, 0,
             SpriteMeshType.FullRect, new Vector4(BoxCorner + 2, BoxCorner + 2, BoxCorner + 2, BoxCorner + 2));
         s.name = bold ? "FrameBold" : "Frame";
@@ -189,6 +229,7 @@ public static class ProceduralSprites
                 }
             }
             tex.Apply();
+            PixelStyle.Register(tex, () => PixelFilter.Shadow(size, 4, ShadowPad, 2));   // 픽셀 UI: 두 칸짜리 계단 그림자
             int b = ShadowPad + 12;
             softShadow = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f, 0,
                 SpriteMeshType.FullRect, new Vector4(b, b, b, b));

@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 64319ab3dd94be547b66c1346fc27ddd, type: 3}
+  m_Name: "\uBC24\uC758 \uD0DC\uC5FD"
+  m_EditorClassIdentifier: Assembly-CSharp::CardData
+  cardName: "\uBC24\uC758 \uD0DC\uC5FD"
+  cardArt: {fileID: 21300000, guid: 1a403d8c461c8e5419a5ed3159d6960c, type: 3}
+  rarity: 2
+  cost: 2
+  requireTension: 1
+  exhaust: 0
+  innate: 0
+  cardDescription: "\uCC28\uAC00\uC6B4 \uBC24\uACF5\uAE30\uC5D0 \uD55C\uAECF \uC870\uC5EC\uB4E0
+    \uD0DC\uC5FD\uC744 \uD55C \uBC88\uC5D0 \uD47C\uB2E4."
+  diceList:
+  - diceName: 
+    diceType: 0
+    diceDetail: 2
+    minRoll: 5
+    maxRoll: 9
+    diceEffectDescription: 
+    effects:
+    - trigger: 0
+      effect: 25
+      amount: 3
+      nextTurn: 0
+    - trigger: 0
+      effect: 0
+      amount: 2
+      nextTurn: 1

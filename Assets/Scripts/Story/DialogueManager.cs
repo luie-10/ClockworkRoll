@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 /// <summary>
 /// 스토리 상태의 대사 재생을 담당.
-/// 좌클릭 / Space로 진행. 타이핑 중 클릭하면 문장 전체가 먼저 나온다.
+/// 좌클릭 / Space / Enter로 진행. Ctrl을 누르고 있으면 빨리 넘긴다. 타이핑 중 클릭하면 문장 전체가 먼저 나온다.
 /// 건너뛰기 버튼 / Esc로 남은 대사를 통째로 넘긴다.
 /// 재생이 끝나면 GameManager가 넘겨준 콜백(전투 시작 등)이 실행된다.
 /// </summary>
@@ -21,7 +21,7 @@ public class DialogueManager : MonoBehaviour
     public Image portraitImage;         // 초상화
 
     [Header("설정")]
-    public float typeSpeed = 0.03f;     // 글자 하나당 출력 간격(초)
+    public float typeSpeed = 0.018f;    // 글자 하나당 출력 간격(초)
 
     [Header("화자별 기본 초상화 (대사 줄에 Portrait가 비어 있으면 이름으로 찾아 씀)")]
     public List<SpeakerPortrait> speakerPortraits = new List<SpeakerPortrait>();
@@ -44,6 +44,7 @@ public class DialogueManager : MonoBehaviour
     private bool isTyping;
     private Button skipButton;
     private bool deckWasOpen;
+    private float fastTimer;
 
     public bool IsPlaying { get; private set; }
 
@@ -196,18 +197,40 @@ public class DialogueManager : MonoBehaviour
         isTyping = true;
         if (bodyText != null) bodyText.text = "";
 
-        foreach (char c in fullText)
+        // 프레임 속도와 무관하게 시간 기준으로 글자를 낸다 (한 프레임에 여러 글자가 나올 수 있다).
+        // Ctrl을 누르고 있으면 6배 빨리.
+        float shown = 0f;
+        int count = 0, typed = 0;
+        while (count < fullText.Length)
         {
-            if (bodyText != null) bodyText.text += c;
-            yield return new WaitForSeconds(typeSpeed);
+            if (PauseMenu.IsOpen) { yield return null; continue; }   // 멈춤 중에는 타이핑도 멈춘다
+            float rate = 1f / Mathf.Max(0.001f, typeSpeed);
+            if (FastForwardHeld) rate *= 6f;
+            shown += Time.unscaledDeltaTime * rate;
+            int next = Mathf.Min(fullText.Length, Mathf.FloorToInt(shown));
+            if (next > count)
+            {
+                bool tick = false;
+                for (int i = count; i < next; i++)
+                    if (!char.IsWhiteSpace(fullText[i]) && typed++ % 2 == 0) tick = true;
+                if (tick) Sfx.Play(SfxId.Type, 0.55f, 0.08f);   // 두 글자에 한 번, 프레임당 최대 한 번 '톡'
+                count = next;
+                if (bodyText != null) bodyText.text = fullText.Substring(0, count);
+            }
+            yield return null;
         }
 
         isTyping = false;
     }
 
+    private static bool FastForwardHeld
+    {
+        get { return Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl); }
+    }
+
     void Update()
     {
-        if (!IsPlaying || PauseMenu.IsOpen) return;   // 멈춤 메뉴의 버튼을 누른 것이 대사까지 넘기지 않게
+        if (!IsPlaying || PauseMenu.IsOpen || PauseMenu.EscConsumed) return;   // 멈춤 메뉴의 버튼 · Esc가 대사까지 넘기지 않게
 
         // Esc = 건너뛰기. 덱 보기가 열려 있으면 Esc는 그 창을 닫는 데 쓰인다.
         if (Input.GetKeyDown(KeyCode.Escape) && !DeckViewer.IsOpen && !deckWasOpen)
@@ -216,8 +239,20 @@ public class DialogueManager : MonoBehaviour
             return;
         }
 
-        if (Input.GetKeyDown(KeyCode.Space) || (Input.GetMouseButtonDown(0) && !PointerOverSkipButton()))
+        if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)
+            || (Input.GetMouseButtonDown(0) && !PointerOverSkipButton()))
+        {
             Advance();
+            return;
+        }
+
+        // Ctrl 꾹 = 빨리 넘기기: 문장이 다 나오면 0.08초마다 다음 줄로
+        if (FastForwardHeld && !isTyping)
+        {
+            fastTimer += Time.unscaledDeltaTime;
+            if (fastTimer >= 0.08f) { fastTimer = 0f; Advance(); }
+        }
+        else fastTimer = 0f;
     }
 
     void LateUpdate()

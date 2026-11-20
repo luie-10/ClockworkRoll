@@ -23,6 +23,9 @@ public class Unit : MonoBehaviour
     public string unitName = "이름 없는 유닛";
     [Tooltip("종류 이름 (적: EnemyData의 Enemy Name). 별명과 다르면 이름 옆에 작게 표시")]
     public string kindName;
+
+    /// <summary>모든 칸 위력 +n (무한 모드에서 회차가 오를수록 적이 세진다). Init이 0으로 되돌린다</summary>
+    [System.NonSerialized] public int powerBonus;
     [Tooltip("적: 무대 안에서의 번호 (1부터) — 머리 위 [번호], 숫자 키로 대상 지정")]
     public int slotNumber;
     public bool isPlayer = false;
@@ -54,6 +57,27 @@ public class Unit : MonoBehaviour
     public EnemyBehavior behavior = EnemyBehavior.Random;
     public EnemyTrait trait = EnemyTrait.None;
     public int traitAmount = 1;
+    /// <summary>추가 특성 (에셋의 extraTraits + 무한 모드에서 덧붙는 특성)</summary>
+    [NonSerialized] public List<EnemyTraitEntry> extraTraits = new List<EnemyTraitEntry>();
+
+    /// <summary>그 특성의 수치 합 (없으면 0)</summary>
+    public int TraitN(EnemyTrait t)
+    {
+        if (t == EnemyTrait.None) return 0;
+        int n = trait == t ? traitAmount : 0;
+        if (extraTraits != null)
+            foreach (EnemyTraitEntry x in extraTraits) if (x != null && x.trait == t) n += x.amount;
+        return Mathf.Max(0, n);
+    }
+
+    /// <summary>걸려 있는 모든 특성 (수치 0 · None 제외)</summary>
+    public IEnumerable<EnemyTraitEntry> AllTraits()
+    {
+        if (trait != EnemyTrait.None && traitAmount > 0) yield return new EnemyTraitEntry { trait = trait, amount = traitAmount };
+        if (extraTraits == null) yield break;
+        foreach (EnemyTraitEntry x in extraTraits)
+            if (x != null && x.trait != EnemyTrait.None && x.amount > 0) yield return x;
+    }
 
     /// <summary>적: 이 유닛을 만든 데이터 (말풍선 대사 등). 플레이어는 null</summary>
     [System.NonSerialized] public EnemyData enemyData;
@@ -84,6 +108,9 @@ public class Unit : MonoBehaviour
         personalDeck = deck != null ? new List<CardData>(deck) : new List<CardData>();
         if (newResistance != null) resistance = newResistance.Clone();
         patternStep = 0;
+        powerBonus = 0;
+        if (extraTraits == null) extraTraits = new List<EnemyTraitEntry>();
+        extraTraits.Clear();
         ClearStatus();
 
         if (bodyRenderer == null) bodyRenderer = GetComponentInChildren<Renderer>();
@@ -389,6 +416,7 @@ public class Unit : MonoBehaviour
     private void Die()
     {
         PlayAnim("Down");   // 쓰러지는 포즈 (스프라이트) / Down 트리거 (Animator)
+        Sfx.Play(SfxId.Death);
 
         Collider col = GetComponent<Collider>();
         if (col != null) col.enabled = false;   // 시체 클릭 방지

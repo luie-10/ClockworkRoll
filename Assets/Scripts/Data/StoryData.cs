@@ -4,9 +4,9 @@ using UnityEngine;
 /// <summary>
 /// 스토리 1개 = 챕터 순서 + 플레이어 시작 덱.
 /// GameManager의 Story 칸에 넣으면 그 스토리로 게임이 진행된다.
-/// Project 창 우클릭 → Create → Ruina → Story 로 에셋 생성
+/// Project 창 우클릭 → Create → ClockworkRoll → Story 로 에셋 생성
 /// </summary>
-[CreateAssetMenu(fileName = "NewStory", menuName = "Ruina/Story", order = 0)]
+[CreateAssetMenu(fileName = "NewStory", menuName = "ClockworkRoll/Story", order = 0)]
 public class StoryData : ScriptableObject
 {
     public string storyTitle;

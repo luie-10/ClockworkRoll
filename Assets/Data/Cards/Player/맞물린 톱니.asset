@@ -17,8 +17,7 @@ MonoBehaviour:
   rarity: 1
   cost: 1
   requireTension: 1
-  cardDescription: "\uC11C\uB85C \uBB3C\uACE0 \uBB3C\uB9B0 \uD1B1\uB2C8\uAC00 \uBE44\uB85C\uC18C
-    \uC81C \uD798\uC744 \uB0B8\uB2E4."
+  cardDescription: "\uD558\uB098\uAC00 \uB3CC\uBA74 \uC606\uC758 \uD1B1\uB2C8\uB3C4 \uB04C\uB824 \uB3C8\uB2E4."
   diceList:
   - diceName: 
     diceType: 0

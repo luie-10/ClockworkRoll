@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c432b655cc2ee62408eb86f1bf1d0dbc, type: 3}
+  m_Name: "\uADF8\uB9BC\uC790 \uC2DC\uACC4\uACF5"
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyData
+  enemyName: "\uADF8\uB9BC\uC790 \uC2DC\uACC4\uACF5"
+  nicknames:
+  - "\uBC14\uB298 \uC5C6\uB294 \uC790"
+  - "\uBC24\uC758 \uC218\uB9AC\uACF5"
+  - "\uAC80\uC740 \uC7A5\uAC11"
+  - "\uBB34\uBA85"
+  maxHp: 36
+  resistance:
+    slash: 1
+    thrust: 0
+    blunt: 0
+  sprite: {fileID: 21300000, guid: 20af63ddde260a440b484e8070c658b4, type: 3}
+  spriteHeight: 2
+  poses:
+    slash: {fileID: 21300000, guid: c2f1bdf3ea9bb144680d66a8fe37a573, type: 3}
+    thrust: {fileID: 21300000, guid: a39c815b3c5e63e46b882cbd45b48ee7, type: 3}
+    blunt: {fileID: 21300000, guid: 4929a1a67e037924d938c38fa8420881, type: 3}
+    guard: {fileID: 21300000, guid: f903aafc13e2bd44ba97e2f4cbfc23ed, type: 3}
+    evade: {fileID: 21300000, guid: 72332d61073405c43993d8239e485fbe, type: 3}
+    hit: {fileID: 21300000, guid: 8da5cd4a0d728e043ab68501ddfa41ef, type: 3}
+    down: {fileID: 0}
+  modelPrefab: {fileID: 0}
+  tintColor: {r: 0.3, g: 0.3, b: 0.45, a: 1}
+  actionsPerRound: 1
+  behavior: 2
+  trait: 13
+  traitAmount: 2
+  extraTraits:
+  - trait: 15
+    amount: 1
+  deck:
+  - {fileID: 11400000, guid: 9e4543e6ce6742bf79cd758143efeaae, type: 2}
+  - {fileID: 11400000, guid: 32ec414f87a8eb74bca1a73b898d87fb, type: 2}
+  - {fileID: 11400000, guid: 9e4543e6ce6742bf79cd758143efeaae, type: 2}
+  barks:
+  - "\uBC24\uC774 \uC624\uBA74 \uB0B4 \uC2DC\uAC04\uC774\uB2E4."
+  - "\u2026"
+  attackBarks:
+  - "\uC27F."
+  hurtBarks:
+  - "\uBE5B\uC774\u2026"
+  deathBarks:
+  - "\uC790\uC815\uC740\u2026 \uC544\uC9C1\u2026"

@@ -25,6 +25,7 @@ public static class RouteIcons
         tex.filterMode = FilterMode.Bilinear;
         tex.SetPixels32(px);
         tex.Apply();
+        PixelStyle.Register(tex, Mathf.Max(2, size / 32));   // 픽셀 UI: 32칸짜리 픽셀 문양
 
         Sprite sprite = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f);
         sprite.name = "Icon " + kind;

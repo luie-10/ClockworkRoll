@@ -39,7 +39,7 @@ MonoBehaviour:
   tintColor: {r: 0.8, g: 0.35, b: 0.3, a: 1}
   actionsPerRound: 1
   behavior: 0
-  trait: 0
+  trait: 14
   traitAmount: 1
   deck:
   - {fileID: 11400000, guid: 44b0abacae1fa621c1687a272e55b9dd, type: 2}

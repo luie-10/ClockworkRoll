@@ -145,7 +145,7 @@ public class DebugWindow : MonoBehaviour
         foreach (DeckEntry e in cards)
         {
             if (e == null || e.data == null) continue;
-            string key = e.data.cardName + (e.absorbed ? "◈" + e.corruption : "");
+            string key = e.data.cardName + (e.absorbed ? "❖" + e.corruption : "");
             if (!counts.ContainsKey(key)) { order.Add(key); counts[key] = 0; sample[key] = e; }
             counts[key]++;
         }
@@ -156,7 +156,7 @@ public class DebugWindow : MonoBehaviour
             DeckEntry e = sample[key];
             sb.Length = 0;
             sb.Append("   ").Append(e.data.cardName);
-            if (e.absorbed) sb.Append($" <color=#d9a6ff>◈ 침식{e.corruption}</color>");
+            if (e.absorbed) sb.Append($" <color=#d9a6ff>❖ 침식{e.corruption}</color>");
             if (counts[key] > 1) sb.Append($" ×{counts[key]}");
             sb.Append($"  <color=#8cd9ff>기력{e.data.cost}</color>");
             if (showDetail) sb.Append("  ").Append(DiceInfo.Summary(e.data));

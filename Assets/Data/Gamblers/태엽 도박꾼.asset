@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c432b655cc2ee62408eb86f1bf1d0dbc, type: 3}
+  m_Name: "\uD0DC\uC5FD \uB3C4\uBC15\uAFBC"
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyData
+  enemyName: "\uD0DC\uC5FD \uB3C4\uBC15\uAFBC"
+  nicknames:
+  - "\uC678\uB208 \uC7AD"
+  - "\uBE5A\uC7C1\uC774 \uB864\uB85C"
+  - "\uB3D9\uC804 \uAD74\uB9AC\uB294 \uD540"
+  - "\uD328 \uC11E\uB294 \uBBF8\uC544"
+  maxHp: 34
+  resistance:
+    slash: 0
+    thrust: 1
+    blunt: 0
+  sprite: {fileID: 21300000, guid: daae971a6a7c5ef47a07e8148e446c24, type: 3}
+  spriteHeight: 2
+  poses:
+    slash: {fileID: 21300000, guid: ec06b52a861d15d4d8c40df9f7e113bc, type: 3}
+    thrust: {fileID: 21300000, guid: 5347c2b16151015408de0cad47cebc01, type: 3}
+    blunt: {fileID: 21300000, guid: 335f42cb273d73e45a3f8ca27d325c03, type: 3}
+    guard: {fileID: 21300000, guid: f4335441533e12c428b76c01600f1eac, type: 3}
+    evade: {fileID: 21300000, guid: c3b742edca9d4db488fc59ad43807516, type: 3}
+    hit: {fileID: 21300000, guid: 120dadb5d49f6674581ab58cbe08b5c0, type: 3}
+    down: {fileID: 0}
+  modelPrefab: {fileID: 0}
+  tintColor: {r: 0.85, g: 0.65, b: 0.25, a: 1}
+  actionsPerRound: 1
+  behavior: 0
+  trait: 16
+  traitAmount: 1
+  extraTraits: []
+  deck:
+  - {fileID: 11400000, guid: 10332b47c9ef0e813b0f04e6982cacbd, type: 2}
+  - {fileID: 11400000, guid: f06aa80e56d43e484c5b878e3df14c0a, type: 2}
+  - {fileID: 11400000, guid: 49c64677fb2ae075419822c403cf979c, type: 2}
+  - {fileID: 11400000, guid: 10332b47c9ef0e813b0f04e6982cacbd, type: 2}
+  barks:
+  - "\uD55C \uD310 \uD558\uACA0\uB098?"
+  - "\uD310\uB3C8\uC740 \uB124 \uD0DC\uC5FD\uC774\uB2E4."
+  - "\uC6B4\uC774 \uC88B\uC740 \uB0A0\uC774\uAD70\u2026 \uB098\uD55C\uD14C."
+  attackBarks:
+  - "\uAC78\uC5C8\uB2E4!"
+  - "\uD328\uB97C \uAE4C\uB77C!"
+  hurtBarks:
+  - "\uD310\uC774 \uAE30\uC6B8\uC5C8\uAD70\u2026"
+  deathBarks:
+  - "\uB2E4\uC74C \uD310\uC5D4\u2026 \uB0B4\uAC00\u2026"

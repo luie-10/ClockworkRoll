@@ -1,0 +1,28 @@
+# Fly.io 설정 — Server 폴더에서 `fly launch --copy-config --no-deploy` → `fly volumes create ranking_data --size 1 --region nrt` → `fly deploy`
+app = "clockworkroll-ranking"
+primary_region = "nrt"            # 도쿄 (한국에서 가깝다)
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  MIN_LOOP_SECONDS = "60"
+  TRUST_PROXY = "1"
+  DATA_DIR = "/data"
+
+[[mounts]]
+  source = "ranking_data"
+  destination = "/data"
+
+[http_service]
+  internal_port = 8787
+  force_https = true
+  auto_stop_machines = "off"      # 기록은 메모리의 '진행 중인 판'도 쓰므로 꺼지지 않게
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    method = "GET"
+    path = "/api/health"
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "10s"

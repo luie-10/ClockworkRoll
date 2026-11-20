@@ -19,8 +19,7 @@ MonoBehaviour:
   requireTension: 0
   exhaust: 0
   innate: 0
-  cardDescription: "\uBA48\uCD94\uC9C0 \uC54A\uB294 \uAC83\uC740 \uC5C6\uB2E4. \uB2E4\uB9CC
-    \uC544\uC8FC \uC624\uB798 \uB3C4\uB294 \uAC83\uC774 \uC788\uC744 \uBFD0."
+  cardDescription: "\uBC31 \uB144\uC9F8 \uB3CC\uACE0 \uC788\uB2E4\uACE0 \uC7A5\uC778\uC740 \uC6B0\uACBC\uB2E4."
   diceList:
   - diceName: 
     diceType: 0

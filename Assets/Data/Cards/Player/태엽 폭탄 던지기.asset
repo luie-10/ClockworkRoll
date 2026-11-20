@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 64319ab3dd94be547b66c1346fc27ddd, type: 3}
+  m_Name: "\uD0DC\uC5FD \uD3ED\uD0C4 \uB358\uC9C0\uAE30"
+  m_EditorClassIdentifier: Assembly-CSharp::CardData
+  cardName: "\uD0DC\uC5FD \uD3ED\uD0C4 \uB358\uC9C0\uAE30"
+  cardArt: {fileID: 21300000, guid: 695bab616d5ae2d4188f3d794e21815c, type: 3}
+  rarity: 2
+  cost: 2
+  requireTension: 0
+  exhaust: 1
+  innate: 0
+  instant: 1
+  instantEffects:
+  - trigger: 3
+    effect: 33
+    amount: 7
+    nextTurn: 0
+  cardDescription: "\uAC10\uC544 \uB454 \uD0DC\uC5FD\uC774 \uD55C\uAEBC\uBC88\uC5D0
+    \uD480\uB9AC\uBA70 \uD130\uC9C4\uB2E4."
+  diceList: []

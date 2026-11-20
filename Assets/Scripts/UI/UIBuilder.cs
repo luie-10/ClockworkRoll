@@ -21,6 +21,9 @@ public static class UIBuilder
         {
             if (font == null)
             {
+                // 게임 글꼴 (Resources/Fonts). ◈ └ ─ 같은 몇몇 기호가 없어서 글 속에서는 ❖ ↳ ― 를 쓴다
+                font = Resources.Load<Font>("Fonts/LevelUp-Regular");
+                if (font != null) return font;
                 try { font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf"); } catch { }
                 if (font == null) { try { font = Resources.GetBuiltinResource<Font>("Arial.ttf"); } catch { } }
             }

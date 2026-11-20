@@ -12,9 +12,9 @@ using UnityEngine.UI;
 /// <summary>버튼의 손맛: 올리면 커지고 누르면 눌린다. UITheme.StyleButton / UIBuilder.Button이 알아서 붙인다.</summary>
 public class UIButtonFeel : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler
 {
-    public float hoverScale = 1.045f;
-    public float pressScale = 0.955f;
-    public float speed = 18f;
+    public float hoverScale = 1.03f;
+    public float pressScale = 0.965f;
+    public float speed = 30f;
 
     private Button button;
     private Vector3 baseScale = Vector3.one;
@@ -51,17 +51,27 @@ public class UIButtonFeel : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         transform.localScale = baseScale;
     }
 
-    public void OnPointerEnter(PointerEventData e) { hovered = true; }
+    public void OnPointerEnter(PointerEventData e)
+    {
+        if (!hovered && Live) Sfx.Play(SfxId.Hover);
+        hovered = true;
+    }
+
+    private bool Live { get { return button == null || button.interactable; } }
     public void OnPointerExit(PointerEventData e) { hovered = pressed = false; }
-    public void OnPointerDown(PointerEventData e) { pressed = true; }
+    public void OnPointerDown(PointerEventData e)
+    {
+        if (Live) Sfx.Play(SfxId.Click);
+        pressed = true;
+    }
     public void OnPointerUp(PointerEventData e) { pressed = false; }
 }
 
 /// <summary>켜질 때마다 작게 시작해 제 크기로 떠오르며 나타난다 (SetActive(true)가 곧 재생).</summary>
 public class UIPop : MonoBehaviour
 {
-    public float fromScale = 0.94f;
-    public float duration = 0.18f;
+    public float fromScale = 0.96f;
+    public float duration = 0.12f;
 
     private CanvasGroup group;
     private Vector3 baseScale = Vector3.one;
@@ -69,7 +79,7 @@ public class UIPop : MonoBehaviour
     private float t = 1f;
 
     /// <summary>fromScale = 1이면 크기는 그대로 두고 서서히 나타나기만 한다</summary>
-    public static UIPop Ensure(GameObject go, float fromScale = 0.94f, float duration = 0.18f)
+    public static UIPop Ensure(GameObject go, float fromScale = 0.96f, float duration = 0.12f)
     {
         if (go == null) return null;
         UIPop pop = go.GetComponent<UIPop>();
@@ -110,7 +120,7 @@ public class UIPop : MonoBehaviour
     {
         float k = 1f - (1f - t) * (1f - t) * (1f - t);
         transform.localScale = baseScale * Mathf.Lerp(fromScale, 1f, k);
-        if (group != null) group.alpha = Mathf.Clamp01(t * 2.2f);
+        if (group != null) group.alpha = Mathf.Clamp01(t * 2.5f);
     }
 }
 
@@ -118,8 +128,8 @@ public class UIPop : MonoBehaviour
 [RequireComponent(typeof(Text))]
 public class UITextPunch : MonoBehaviour
 {
-    public float punchScale = 1.2f;
-    public float duration = 0.25f;
+    public float punchScale = 1.15f;
+    public float duration = 0.18f;
 
     private Text label;
     private string last;
@@ -166,7 +176,7 @@ public class UITextPunch : MonoBehaviour
 /// </summary>
 public class PhaseBanner : MonoBehaviour
 {
-    private const float Life = 1.15f;
+    private const float Life = 0.8f;
     private const int SortingOrder = 55;   // 시계판(50) 바로 위, 정보창(500) · 승리 화면(600)보다 아래
 
     private static PhaseBanner instance;
@@ -253,12 +263,58 @@ public class PhaseBanner : MonoBehaviour
 
         age += Time.unscaledDeltaTime;
         float t = Mathf.Clamp01(age / Life);
-        float fadeIn = Mathf.Clamp01(t / 0.16f), fadeOut = Mathf.Clamp01((1f - t) / 0.28f);
+        float fadeIn = Mathf.Clamp01(t / 0.14f), fadeOut = Mathf.Clamp01((1f - t) / 0.25f);
         group.alpha = Mathf.Min(fadeIn, fadeOut);
 
         // 띠는 가운데에서 위아래로 펼쳐지고, 글자는 오른쪽에서 들어와 천천히 왼쪽으로 흘러간다
         float open = 1f - (1f - fadeIn) * (1f - fadeIn);
         band.localScale = new Vector3(1f, Mathf.Lerp(0.2f, 1f, open), 1f);
         label.rectTransform.anchoredPosition = new Vector2(Mathf.Lerp(90f, 0f, open) - 40f * t, 0f);
+    }
+}
+
+/// <summary>
+/// "시계 진행" 버튼 재촉: 내 차례인데 손패에 낼 수 있는 카드가 하나도 없으면 버튼 둘레의 금빛 테가 숨 쉬듯 빛난다.
+/// BattleManager가 시작할 때 EndTurnNudge.Ensure(endTurnButton)으로 붙인다.
+/// </summary>
+public class EndTurnNudge : MonoBehaviour
+{
+    private Button button;
+    private Image glow;
+    private float level;
+
+    public static void Ensure(Button b)
+    {
+        if (b == null || !Application.isPlaying || b.GetComponent<EndTurnNudge>() != null) return;
+        EndTurnNudge n = b.gameObject.AddComponent<EndTurnNudge>();
+        n.button = b;
+
+        RectTransform rt = UIBuilder.Rect("Nudge", b.transform);
+        UIBuilder.Stretch(rt, -6f);   // 버튼보다 사방으로 6px 크게
+        n.glow = rt.gameObject.AddComponent<Image>();
+        n.glow.sprite = ProceduralSprites.Frame(true);
+        n.glow.type = Image.Type.Sliced;
+        n.glow.pixelsPerUnitMultiplier = 1.6f;
+        n.glow.raycastTarget = false;
+        n.glow.color = UITheme.Alpha(UITheme.Gold, 0f);
+    }
+
+    void Update()
+    {
+        bool want = button.interactable && NothingPlayable();
+        level = Mathf.MoveTowards(level, want ? 1f : 0f, Time.unscaledDeltaTime * 4f);
+        float pulse = 0.55f + 0.45f * Mathf.Sin(Time.unscaledTime * 4.5f);
+        glow.color = UITheme.Alpha(UITheme.Gold, level * pulse);
+    }
+
+    private static bool NothingPlayable()
+    {
+        BattleManager bm = BattleManager.Instance;
+        if (bm == null || bm.handManager == null || bm.Phase != BattleManager.BattlePhase.PlayerTurn) return false;
+        foreach (CardInstance c in bm.handManager.Hand)
+        {
+            if (c != null && c.data != null && c.data.cost <= bm.CurrentKi && bm.HasTensionFor(c.data)) return false;
+        }
+        return true;
     }
 }

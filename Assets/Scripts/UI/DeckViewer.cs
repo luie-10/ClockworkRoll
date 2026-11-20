@@ -81,6 +81,8 @@ public class DeckViewer : MonoBehaviour
             return;
         }
 
+        if (PauseMenu.IsOpen || PauseMenu.EscConsumed || TutorialCoach.IsOpen) return;   // 멈춤 메뉴가 열려 있으면 Tab · Esc는 그쪽 몫
+
         if (Input.GetKeyDown(KeyCode.Tab)) Toggle();
         else if (IsOpen && Input.GetKeyDown(KeyCode.Escape)) panelRoot.SetActive(false);
 
@@ -106,7 +108,7 @@ public class DeckViewer : MonoBehaviour
         foreach (TimedAction a in bm.PlayerActions) onClock.Add(a.card.entry);
 
         int owned = GameManager.Instance != null && GameManager.Instance.OwnedDeck != null ? GameManager.Instance.OwnedDeck.Count : 0;
-        titleText.text = $"보유 덱 {owned}장   <size=20><color={UITheme.HexMuted}>◈ = 흡수한 태엽판 · 뽑을 더미는 순서를 감추고 이름순</color></size>";
+        titleText.text = $"보유 덱 {owned}장   <size=20><color={UITheme.HexMuted}>❖ = 흡수한 태엽판 · 뽑을 더미는 순서를 감추고 이름순</color></size>";
 
         Fill(columns[0], "뽑을 더미", hm.DrawPile);
         Fill(columns[1], "손패", hand);
@@ -124,7 +126,7 @@ public class DeckViewer : MonoBehaviour
         foreach (DeckEntry e in entries)
         {
             if (e == null || e.data == null) continue;
-            string key = (e.absorbed ? "◈ " : "") + e.data.cardName;
+            string key = (e.absorbed ? "❖ " : "") + e.data.cardName;
             counts.TryGetValue(key, out int n);
             counts[key] = n + 1;
             sample[key] = e;

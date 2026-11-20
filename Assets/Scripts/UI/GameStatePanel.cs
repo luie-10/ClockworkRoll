@@ -16,6 +16,10 @@ public class GameStatePanel : MonoBehaviour
 
     private GameManager.GameState shownState = GameManager.GameState.Story;
 
+    /// <summary>결과 메시지 아래에 덧붙일 한 줄 (무한 모드 랭킹 — 서버 응답이 늦게 와도 그때 채워진다)</summary>
+    public static string ExtraLine;
+    private string baseMessage, shownExtra;
+
     void Start()
     {
         if (panel != null)
@@ -39,6 +43,12 @@ public class GameStatePanel : MonoBehaviour
             return;
         }
 
+        if (ended && messageText != null && baseMessage != null && ExtraLine != shownExtra)
+        {
+            shownExtra = ExtraLine;
+            messageText.text = baseMessage + (string.IsNullOrEmpty(ExtraLine) ? "" : "\n" + ExtraLine);
+        }
+
         if (state == shownState) return;
         shownState = state;
 
@@ -49,8 +59,14 @@ public class GameStatePanel : MonoBehaviour
 
         if (state == GameManager.GameState.GameOver)
         {
+            GameManager gm = GameManager.Instance;
             if (titleText != null) titleText.text = "패배...";
-            if (messageText != null) messageText.text = "쓰러졌다. 처음부터 다시 시작한다. (R / Enter)";
+            if (messageText != null)
+                messageText.text = gm != null && gm.IsEndless
+                    ? $"무한 모드 {gm.EndlessLoop}회차에서 쓰러졌다.  최고 기록 {GameManager.EndlessBest}회차\n다시 도전한다. (R / Enter)"
+                    : "쓰러졌다. 처음부터 다시 시작한다. (R / Enter)";
+            baseMessage = messageText != null ? messageText.text : null;
+            shownExtra = null;
         }
         else
         {
